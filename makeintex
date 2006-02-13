@@ -3,13 +3,14 @@
 # $Id: makeintex 34 2005-10-25 11:31:35Z mtr $
 """
 
-Copyright (C) 2005 by Martin Thorsen Ranang
+Copyright (C) 2005, 2006 by Martin Thorsen Ranang
 """
 
-__version__ = "$Rev: 34 $"
+__revision__ = "$Rev: 34 $"
 __author__ = "Martin Thorsen Ranang"
 
-import itertools
+from itertools import count, cycle, izip
+import logging
 import optparse
 import os
 import re
@@ -26,30 +27,37 @@ intex_re = re.compile('\\\@writefile\{%s\}' \
                       % (INTEX_INDEX))
 
 def parse_command_line(command_line_options):
-    class Options(object):
-        def __init__(self, args):
-            for key, value in args.items():
-                setattr(self, key, value)
-                
+    """
+    Parse the command line according to the possible COMMAND_LINE_OPTIONS.
+    """
+    #class Options(object):
+    #    def __init__(self, args):
+    #        for key, value in args.items():
+    #            setattr(self, key, value)
+    
     parser = optparse.OptionParser(usage = '%prog [options]...',
-                                   version = '%%prog %s' % (__version__))
+                                   version = '%%prog %s' % (__revision__))
     for option, description in command_line_options:
         parser.add_option(*option, **description)
         
     # Parse the command line.
     options, args = parser.parse_args()
-    return Options(eval(str(options))), eval(str(args))
+    #return #Options(eval(str(options))), eval(str(args))
+    return options, args
     
 class Concept(object):
+    """
+    A class representing a single concept.
+    """
     def __init__(self, key='', in_text='',
                  equivalencies=None, sort_as='', kind=None, serial=None):
-        self.key = key
-        self.serial = serial
-        self.in_text = in_text
-        self.equivalencies = equivalencies and equivalencies or list()
-        self.sort_as = sort_as
+        self.__key = key
+        self.__serial = serial
+        self.__in_text = in_text
+        self.__equivalencies = equivalencies and equivalencies or list()
+        self.__sort_as = sort_as
+        self.__kind = None
         self.kind = kind
-        #print >>sys.stderr, str(self)
         
     def __str__(self):
         return '%(class)s("%(key)s", ' \
@@ -64,75 +72,134 @@ class Concept(object):
     __repr__ = __str__
     
     def add_equivalency(self, equivalency):
-        self.equivalencies.append(equivalency)
-        
+        """
+        Add a concept that is defined to be equivalent/synonymous with
+        SELF.
+        """
+        self.__equivalencies.append(equivalency)
+
+    def get_key(self):
+        """
+        Read accessor.  Returns private member __key.
+        """
+        return self.__key
+
+    key = property(get_key, )
+
+    def get_in_text(self):
+        """
+        Read accessor.  Returns private member __in_text.
+        """
+        return self.__in_text
+
+    in_text = property(get_in_text, )
+    
+    def get_kind(self):
+        """
+        Read accessor that returns what kind of acronym this is.
+        """
+        return self.__kind
+    
     def set_kind(self, kind):
-        if kind not in ['acronym', 'person', 'plain']:
-            raise KeyError, 'unknown kind of concept'
+        """
+        An accessor method that safely declares what KIND of concept
+        this object represents.
+        """
+        if kind not in set(['acronym', 'person', 'plain',
+                            'equivalency', 'concept' # Not sure about these 2.
+                            ]):
+            raise KeyError, 'unknown kind of concept "%s"' % (kind, )
         else:
-            self.kind = kind
-
+            self.__kind = kind
+            
+    kind = property(get_kind, set_kind, )
+    
     def get_keys(self):
-        yield self.key
-        for equivalent in self.equivalencies:
-            yield equivalent.key
+        """
+        A generator accessor that yields the key of each concept
+        equivalent with the current one.
+        """
+        yield self.__key
+        
+        for equivalent in self.__equivalencies:
+            yield equivalent.__key
 
+    keys = property(get_keys, )
+    
     def get_equivalency(self, key):
-        if key != self.key:
-            for equivalency in self.equivalencies:
-                if equivalency.key == key:
+        """
+        Return the first equivalent concept that has a key that
+        matches KEY.
+        """
+        if key != self.__key:
+            for equivalency in self.__equivalencies:
+                if equivalency.__key == key:
                     return equivalency
         return None
     
     def generate_index_entries(self, key, page):
+        """
+        Generate all the index entries for this concept.
+        """
         equivalency = self.get_equivalency(key)
         
-        args = dict(zip(('subentry', 'sort_as', 'concept', 'page'),
-                        itertools.cycle([''])))
-
+        args = dict(izip(('subentry', 'sort_as', 'concept', 'page'),
+                         cycle([''])))
+        
         args['index_name'] = 'raw'
         args['page'] = page
         
-        if self.kind == 'acronym':
-            args['concept'] = self.in_text[0]                
+        if self.__kind == 'acronym':
+            args['concept'] = self.__in_text[0]                
                 
-        elif self.kind == 'person':
-            args['concept'] = ', '.join(self.in_text)
+        elif self.__kind == 'person':
+            args['concept'] = ', '.join(self.__in_text)
         else:
-            args['concept'] = self.key
+            args['concept'] = self.__key
 
-        if self.sort_as:
-            args['sort_as'] = '%s@' % (self.sort_as)
+        if self.__sort_as:
+            args['sort_as'] = '%s@' % (self.__sort_as)
         
         if equivalency:
-            for part in equivalency.in_text:
+            for part in equivalency.__in_text:
                 if part[0] == ':':
                     args['subentry'] = '!%s' % (part[1:])
-            if equivalency.sort_as:
-                args['sort_as'] = '%s@' % (equivalency.sort_as)
+            if equivalency.__sort_as:
+                args['sort_as'] = '%s@' % (equivalency.__sort_as)
                 
         res = '\indexentry{%(sort_as)s%(concept)s%(subentry)s}{%(page)s}' \
               % (args)
         
-        if self.kind == 'acronym':
-            if len(self.in_text) > 1:
-                args['typeset'] =  '@' + self.in_text[1]
+        if self.__kind == 'acronym':
+            if len(self.__in_text) > 1:
+                args['typeset'] =  '@' + self.__in_text[1]
             else:
                 args['typeset'] = ''
                 
-            args['acronym'] = self.key
+            args['acronym'] = self.__key
             res += '\n\indexentry{%(acronym)s%(typeset)s' \
                    '|see{%(concept)s}}{%(page)s}' % (args)
         
         return res
 
     def get_typeset(self):
-        if len(self.in_text) > 1:
-            return '@' + self.in_text[1]
+        """
+        Accessor that returns instructions as for how this concept
+        should be typeset in the index.
+        """
+        if len(self.__in_text) > 1:
+            return '@' + self.__in_text[1]
         else:
             return ''
 
-    def get_full_form_and_typeset_as(self, in_text):
+    typeset = property(get_typeset, )
+    
+    @staticmethod
+    def get_full_form_and_typeset_as(in_text):
+        """
+        Returns the full-form of this concept and how it should be
+        typeset in running text.
+        """
         candidates = [field for field in in_text if field[0] != [':']]
         num_candidates = len(candidates) 
             
@@ -143,23 +210,17 @@ class Concept(object):
         else:
             return (candidates[0], candidates[1])
         
-    def get_index_as(self, in_text):
-        for field in in_text:
-            if field[0] == [':']:
-                return field
-
     def expand_typeset_info(self, args):
         for arg in args:
             if arg and (arg[0] == '#'):
                 if arg[1] == 'y':
-                    full = self.in_text[0]
+                    full = self.__in_text[0]
                     if full[-1] == 'y':
                         yield full[:-1] + 'ies'
                     else:
-                        print >>sys.stderr, \
-                              "Warning, 'y' --> 'ies' transformation " \
-                              "specified, but 'y' not last in full-form. "\
-                              "('%s')" % (full)
+                        logging.warning("'y' --> 'ies' transformation " \
+                                        "specified, but 'y' not last in " \
+                                        "full-form ('%s')", full)
                 elif arg[1] == 's':
                     yield full + 's'
             else:
@@ -167,64 +228,57 @@ class Concept(object):
                 
     def generate_aux_modifications(self, key, page):
         res = []
-        if self.kind == 'concept':
+        if self.__kind == 'concept':
             #res.append('\\new%s{%s}{%d}{%s}{}' \
-            #        % (self.kind, self.key, self.serial, self.key))
+            #        % (self.__kind, self.__key, self.__serial, self.__key))
             res.append('\\new%s{%s}{%s}{}' \
-                       % (self.kind, self.key, self.key))
+                       % (self.__kind, self.__key, self.__key))
             equiv = self.get_equivalency(key)
             if equiv:
                 #res.append('\\new%sequiv{%s}{%d}{%s}{%s}{}' \
-                #           % (self.kind, self.key,
-                #              self.serial, equiv.key, equiv.key))
+                #           % (self.__kind, self.__key,
+                #              self.__serial, equiv.__key, equiv.__key))
                 res.append('\\new%sequiv{%s}{%s}{%s}{}' \
-                           % (self.kind, self.key,
-                              equiv.key, equiv.key))
+                           % (self.__kind, self.__key,
+                              equiv.__key, equiv.__key))
                 
         kinds = {'acronym': 'acronym',
                  'person': 'person',}
-        if self.kind in kinds:
-            if len(self.in_text) > 1:
-                typeset_as = self.in_text[1]
+        if self.__kind in kinds:
+            if len(self.__in_text) > 1:
+                typeset_as = self.__in_text[1]
             else:
-                typeset_as = self.key
-            #res.append('\\new%s{%s}{%d}{%s}{%s}' \
-            #           % (kinds[self.kind], self.key, self.serial, typeset_as,
-            #              self.in_text[0]))
+                typeset_as = self.__key
             res.append('\\new%s{%s}{%s}{%s}' \
-                       % (kinds[self.kind], self.key, typeset_as,
-                          self.in_text[0]))
-            
-            #res.append('\\%sused{%s}' % (self.kind, self.key))
+                       % (kinds[self.__kind], self.__key, typeset_as,
+                          self.__in_text[0]))
             
             equiv = self.get_equivalency(key)
             if equiv:
                 (full_form, typeset_as) = \
                             self.expand_typeset_info(\
-                    self.get_full_form_and_typeset_as(equiv.in_text))
-
-                #print '(full_form, typeset_as) =', (full_form, typeset_as)
+                    self.get_full_form_and_typeset_as(equiv.__in_text))
 
                 if not full_form:
-                    full_form = self.in_text[0]
+                    full_form = self.__in_text[0]
                 if not typeset_as:
-                    typeset_as = (self.kind == 'person') \
-                                 and self.in_text[1] \
+                    typeset_as = (self.__kind == 'person') \
+                                 and self.__in_text[1] \
                                  or full_form
                     
                 res.append('\\new%sequiv{%s}{%s}{%s}{%s}' \
-                           % (kinds[self.kind], self.key, typeset_as,
-                              equiv.key, full_form))
+                           % (kinds[self.__kind], self.__key, typeset_as,
+                              equiv.__key, full_form))
                 
         return res
 
 class Equivalency(Concept):
-    def __init__(self, key='', in_text='', #position = 'normal',
-                 equivalencies=[], sort_as=None, serial=None):
+    def __init__(self, key='', in_text='',
+                 equivalencies=list(), sort_as=None, serial=None):
         super(self.__class__, self).__init__(key, in_text,
                                              equivalencies, sort_as,
                                              'equivalency', serial=serial)
-
+        
 class InTeX(object):
     delimiter = '\t'
     
@@ -252,7 +306,8 @@ class InTeX(object):
     def __getitem__(self, key):
         return self.index.__getitem__(key)
 
-    def handle_fields(self, fields, kind, serial_number):
+    @staticmethod
+    def handle_fields(fields, kind, serial_number):
         info = {'serial': serial_number}
         
         key, fields = fields[0], fields[1:]
@@ -266,7 +321,7 @@ class InTeX(object):
         
         info['kind'] = kind
 
-        #print >>sys.stderr, "Found info:", info
+        #print >> sys.stderr, "Found info:", info
         return info
 
     def parse_line(self, line, concepts, kind, serial_number=0):
@@ -291,35 +346,32 @@ class InTeX(object):
         kind = 'concept'                # Default "mode".
 
         serial_number = 1
-        f = open(filename, 'r')
-        for line in f:
+        in_file = open(filename, 'r')
+        for line in in_file:
             line = line.rstrip("\n")
             if not line:
                 continue
             if line[0] == '%':
-                m = mode_switch_re.match(line)
-                if m:
+                match = mode_switch_re.match(line)
+                if match:
                     # New current KIND (or mode).
-                    kind = m.group('kind')[:-1].lower()
+                    kind = match.group('kind')[:-1].lower()
                 continue
             
             self.parse_line(line, concepts, kind, serial_number)
             serial_number += 1
             
-        f.close()
+        in_file.close()
         
         return concepts
 
 def get_entries(filename):
-    global intex_re
-    
-    entries = []
     for line in open(filename, 'r'):
-        m = intex_re.match(line.rstrip())
-        if not m:
+        match = intex_re.match(line.rstrip())
+        if not match:
             yield (False, line)
             continue
-        yield (True, m.groups())
+        yield (True, match.groups())
         
 def handle_auxiliary(aux_filename, index, index_file, tmp_aux_file):
     not_found = []
@@ -338,13 +390,13 @@ def handle_auxiliary(aux_filename, index, index_file, tmp_aux_file):
             continue
         
         concept = index[key]
-        print >>index_file, concept.generate_index_entries(key, page)
+        print >> index_file, concept.generate_index_entries(key, page)
         
         if key not in already_handled:
             aux_info = concept.generate_aux_modifications(key, page)
             for line in aux_info:
                 if line not in already_printed:
-                    print >>tmp_aux_file, line
+                    print >> tmp_aux_file, line
                     already_printed.add(line)
                     
             already_handled.add(key)
@@ -352,8 +404,6 @@ def handle_auxiliary(aux_filename, index, index_file, tmp_aux_file):
     return not_found
 
 def copy(src_name, dst_name):
-    global READ_BUF_SIZE
-    
     src, dst = open(src_name, 'r'), open(dst_name, 'w')
     while True:
         data = src.read(READ_BUF_SIZE)
@@ -364,16 +414,16 @@ def copy(src_name, dst_name):
     dst.close()
     src.close()
 
-auto_edit_warning ='''
+auto_edit_warning = '''
 %%%% This file was automatically generated by InTeX version %s,
 %%%% copyright (C) 2005 by Martin Thorsen Ranang.  Any manual changes
 %%%% made to this file will be lost next time InTeX is run with the
 %%%% same arguments.
-''' % (__version__)
+''' % (__revision__)
 
 def generate_acrodefs(index):
     res = []
-    for identifier, concepts in index.identifiers.items():
+    for concepts in index.identifiers.values():
         for concept in concepts:
             if concept.kind == 'acronym':
                 if len(concept.in_text) > 1:
@@ -388,7 +438,7 @@ def generate_acrodefs(index):
 
 def generate_persondefs(index):
     res = []
-    for identifier, concepts in index.identifiers.items():
+    for concepts in index.identifiers.values():
         for concept in concepts:
             if concept.kind == 'person':
                 if len(concept.in_text) > 1:
@@ -400,8 +450,35 @@ def generate_persondefs(index):
                                % (concept.key, concept.in_text[0]))
     return res
 
+def resolve_auxiliary_and_args(args):
+    aux_re = re.compile('^.*\.aux$', re.IGNORECASE)
+    auxiliary = [arg for arg in args
+                 if aux_re.match(arg) and os.path.exists(arg)]
+    args = [arg for arg in args if arg not in auxiliary]
+
+    attempts = count(-2)
+    
+    while attempts.next():
+        if len(auxiliary) > 1:
+            logging.error('Please explicitly specify the ' \
+                          'LaTeX auxiliary (.aux) file to use.')
+            sys.exit(1)
+            
+        elif not auxiliary:
+            auxiliary = ['%s.aux' % (arg) for arg in args
+                         if os.path.exists('%s.aux' % (arg))]
+            args = [arg for arg in args if '%s.aux' % (arg) not in auxiliary]
+            
+        else:
+            auxiliary = auxiliary[0]
+            break
+        
+    return auxiliary, args
+
 def main():
-    """Module mainline (for standalone execution)."""
+    """
+    Module mainline (for standalone execution).
+    """
     command_line_options = [
         (['-o', '--index-output'],
          {'dest': 'index_output',
@@ -424,32 +501,15 @@ def main():
           'action': 'store_true',
           'help': 'whether or not to output verbose information'}),
         ]
-
-                       
+    
     options, args = parse_command_line(command_line_options)
-
-    aux_re = re.compile('^.*\.aux$', re.IGNORECASE)
-    auxiliary = [arg for arg in args
-                 if aux_re.match(arg) and os.path.exists(arg)]
-    args = [arg for arg in args if arg not in auxiliary]
-
-    for attempt in xrange(2):
-        if len(auxiliary) > 1:
-            print >>sys.stderr, 'error: Please explicitly specify the ' \
-                  'LaTeX auxiliary (.aux) file to use.'
-            return 1
-        elif not auxiliary:
-            auxiliary = ['%s.aux' % (arg) for arg in args
-                         if os.path.exists('%s.aux' % (arg))]
-            args = [arg for arg in args if '%s.aux' % (arg) not in auxiliary]
-        else:
-            auxiliary = auxiliary[0]
-            break
-
+    
+    auxiliary, args = resolve_auxiliary_and_args(args)
+    
     if not auxiliary:
-        print >>sys.stderr, 'warning: No LaTeX auxiliary file specified.'
-        return 0
-
+        logging.warning('No LaTeX auxiliary file specified.')
+        sys.exit(1)
+        
     if len(args) == 0:
         suffix_re = re.compile('^.*\.%s$' % (INTEX_EXT))
         
@@ -461,12 +521,12 @@ def main():
     
     for filename in filenames:
         if not os.path.exists(filename):
-            print >>sys.stderr, "error: File '%s' not found" % (filename)
+            print >> sys.stderr, "error: File '%s' not found" % (filename)
             return 1
         
     if options.verbose:
-        print >>sys.stderr, 'LaTeX Auxiliary file: %s' % (auxiliary)
-        print >>sys.stderr, 'Concept-files:\n%s' % '\n'.join(filenames)
+        print >> sys.stderr, 'LaTeX Auxiliary file: %s' % (auxiliary)
+        print >> sys.stderr, 'Concept-files:\n%s' % '\n'.join(filenames)
 
     index = InTeX(filenames)
 
@@ -480,24 +540,23 @@ def main():
                                             '(proper)name definitions',
                                             'person')):
         if (kind and (kind in index.used_kinds) and (not option)):
-            print >>sys.stderr, 'error: Missing name for file wherein ' \
-                  '%s will be stored.' % (meta_information)
+            logging.error('Missing name for file wherein ' \
+                          '%s will be stored.', meta_information)
             return 1
         elif (kind and option and (kind not in index.used_kinds)):
-            print >>sys.stderr, \
-                  "warning: name for file wherein " \
-                  "%s will be stored was\n" \
-                  "         supplied ('%s'), but no such input occur" \
-                  "." % (meta_information, option)
+            logging.warning("name for file wherein " \
+                            "%s will be stored was  supplied ('%s'), " \
+                            "but no such input occur.",
+                            meta_information, option)
 
     persondef_file = open(options.persondef_output, 'w')
-    print >>persondef_file, auto_edit_warning
-    print >>persondef_file, '\n'.join(generate_persondefs(index))
+    print >> persondef_file, auto_edit_warning
+    print >> persondef_file, '\n'.join(generate_persondefs(index))
     persondef_file.close()
     
     acrodef_file = open(options.acrodef_output, 'w')
-    print >>acrodef_file, auto_edit_warning
-    print >>acrodef_file, '\n'.join(generate_acrodefs(index))
+    print >> acrodef_file, auto_edit_warning
+    print >> acrodef_file, '\n'.join(generate_acrodefs(index))
     acrodef_file.close()
     
     index_file = open(options.index_output, 'w')
@@ -511,11 +570,6 @@ def main():
     not_found = handle_auxiliary(auxiliary, index,
                                  index_file, tmp_aux_file)
 
-    #     acrodef_file = open(options.acrodef_output, 'w')
-    #     print >>acrodef_file, auto_edit_warning
-    #print >>tmp_aux_file, '\n'.join(generate_acrodefs(index))
-    #     acrodef_file.close()
-
     index_file.close()
     tmp_aux_file.close()
     
@@ -527,12 +581,11 @@ def main():
     os.unlink(tmp_aux_filename)
     
     if not_found:
-        print >>sys.stderr, 'warning: The following phrases ' \
-              'could not be handled:\n%s' \
-              % ('\n'.join('%s\t%s' % item for item in not_found))
-    
+        logging.warning('The following phrases ' \
+                        'could not be handled:\n%s',
+                        ('\n'.join('%s\t%s' % item for item in not_found)))
+        
     return
-
 
 if __name__ == "__main__":
     main()
