@@ -321,7 +321,6 @@ class InTeX(object):
         
         info['kind'] = kind
 
-        #print >> sys.stderr, "Found info:", info
         return info
 
     def parse_line(self, line, concepts, kind, serial_number=0):
@@ -521,13 +520,13 @@ def main():
     
     for filename in filenames:
         if not os.path.exists(filename):
-            print >> sys.stderr, "error: File '%s' not found" % (filename)
-            return 1
-        
+            logging.error("File '%s' not found", filename)
+            sys.exit(1)
+            
     if options.verbose:
-        print >> sys.stderr, 'LaTeX Auxiliary file: %s' % (auxiliary)
-        print >> sys.stderr, 'Concept-files:\n%s' % '\n'.join(filenames)
-
+        logging.info('LaTeX Auxiliary file: %s', auxiliary)
+        logging.info('Concept-files:\n%s', '\n'.join(filenames))
+        
     index = InTeX(filenames)
 
     for option, meta_information, kind in ((options.index_output,
