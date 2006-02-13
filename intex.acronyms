@@ -1,0 +1,23 @@
+% Acronyms:
+% <acronym>, [equivalent], <full-form>, <typeset-as>
+% *ACRONYMS*:
+
+NLP	natural language processing	\textsc{n$_2$lp}
+H20	dihydrogen-oxyde	H$_2$O
+AI	artificial intelligence
+  AIC	AI-complete	EiAi-kåmplit	:-complete
+
+synset	synonym set
+  synsets	#s
+
+% the above line should mean that "\co{synsets}" in the text should be
+% indexed as if it read "\co{synset}".  However, if the plural of the
+% concept occurs first (in the [part of] document), its full-form
+% should be _typeset_ "synonym set" + "s" (indicated by the '#y') in
+% the text.  In other words, it only a short-hand notation.  On the
+% other hand, in the next definition, another short-hand notation '#y'
+% is used that will transform 'y' into 'ies' as the end of the last
+% word:
+
+ID	identity
+  IDs	#y	i$_d$entities

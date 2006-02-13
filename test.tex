@@ -1,0 +1,87 @@
+\documentclass[11pt,norsk,english,american,a4paper]{article}
+\usepackage{babel}
+\usepackage[nomarginplain,nomarginacronym,nomarginperson]{intex}
+\usepackage{xspace}
+\usepackage[latin1]{inputenc}
+
+\title{Tests of the {\InTeX{}} Indexing Package}
+
+\author{Martin Thorsen Ranang}
+
+\begin{document}
+\maketitle
+
+\newacronym{bil}{bil}{boliger i landskap}
+
+\section{Pre-test}
+
+\begin{itemize}
+\item \co{A}
+\item \co{C}
+\end{itemize}
+
+\section{Introduction}
+\label{sec:introduction}
+
+Perhaps we should start this journey by talking about \co{bil}.
+
+A good, technically oriented book should be accompanied by a \co{high
+quality index}.  Even though research on \co{NLP} constantly leads to
+better ways of handling text processing, the problem of creating good
+\co{indices} seems to be an \co{AIC} problem.  However, I strongly
+believe that a robust framework for creating \co{indices} in
+\LaTeX\xspace will help authors avoid easy-to-avoid errors.  Oops.  Do
+you know what \co{AIC} is?  It's time we mention \co{mtr} up here
+now\ldots
+
+Now that \co{mtr} has been mentioned, we can move on.  And please note
+that this has been programmed in \co{\LaTeX}.
+
+\section{Examples}
+\label{sec:examples}
+
+It could be interesting to define some \co{IDs}.  \co{MTR} developed
+this package to ease the writing of my Ph.D. dissertation.  The area
+of interest for \co{MTR}'s research is
+ \co{NLP}.  Perhaps I should
+invent a new concept, like
+ \co{$\alpha$-translation}?  And when I say
+\co{$\alpha$-translation}, I mean it.  What happens to a concept like
+\co{``fun''}?
+
+The \InTeX\xspace package was written in \LaTeX\xspace and in
+\co{Python}.  \co{Python} is a scripting language written by \co{GvR}.
+
+To test the \emph{sort-as} feature, I would like to index \co{Volks Wagen}.
+
+
+
+\section{Results}
+\label{sec:results}
+Well, it seems that \co{MTR} has done something wrong.  \co{mtr}, on
+the other hand, seems a bit schizophren.
+
+
+\section{Next}
+\label{sec:next}
+
+And, we keep on writing till we're on the next page.  \co{MTR} is
+still with us.
+
+
+%\index{recursion|see{recursion}}
+
+\printindex[raw]
+
+%\printindex
+
+\end{document}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% buffer-file-coding-system: latin-1-unix
+%%% TeX-master: t
+%%% ispell-local-dictionary: "american"
+%%% mode: flyspell
+%%% End: 

@@ -1,0 +1,428 @@
+%%
+%% This is file `intex.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% intex.dtx  (with options: `intex')
+%% 
+%% This is a generated file.
+%% 
+%% Copyright (C) 2005 by Martin Thorsen Ranang <intex@ranang.org>
+%% 
+%% This file may be distributed and/or modified under the conditions of
+%% the LaTeX Project Public License, either version 1.2 of this license
+%% or (at your option) any later version.  The latest version of this
+%% license is in:
+%% 
+%%    http://www.latex-project.org/lppl.txt
+%% 
+%% and version 1.2 or later is part of all distributions of LaTeX version
+%% 1999/12/01 or later.
+%% 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\def\filename{intex}%
+\ProvidesPackage{intex}[2005/08/05 v0.1
+Support for concept, acronym, and proper-name typesetting and indexing]%
+\newif\if@itx@index%
+\@itx@indextrue%
+\DeclareOption{noindex}{\@itx@indexfalse}%
+\newif\if@itx@warn@undef%
+\@itx@warn@undeftrue%
+\DeclareOption{nowarnundef}{\@itx@warn@undeffalse}%
+
+
+\newif\if@itx@margin@plain%
+\newif\if@itx@margin@acronym%
+\newif\if@itx@margin@person%
+\@itx@margin@plaintrue%
+\@itx@margin@acronymtrue%
+\@itx@margin@persontrue%
+\DeclareOption{nomarginplain}{\@itx@margin@plainfalse}
+\DeclareOption{nomarginacronym}{\@itx@margin@acronymfalse}
+\DeclareOption{nomarginperson}{\@itx@margin@personfalse}
+\ProcessOptions
+\if@itx@index%
+  \RequirePackage{index}%
+  \makeindex%
+  \newindex{raw}{rix}{rid}{Raw Index}%
+\else%
+  \def\@nearverbatim{\expandafter\strip@prefix\meaning}%
+\fi
+
+\RequirePackage{acronym}
+
+\newcommand*{\InTeX}{\textsl{In}\kern-.07em\TeX}%
+
+
+
+\newcommand{\itxplaindeffont}[1]{\emph{#1}}
+\newcommand{\itxplainfollowfont}[1]{#1}
+\newcommand{\itxplainmarginfont}[1]{\raggedright\footnotesize\textsf{#1}}
+
+
+\newcommand{\itxacronymdeffont}[1]{#1}
+\newcommand{\itxacronymdefshortfont}[1]{\emph{#1}}
+\newcommand{\itxacronymshortfont}[1]{#1}
+\newcommand{\itxacronymmarginfont}[1]{\raggedright\footnotesize\textsf{#1}}
+
+
+\newcommand{\itxpersondeffont}[1]{\emph{#1}}
+\newcommand{\itxpersonfirstfont}[1]{#1}
+\newcommand{\itxpersonlastfont}[1]{#1}
+\newcommand{\itxpersonmarginfont}[1]{\raggedright\footnotesize\textsf{#1}}
+
+\newcounter{co@serial}%
+\newcounter{co@equiv@serial}%
+\newcounter{co@type}%
+\newcommand*\itxundefcomment[1]{\emph{(undefined concept ``#1'')}}
+
+\long\def\@firstofthree#1#2#3{#1}%
+\long\def\@secondofthree#1#2#3{%
+  %\PackageWarning{@secondofthree}{#1}%
+  #2}%
+
+\def\ITX@reset#1{%
+  \global\expandafter\let\csname itx@#1\endcsname\relax}
+
+
+
+\newcommand*\@itxmarginlabel[2]{%
+  \hspace{0pt}%
+  %
+  % The second argument is the \emph{identity} of the entity we're
+  % typesetting, while the first argument signals whether we're
+  % typesetting a\ldots
+  %
+  \PackageWarning{marginlabel}{Got (\meaning#1, \meaning#2)}%
+  \ifcase#1%
+  % \ldots plain concept, \ldots
+    \if@itx@margin@plain%
+      \marginpar{\itxplainmarginfont{\ITX@itxs{#1}{#2}}}%
+    \fi%
+  \or%
+  % \ldots an acronym, \ldots
+    \if@itx@margin@acronym%
+      \marginpar{\itxacronymmarginfont{\ITX@itxs{#1}{#2}}}%
+    \fi%
+  \or%
+  % \ldots or a person's name.
+    \if@itx@margin@person%
+      \marginpar{\itxpersonmarginfont{\ITX@itxl{#1}{#2}}}%
+    \fi%
+  \fi%
+}
+\newcommand*\ITX@used{@<>@<>@}
+
+\newcommand*\ITX@get[2]{%
+  %\PackageWarning{ITX@get}{#1}%
+  \ifx#1\relax%
+  \else%
+    \expandafter#2#1%
+  \fi%
+}
+
+\newcommand*\itxplainarea{\thesubparagraph.\thepage}%
+\newcommand*\itxacronymarea{\thesubparagraph.\thepage}%
+\newcommand*\itxpersonarea{\thesubsubsection}%
+\newcommand*\@itxarea[1]{%
+  \ifcase#1%
+    \itxplainarea%
+  \or%
+    \itxacronymarea%
+  \or%
+    \itxpersonarea%
+  \fi%
+}
+\def\itx@last@pos0{}%
+\def\itx@last@pos1{}%
+\def\itx@last@pos2{}%
+
+\newcommand*\ITX@itxs[2]{%
+  %\PackageWarning{ITX@itxs}{Got (\meaning#1, \meaning#2)}%
+  %\edef\value{\csname fn\number#1@#2\endcsname}%
+  %\PackageWarning{ITX@itxs:2}{value = \meaning\value = \value}%
+  %\csname fnss@\number\value\endcsname%
+  \csname fnss@\number#2\endcsname%
+}
+\newcommand*\ITX@itxl[2]{%
+  %\edef\value{\csname fn#1@#2\endcsname}%
+  %\csname fnsl@\number\value\endcsname%
+  \csname fnsl@\number#2\endcsname%
+}
+\newcommand*{\itxs}[2]{%
+  \texorpdfstring{\protect\@itxs{#1}{#2}}{#1}}
+\newcommand*{\@itxs}[2]{%
+  \ifcase\number#1%
+    % Plain.
+    \itxplainfollowfont{\ITX@itxs{#1}{#2}}%
+  \or%
+    % Acronym.
+    \itxacronymshortfont{\ITX@itxs{#1}{#2}}%
+  \or%
+    % Person.
+    \itxpersonlastfont{\ITX@itxl{#1}{#2}}%
+  \fi%
+}
+\newcommand*{\itxl}{\protect\@itxl}
+\newcommand*{\@itxl}[2]{%
+   \ITX@itxl{#1}{#2}%
+ }
+\newcommand*{\itxf}[2]{%
+  \texorpdfstring{\protect\@itxf{#1}{#2}}{\ITX@itxl{#1}{#2} (#1)}%
+ }
+\newcommand*{\@itxf}[2]{%
+  \ifcase\number#1%
+    % Plain.
+    % Typeset margin-notes if applicable.
+    \PackageWarning{ZZ}{plain}%
+    \PackageWarning{ZZ}{@itxmarginlabel:enter}%
+    \@itxmarginlabel{#1}{#2}%
+    \PackageWarning{ZZ}{@itxmarginlabel:exit}%
+    % Typeset the concept.
+    \itxplaindeffont{\ITX@itxs{#1}{#2}}\nolinebreak %
+  \or%
+    % Acronym.
+    % Typeset the concept.  Note in-between margin label.
+    \PackageWarning{ZZ}{acronym}%
+    \itxacronymdeffont{%
+      \PackageWarning{ZZ}{ITX@itxl:enter}%
+      \ITX@itxl{#1}{#2} %
+      \PackageWarning{ZZ}{ITX@itxl:exit}%
+      %\nolinebreak[3] %
+      % Typeset margin-notes if applicable.
+      \@itxmarginlabel{#1}{#2}%
+      % Continue typesetting the concept.
+      \itxacronymdefshortfont{%
+        \itxacronymshortfont{(\ITX@itxs{#1}{#2})}}\nolinebreak %
+    }%
+  \or%
+    % Person.
+    % Typeset the concept.  Note in-between margin label.
+    \PackageWarning{ZZ}{person}%
+    \itxpersondeffont{%
+      \itxpersonfirstfont{%
+        \ITX@itxs{#1}{#2}} %
+      %\nolinebreak[3] %
+      % Typeset margin-notes if applicable.
+      \@itxmarginlabel{#1}{#2}%
+      % Continue typesetting the concept.
+      \itxpersonlastfont{%
+        \ITX@itxl{#1}{#2}%
+      }%
+    }%
+  \fi%
+  % Now, do the used/unused accounting.
+  \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
+    %\relax%
+  \else%
+    \global\expandafter\let\csname itx@#2\endcsname\ITX@used%
+    %\ITX@addtoclearlist{#2}% MTR
+  \fi%
+  %\ITX@logged{#2} MTR
+}
+\newcommand*{\@itxrecordarea}[2]{%
+  % Record this area:
+  \edef\curr@pos{\@itxarea{#1}}%
+  % Remember the last area where this concept (second argument) was used.
+  \PackageWarning{plain:x1}{Got (\meaning#1, \meaning#2)}%
+  \edef\last@pos{\csname itx@last@pos#1@#2\endcsname}%
+  \ifx\curr@pos\last@pos%
+    % We're still in the same area.  Hence, we do nothing.
+  \else%
+    % The area has changed.
+    \ITX@reset{#2}%
+    \PackageWarning{plain:x2}{reset}%
+  \fi%
+  \expandafter\xdef\csname itx@last@pos#1@#2\endcsname{\curr@pos}%
+  \PackageWarning{plain:x3}{exported position}%
+}
+\newcommand*{\@itxplain}[2]{%
+  \@itxrecordarea{#1}{#2}%
+  % Then, typeset the concept.
+  \PackageWarning{ZZ}{itxplain:enter}%
+  \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
+    \PackageWarning{ZZ}{itxs:enter}%
+    \itxs{#1}{#2}%
+    \PackageWarning{ZZ}{itxs:exit}%
+  \else%
+    \PackageWarning{ZZ}{itxf:enter}%
+    \itxf{#1}{#2}%
+    \PackageWarning{ZZ}{itxf:exit}%
+  \fi%
+  \PackageWarning{ZZ}{itxplain:exit}%
+}
+\newcommand*{\@itxalias}[2]{%
+  \PackageWarning{x0}{args = (#1, "#2")}%
+  %\edef\equiv{\csname fn\number#1e@#2\endcsname}%
+  %\PackageWarning{x1}{value(equiv): "\equiv", meaning: "\meaning\equiv"}%
+  \edef\@mainserial{\expandafter\@firstoftwo#2}%
+  \edef\@equivserial{\expandafter\@secondoftwo#2}%
+  \PackageWarning{x2}{main: "\@mainserial", equiv: "\@equivserial"}%
+  % Record usage of the main concept entry.
+  %\@itxrecordarea{#1}{\@mainserial}%
+  %
+  \@itxplain{#1}{\@equivserial}%
+}%
+\newcommand{\@itx@fakeindex}[1]{%
+  \begingroup%
+    \edef\@tempa{%
+      \write\@auxout{%
+        \string\@writefile{raw}{%
+          \string\indexentry{#1}%
+          {0}%
+        }%
+      }%
+    }%
+  \expandafter\endgroup\@tempa%
+}
+
+
+\newcommand{\co}{\protect\@itx}
+\newcommand*{\@itx}[1]{%
+  \def\@tempa{#1}%
+  % Handles, e.g., backslashes.
+  \edef\@tempb{\@nearverbatim\@tempa}%
+  %\PackageWarning{itx}{tempa = \meaning\@tempa, tempb = \meaning\@tempb}%
+  %\PackageWarning{ITXindex}{index:enter}%
+  \if@itx@index%
+    \index[raw]{#1}%
+  \else%
+    \@itx@fakeindex{\@tempb}%
+  \fi%
+  %\PackageWarning{ITXindex}{index:exit}%
+  \setcounter{co@type}{0}%
+  \newif\iffound%
+  \loop\ifnum\theco@type<3%
+  % Check to see if the \meta{identity} is an (acronym or person)
+  % \emph{alias} or a \emph{main} entry.  If it is an \emph{alias},
+  % there exists a variable named |fn|$n$|e@|\meta{identity}.
+  % However, if \meta{identity} refers to a \emph{main} entry, a
+  % variable named |fn|$n$|@|\meta{identity} exists.  That is, without
+  % the |e| before the |@|.  Also, it should be noted that no
+  % \emph{alias} can exists without a main entry with the same
+  % \meta{identity}.
+  %
+  % If an expansion of \meta{identity} is found, typeset it
+  % accordingly and flag the finding by setting |\iffound|.
+    \expandafter\ifx\csname fn\number\theco@type e@\@tempb\endcsname\relax%
+      \expandafter\ifx\csname fn\number\theco@type @\@tempb\endcsname\relax\else%
+        \PackageWarning{here}{plain found \meaning\@tempb}%
+        \foundtrue%
+        %\@itxplain{\number\theco@type}{\@tempb}%
+\edef\co@id{\csname fn\number\theco@type @\@tempb\endcsname}%
+\@itxplain{\number\theco@type}{\co@id}%
+      \fi%
+    \else%
+      \PackageWarning{here}{alias found \meaning\@tempb}%
+      %\@itxalias{\number\theco@type}{\@tempb}%
+      \edef\co@id{\csname fn\number\theco@type e@\@tempb\endcsname}%
+      \@itxalias{\number\theco@type}{\co@id}%
+      \foundtrue%
+    \fi%
+    % Increase $n$ by 1 and perform a new iteration of the loop.
+    \stepcounter{co@type}%
+  \repeat%
+    % If no expansion of \meta{identity} could be found, warn the
+    % user.  Furthermore, an in-document warning will be typeset if
+    % |\if@itx@warn@undef| is \emph{true}.
+  \iffound%
+  \else%
+    \PackageWarning{InTeX}{Concept `#1' is not defined}%
+    \if@itx@warn@undef%
+      \textbf{\itxundefcomment{#1}}%
+    \else%
+      #1%
+    \fi%
+  \fi%
+}
+\newcommand*{\personused}[1]{%
+  \expandafter\ifx\csname pnused@#1\endcsname\PN@used%
+    \relax%
+  \else%
+    \global\expandafter\let\csname pnused@#1\endcsname\PN@used%
+    \global\let\PN@populated\PN@used%
+  \fi%
+}
+\newcommand\@itxdefineforms[3]{%
+  \expandafter\gdef\csname fnss@\number#1\endcsname{#2}%
+  \expandafter\gdef\csname fnsl@\number#1\endcsname{#3}%
+}
+\newcommand\@newentry[4]{%
+  \def\@tempa{#2}%
+  \edef\@tempb{\@nearverbatim\@tempa}%
+  %
+  \stepcounter{co@serial}%
+  %\PackageWarning{init}{serial counter = \expandafter\theco@serial}%
+  \expandafter\xdef\csname fn\number#1@\@tempb\endcsname{%
+    \number\theco@serial}%
+  \PackageWarning{init}{Def: \meaning\csname fn\number#1@\@tempb\endcsname}%
+  \@itxdefineforms{\theco@serial}{#3}{#4}%
+}
+\newcommand*\newconcept[3]{%
+  \@newentry{0}{#1}{#2}{#3}%
+}
+\newcommand*\newacronym[3]{%
+  \@newentry{1}{#1}{#2}{#3}%
+}
+\newcommand*\newperson[3]{%
+  \@newentry{2}{#1}{#2}{#3}%
+}
+\newcommand*\@newentryequiv[5]{%
+  \newif\iffound%
+  \def\@tempa{#2}%
+  \edef\@tempb{\@nearverbatim\@tempa}%
+  \expandafter\ifx\csname fn\number#1 @\@tempb\endcsname\relax%
+    % Nothing is done if |\csname fn\number#1 @\@tempb\endcsname| is not
+    % defined here, but notice that the default value of |\iffound| is
+    % \emph{false}.
+  \else%
+    \foundtrue%
+    \edef\co@id{\csname fn\number#1@\@tempb\endcsname}%
+    \PackageWarning{init}{Found `\@tempb' (type=\number#1, serial=\co@id)}%
+    % Store the \emph{short} and the \emph{long}
+    % versions of the alias, in that order.
+    \stepcounter{co@serial}%
+    \@itxdefineforms{\theco@serial}{#3}{#5}%
+    % Store the numeric id of the concept alias.
+    \def\@tempa{#4}%
+    \edef\@tempb{\@nearverbatim\@tempa}%
+    \expandafter\xdef\csname fn\number#1 e@\@tempb\endcsname{%
+      {\co@id}{\theco@serial}}%
+  \fi%
+  \iffound%
+  \else%
+    \PackageWarning{InTeX}{Can't find `#2' for sub-concept `#3'}%
+  \fi%
+}%
+\newcommand*\newconceptequiv[4]{%
+  \@newentryequiv{0}{#1}{#2}{#3}{#4}%
+}%
+\newcommand*\newacronymequiv[4]{%
+  \@newentryequiv{1}{#1}{#2}{#3}{#4}%
+}%
+\newcommand*\newpersonequiv[4]{%
+  \@newentryequiv{2}{#1}{#2}{#3}{#4}%
+}%
+\endinput
+%%
+%% End of file `intex.sty'.

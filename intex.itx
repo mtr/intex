@@ -1,0 +1,40 @@
+% *ACRONYMS*:
+% <acronym>	<full-form>	<typeset-as>
+%   <equivalent>	[full-form]	[typeset-as]	[:sub-index-as]
+%
+H2O	dihydrogen-oxyde	H$_{2}$O
+AI	artificial intelligence
+  AIC	AI-complete	EiAi-kåmplit	:-complete
+
+synset	synonym set
+  synsets	#s
+ID	identity
+  IDs	#y	i$_d$entities
+
+% *CONCEPTS*:
+% [^]<index_as> [full_form [typeset_as]] [@sort_as]
+%   <in_text>
+%   [equivalent phrase]
+Python
+
+$\alpha $-translation	@alpha-translation
+  $\alpha $-translation
+
+%\InTeX \ logo
+\InTeX	InTeX		@InTeX
+  \InTeX \ logo	:logo
+
+concepts
+  concept
+  acronym	:acronym
+  person	:person
+  plain	:plain
+  plain concepts	:plain
+  sub-concepts	:sub-
+
+index
+  indices
+  high quality index	:high quality
+
+A	B
+  C	D

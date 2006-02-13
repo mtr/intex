@@ -1,0 +1,25 @@
+\begin{theindex}
+
+  \item acronym\actualchar \string \verb \quotechar *\verbatimchar \bslash acronym\verbatimchar \encapchar usage, 
+		1
+
+  \indexspace
+
+  \item co\actualchar \string \verb \quotechar *\verbatimchar \bslash co\verbatimchar \encapchar usage, 
+		1
+
+  \indexspace
+
+  \item index\actualchar \string \verb \quotechar *\verbatimchar \bslash index\verbatimchar \encapchar usage, 
+		1
+  \item InTeX\actualchar \string \verb \quotechar *\verbatimchar \bslash InTeX\verbatimchar \encapchar usage, 
+		4
+  \item intex\actualchar \string \verb \quotechar *\verbatimchar \bslash intex\verbatimchar \encapchar usage, 
+		1
+
+  \indexspace
+
+  \item makeintex\actualchar \string \verb \quotechar *\verbatimchar \bslash makeintex\verbatimchar \encapchar usage, 
+		4
+
+\end{theindex}
