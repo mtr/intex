@@ -275,10 +275,11 @@ class Concept(object):
 class Equivalency(Concept):
     def __init__(self, key='', in_text='',
                  equivalencies=list(), sort_as=None, serial=None):
-        super(self.__class__, self).__init__(key, in_text,
-                                             equivalencies, sort_as,
-                                             'equivalency', serial=serial)
+        Concept.__init__(self, key, in_text,
+                         equivalencies, sort_as,
+                         'equivalency', serial=serial)
         
+
 class InTeX(object):
     delimiter = '\t'
     
@@ -547,7 +548,7 @@ def main():
                             "%s will be stored was  supplied ('%s'), " \
                             "but no such input occur.",
                             meta_information, option)
-
+            
     persondef_file = open(options.persondef_output, 'w')
     print >> persondef_file, auto_edit_warning
     print >> persondef_file, '\n'.join(generate_persondefs(index))

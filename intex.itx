@@ -2,7 +2,9 @@
 % <acronym>	<full-form>	<typeset-as>
 %   <equivalent>	[full-form]	[typeset-as]	[:sub-index-as]
 %
-H2O	dihydrogen-oxyde	H$_{2}$O
+H2O	di\-hydrogen monoxide	H$_{2}$O
+  H2O-reserve
+  H2O-reserver	di\-hydrogen monoxide-reserve	H$_{2}$O-reserve	:-reserve
 AI	artificial intelligence
   AIC	AI-complete	EiAi-kåmplit	:-complete
 

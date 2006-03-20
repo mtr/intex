@@ -327,7 +327,8 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %   \@itx@margin@acronymfalse%
 %   \makeatother
 %   It is easy to refer to (and thus index)
-%   acronyms, like \co{H2O}.
+%   acronyms, like \co{H2O}.  And 
+%   sub-concepts, like \co{H2O-reserve}.
 % \end{SideBySideExample}
 %
 
@@ -752,7 +753,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
       % Continue typesetting the concept.
 %    \begin{macrocode}
       \itxacronymdefshortfont{%
-        \itxacronymshortfont{(\ITX@itxs{#1}{#2})}}\nolinebreak %
+        \itxacronymshortfont{(\ITX@itxs{#1}{#2})}}%
     }%
   \or%
 %    \end{macrocode}
@@ -786,7 +787,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     %\ITX@addtoclearlist{#2}% MTR
   \fi%
   %\ITX@logged{#2} MTR
-}
+}%
 %    \end{macrocode}
 %
 % \begin{macro}{\@itxrecordarea}

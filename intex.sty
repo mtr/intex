@@ -213,7 +213,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
       \@itxmarginlabel{#1}{#2}%
       % Continue typesetting the concept.
       \itxacronymdefshortfont{%
-        \itxacronymshortfont{(\ITX@itxs{#1}{#2})}}\nolinebreak %
+        \itxacronymshortfont{(\ITX@itxs{#1}{#2})}}%
     }%
   \or%
     % Person.
@@ -239,7 +239,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     %\ITX@addtoclearlist{#2}% MTR
   \fi%
   %\ITX@logged{#2} MTR
-}
+}%
 \newcommand*{\@itxrecordarea}[2]{%
   % Record this area:
   \edef\curr@pos{\@itxarea{#1}}%
