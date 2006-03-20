@@ -4,14 +4,15 @@
 %
 H2O	di\-hydrogen monoxide	H$_{2}$O
   H2O-reserve
-  H2O-reserver	di\-hydrogen monoxide-reserve	H$_{2}$O-reserve	:-reserve
+%  H2O-reserver	di\-hydrogen monoxide-reserve	H$_{2}$O-reserve	:-reserve
 AI	artificial intelligence
   AIC	AI-complete	EiAi-kåmplit	:-complete
 
 synset	synonym set
   synsets	#s
 ID	identity
-  IDs	#y	i$_d$entities
+  IDs	#y
+%  IDs	#y	i$_d$entities
 
 % *CONCEPTS*:
 % [^]<index_as> [full_form [typeset_as]] [@sort_as]
@@ -24,10 +25,10 @@ $\alpha $-translation	@alpha-translation
 
 %\InTeX \ logo
 \InTeX	InTeX		@InTeX
-  \InTeX \ logo	:logo
+  \InTeX \ logo	:logo	@InTeXlogo
 
-concepts
-  concept
+concept
+  concepts	#s
   acronym	:acronym
   person	:person
   plain	:plain

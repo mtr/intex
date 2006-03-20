@@ -9,7 +9,7 @@ Copyright (C) 2005, 2006 by Martin Thorsen Ranang
 __revision__ = "$Rev: 34 $"
 __author__ = "Martin Thorsen Ranang"
 
-from itertools import count, cycle, izip
+from itertools import count, cycle, ifilter, izip
 import logging
 import optparse
 import os
@@ -30,11 +30,6 @@ def parse_command_line(command_line_options):
     """
     Parse the command line according to the possible COMMAND_LINE_OPTIONS.
     """
-    #class Options(object):
-    #    def __init__(self, args):
-    #        for key, value in args.items():
-    #            setattr(self, key, value)
-    
     parser = optparse.OptionParser(usage = '%prog [options]...',
                                    version = '%%prog %s' % (__revision__))
     for option, description in command_line_options:
@@ -42,34 +37,42 @@ def parse_command_line(command_line_options):
         
     # Parse the command line.
     options, args = parser.parse_args()
-    #return #Options(eval(str(options))), eval(str(args))
     return options, args
+
     
 class Concept(object):
     """
     A class representing a single concept.
     """
+    xname = 'blipp'
     def __init__(self, key='', in_text='',
-                 equivalencies=None, sort_as='', kind=None, serial=None):
+                 equivalencies=None, sort_as='', serial=None):
         self.__key = key
         self.__serial = serial
         self.__in_text = in_text
         self.__equivalencies = equivalencies and equivalencies or list()
         self.__sort_as = sort_as
-        self.__kind = None
-        self.kind = kind
+        self.__name = self.xname
         
     def __str__(self):
+        return '%s("%s", "%s", %s, "%s", %s)' \
+               % (self.__class__.__name__, self.key, self.in_text,
+                  self.__equivalencies, self.sort_as, self.__serial)
+                              
         return '%(class)s("%(key)s", ' \
                'serial=%(serial)s, ' \
                'in_text="%(in_text)s", ' \
                'equivalencies=%(equivalencies)s, ' \
                'sort_as="%(sort_as)s", ' \
-               'kind="%(kind)s")' \
                % dict(list(self.__dict__.items())
                       + [('class', self.__class__.__name__)])
     
     __repr__ = __str__
+
+    def get_name(self):
+        return self.__name
+
+    name = property(get_name, )
     
     def add_equivalency(self, equivalency):
         """
@@ -94,26 +97,6 @@ class Concept(object):
 
     in_text = property(get_in_text, )
     
-    def get_kind(self):
-        """
-        Read accessor that returns what kind of acronym this is.
-        """
-        return self.__kind
-    
-    def set_kind(self, kind):
-        """
-        An accessor method that safely declares what KIND of concept
-        this object represents.
-        """
-        if kind not in set(['acronym', 'person', 'plain',
-                            'equivalency', 'concept' # Not sure about these 2.
-                            ]):
-            raise KeyError, 'unknown kind of concept "%s"' % (kind, )
-        else:
-            self.__kind = kind
-            
-    kind = property(get_kind, set_kind, )
-    
     def get_keys(self):
         """
         A generator accessor that yields the key of each concept
@@ -125,23 +108,34 @@ class Concept(object):
             yield equivalent.__key
 
     keys = property(get_keys, )
-    
-    def get_equivalency(self, key):
+
+    def get_equivalencies(self):
         """
-        Return the first equivalent concept that has a key that
-        matches KEY.
+        Return the equivalent concepts of SELF.
         """
-        if key != self.__key:
-            for equivalency in self.__equivalencies:
-                if equivalency.__key == key:
-                    return equivalency
-        return None
+        return (equivalency
+                for equivalency in self.__equivalencies)
+                #if equivalency.key == key)
+
+    equivalencies = property(get_equivalencies, )
+
+    def get_sort_as(self):
+        """
+        Read accessor.  Returns private member __sort_as.
+        """
+        return self.__sort_as
+
+    sort_as = property(get_sort_as, )
     
     def generate_index_entries(self, key, page):
         """
         Generate all the index entries for this concept.
         """
-        equivalency = self.get_equivalency(key)
+        raise (NotImplementedError,
+               'The %s class does not implement this method.' %
+               self.__class__.__name__)
+    
+        equivalency = self.get_equivalencies(key)
         
         args = dict(izip(('subentry', 'sort_as', 'concept', 'page'),
                          cycle([''])))
@@ -150,8 +144,8 @@ class Concept(object):
         args['page'] = page
         
         if self.__kind == 'acronym':
-            args['concept'] = self.__in_text[0]                
-                
+            args['concept'] = self.__in_text[0]
+            
         elif self.__kind == 'person':
             args['concept'] = ', '.join(self.__in_text)
         else:
@@ -179,7 +173,7 @@ class Concept(object):
             args['acronym'] = self.__key
             res += '\n\indexentry{%(acronym)s%(typeset)s' \
                    '|see{%(concept)s}}{%(page)s}' % (args)
-        
+            
         return res
 
     def get_typeset(self):
@@ -210,11 +204,11 @@ class Concept(object):
         else:
             return (candidates[0], candidates[1])
         
-    def expand_typeset_info(self, args):
+    def expand_typeset_info(self, parent, args):
         for arg in args:
             if arg and (arg[0] == '#'):
+                full = parent.in_text and parent.in_text[0] or parent.key
                 if arg[1] == 'y':
-                    full = self.__in_text[0]
                     if full[-1] == 'y':
                         yield full[:-1] + 'ies'
                     else:
@@ -227,17 +221,15 @@ class Concept(object):
                 yield arg
                 
     def generate_aux_modifications(self, key, page):
+        raise (NotImplementedError,
+               'The %s class does not implement this method.' %
+               self.__class__.__name__)
+    
         res = []
         if self.__kind == 'concept':
-            #res.append('\\new%s{%s}{%d}{%s}{}' \
-            #        % (self.__kind, self.__key, self.__serial, self.__key))
             res.append('\\new%s{%s}{%s}{}' \
                        % (self.__kind, self.__key, self.__key))
-            equiv = self.get_equivalency(key)
-            if equiv:
-                #res.append('\\new%sequiv{%s}{%d}{%s}{%s}{}' \
-                #           % (self.__kind, self.__key,
-                #              self.__serial, equiv.__key, equiv.__key))
+            for quiv in self.get_equivalencies(key):
                 res.append('\\new%sequiv{%s}{%s}{%s}{}' \
                            % (self.__kind, self.__key,
                               equiv.__key, equiv.__key))
@@ -253,8 +245,7 @@ class Concept(object):
                        % (kinds[self.__kind], self.__key, typeset_as,
                           self.__in_text[0]))
             
-            equiv = self.get_equivalency(key)
-            if equiv:
+            for equiv in self.get_equivalencies(key):
                 (full_form, typeset_as) = \
                             self.expand_typeset_info(\
                     self.get_full_form_and_typeset_as(equiv.__in_text))
@@ -272,14 +263,209 @@ class Concept(object):
                 
         return res
 
-class Equivalency(Concept):
-    def __init__(self, key='', in_text='',
-                 equivalencies=list(), sort_as=None, serial=None):
-        Concept.__init__(self, key, in_text,
-                         equivalencies, sort_as,
-                         'equivalency', serial=serial)
+    @staticmethod
+    def is_plain():
+        return False
+
+    @staticmethod
+    def is_acronym():
+        return False
+
+    @staticmethod
+    def is_person():
+        return False
+
+    @staticmethod
+    def is_equivalency():
+        return False
+
+    @staticmethod
+    def _setup_index_args(index_name, page, concept, sort_as='',
+                          sub_concept=''):
+        return {
+            'index_name': index_name,
+            'page': page,
+            'concept': concept,
+            'sub_concept': sub_concept,
+            'sort_as': sort_as and ('%s@' % (sort_as)) or '',
+            }
+
+    def generate_index_entries(self, index_name, page):
+        """
+        Generate all the index entries (including sub-entries) for
+        this concept.
+        """
+        yield self.generate_index_entry(index_name, page)
+        
+        for equivalency in self.equivalencies:
+            yield equivalency.generate_index_entry(index_name, page, self)
+            
+    def generate_aux_modifications(self):
+        """
+        Generate all the aux-file modifications (including
+        sub-entries) for this concept.
+        """
+        yield self.generate_aux_modification()
+        
+        for equiv in self.equivalencies:
+            yield equiv.generate_aux_modification(self)
+
+class PlainConcept(Concept):
+    #__init__ = Concept.__init__
+    xname = 'concept'
+    
+    @staticmethod
+    def is_plain():
+        return True
+    
+    def generate_index_entry(self, index_name, page):
+        args = self._setup_index_args(index_name, page, self.key, self.sort_as)
+        return '\indexentry{%(sort_as)s%(concept)s}{%(page)s}' % (args)
+    
+    def generate_aux_modification(self):
+        return '\\new%s{%s}{%s}{}' % (self.name, self.key, self.key)
+            
+class AcronymConcept(Concept):
+    xname = 'acronym'
+    
+    @staticmethod
+    def is_acronym():
+        return True
+
+    def generate_index_entry(self, index_name, page):
+        args = self._setup_index_args(index_name, page, self.in_text[0], self.sort_as)
+        args['typeset_as'] = (len(self.in_text) > 1) and self.in_text[1] or self.key
         
 
+        return '\indexentry{%(sort_as)s%(concept)s}{%(page)s}\n' \
+               '\indexentry{%(typeset_as)s|see{%(concept)s}}{%(page)s}' \
+               % (args)
+
+    def generate_aux_modification(self):
+        typeset_as = (len(self.in_text) > 1) and self.in_text[1] or self.key
+        return '\\new%s{%s}{%s}{%s}' \
+               % (self.name, self.key, typeset_as, self.in_text[0])
+    
+            
+class PersonConcept(Concept):
+    xname = 'person'
+    
+    @staticmethod
+    def is_person():
+        return True
+    
+class Equivalency(Concept):
+    xname = 'equiv'
+    
+    @staticmethod
+    def is_equivalency():
+        return True
+    
+    def generate_index_entry(self, index_name, page, parent):
+        sub_concept = ''
+        for part in self.in_text:
+            if part[0] == ':':
+                sub_concept = '!%s' % (part[1:])
+                
+        args = self._setup_index_args(index_name, page, parent.key,
+                                      self.sort_as, sub_concept)
+        return '\\indexentry{%(sort_as)s%(concept)s%(sub_concept)s}{%(page)s}' \
+               % (args)
+    
+    def generate_index_entries(self, **args):
+        raise (NotImplementedError,
+               'The %s class does not implement this method.' %
+               self.__class__.__name__)
+    
+    def _modify_aux_args(self, args):
+        return args
+    
+    def _setup_aux_args(self, concept, sub_concept=None):
+        full_form, typeset_as = \
+                   self.expand_typeset_info(\
+            concept,
+            self.get_full_form_and_typeset_as(self.in_text))
+
+        #print 'self.in_text:', self.in_text, typeset_as, full_form
+        
+        if not full_form and self.in_text:
+            full_form = self.in_text[0]
+
+        if not typeset_as:
+            typeset_as = self.key       # Should handle "IDs   #y" -> IDs
+            
+        return self._modify_aux_args({
+            'name': self.name,
+            'concept': concept.key,
+            'sub_concept': sub_concept,
+            'full_form': full_form,
+            'typeset_as': typeset_as or full_form,
+            'parent': concept,
+            })
+    
+    def generate_aux_modification(self, parent):
+        args = self._setup_aux_args(parent, self.key)
+
+        return '\\new%(name)s{%(concept)s}{%(typeset_as)s}' \
+               '{%(sub_concept)s}{%(full_form)s}' % (args)
+
+    def generate_aux_modifications(self, **args):
+        raise (NotImplementedError,
+               'The %s class does not implement this method.' %
+               self.__class__.__name__)
+    
+class PlainEquivalency(Equivalency):
+    xname = 'conceptequiv'
+
+    def _modify_aux_args(self, args):
+        if args['full_form'][0] == ':':
+            args['full_form'] = args['sub_concept']
+        if args['typeset_as'][0] == ':':            
+            args['typeset_as'] = args['sub_concept']
+            
+        return args
+    
+class AcronymEquivalency(Equivalency):
+    xname = 'acronymequiv'
+
+    def generate_index_entry(self, index_name, page, parent):
+        sub_concept = ''
+        for part in self.in_text:
+            if part[0] == ':':
+                sub_concept = '!%s' % (part[1:])
+                
+        args = self._setup_index_args(index_name, page, parent.in_text[0],
+                                      self.sort_as, sub_concept)
+        
+        args['typeset_as'] = (len(self.in_text) > 1) \
+                             and ('@' + self.in_text[1]) or ''
+        
+        return '\\indexentry{%(sort_as)s%(concept)s%(sub_concept)s}{%(page)s}' \
+               % (args)
+
+    def _modify_aux_args(self, args):
+        parent = args['parent']
+        
+        if not args['full_form']:
+            old = parent.in_text and parent.in_text[0] or parent.key
+            added = args['sub_concept'].lstrip(args['concept'])
+            args['full_form'] = old + added
+            
+        if not args['typeset_as']:
+            old = parent.in_text and parent.in_text[1] or parent.key
+            added = args['sub_concept'].lstrip(args['concept'])
+            args['typeset_as'] = old + added
+            
+        return args
+        
+class PersonEquivalency(Equivalency):
+    xname = 'personequiv'
+    
+    def modify_aux_args(self, args):
+        args['typeset_as'] = self.in_text[1]
+        return args
+
+    
 class InTeX(object):
     delimiter = '\t'
     
@@ -290,17 +476,21 @@ class InTeX(object):
             identifiers[filename] = self.parse(filename)
             
         self.index = dict()
-        seen_kinds = dict()
+        seen_kinds = set()
         
         for filename, concepts in identifiers.items():
             for concept in concepts:
-                seen_kinds[concept.kind] = True
+                seen_kinds.add(concept.__class__.__name__)
+                
                 for key in concept.get_keys():
                     self.index[key] = concept
         
         self.identifiers = identifiers
         self.used_kinds = tuple(seen_kinds)
-        
+
+    def __str__(self):
+        return str(self.index)
+    
     def __contains__(self, key):
         return self.index.__contains__(key)
 
@@ -308,7 +498,7 @@ class InTeX(object):
         return self.index.__getitem__(key)
 
     @staticmethod
-    def handle_fields(fields, kind, serial_number):
+    def handle_fields(fields, serial_number):
         info = {'serial': serial_number}
         
         key, fields = fields[0], fields[1:]
@@ -320,23 +510,33 @@ class InTeX(object):
 
         info['in_text'] = tuple(fields)
         
-        info['kind'] = kind
+        #info['kind'] = kind
 
         return info
 
+    __kind_class_map = {
+        'person': PersonConcept,
+        'acronym': AcronymConcept,
+        'concept': PlainConcept,
+        'person_equiv': PersonEquivalency,
+        'acronym_equiv': AcronymEquivalency,
+        'concept_equiv': PlainEquivalency,
+        }
+    
     def parse_line(self, line, concepts, kind, serial_number=0):
         if line[0].isspace():
             # An equivalent form of the current index entry.
+            kind = '%s_equiv' % (kind, )
             fields = self.handle_fields(line.lstrip().split(self.delimiter),
-                                        kind, serial_number)
-            del fields['kind']
-            concepts[-1].add_equivalency(Equivalency(**fields))
+                                        serial_number)
+            #del fields['kind']
+            concepts[-1].add_equivalency(self.__kind_class_map[kind](**fields))
             
         else:
             # A new index entry.  Can be 'person', 'acronym', or 'plain'.
             fields = self.handle_fields(line.split(self.delimiter),
-                                        kind, serial_number)
-            concepts.append(Concept(**fields))
+                                        serial_number)
+            concepts.append(self.__kind_class_map[kind](**fields))
             
     def parse(self, filename):
         concepts = []
@@ -390,11 +590,14 @@ def handle_auxiliary(aux_filename, index, index_file, tmp_aux_file):
             continue
         
         concept = index[key]
-        print >> index_file, concept.generate_index_entries(key, page)
-        
+
+        for line in concept.generate_index_entries(INTEX_INDEX, page):
+            if line not in already_printed:
+                print >> index_file, line
+                already_printed.add(line)
+                
         if key not in already_handled:
-            aux_info = concept.generate_aux_modifications(key, page)
-            for line in aux_info:
+            for line in concept.generate_aux_modifications():
                 if line not in already_printed:
                     print >> tmp_aux_file, line
                     already_printed.add(line)
@@ -424,30 +627,28 @@ auto_edit_warning = '''
 def generate_acrodefs(index):
     res = []
     for concepts in index.identifiers.values():
-        for concept in concepts:
-            if concept.kind == 'acronym':
-                if len(concept.in_text) > 1:
-                    typeset_as = concept.in_text[1]
-                else:
-                    typeset_as = concept.key
-                    
-                res.append('\\newacronym{%s}{%s}{%s}' \
-                           % (concept.key, typeset_as,
-                              concept.in_text[0]))
+        for concept in ifilter(lambda concept: concept.is_acronym(), concepts):
+            if len(concept.in_text) > 1:
+                typeset_as = concept.in_text[1]
+            else:
+                typeset_as = concept.key
+
+            res.append('\\newacronym{%s}{%s}{%s}' \
+                       % (concept.key, typeset_as,
+                          concept.in_text[0]))
     return res
 
 def generate_persondefs(index):
     res = []
     for concepts in index.identifiers.values():
-        for concept in concepts:
-            if concept.kind == 'person':
-                if len(concept.in_text) > 1:
-                    res.append('\\newperson{%s}{%s}{%s}' \
-                               % (concept.key, concept.in_text[1],
-                                  concept.in_text[0]))
-                else:
-                    res.append('\\newperson{%s}{%s}' \
-                               % (concept.key, concept.in_text[0]))
+        for concept in ifilter(lambda concept: concept.is_person(), concepts):
+            if len(concept.in_text) > 1:
+                res.append('\\newperson{%s}{%s}{%s}' \
+                           % (concept.key, concept.in_text[1],
+                              concept.in_text[0]))
+            else:
+                res.append('\\newperson{%s}{%s}' \
+                           % (concept.key, concept.in_text[0]))
     return res
 
 def resolve_auxiliary_and_args(args):
