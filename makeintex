@@ -1,12 +1,12 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
-# $Id: makeintex 34 2005-10-25 11:31:35Z mtr $
+# $Id$
 """
 
 Copyright (C) 2005, 2006 by Martin Thorsen Ranang
 """
 
-__revision__ = "$Rev: 34 $"
+__revision__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
 from itertools import count, cycle, ifilter, izip
