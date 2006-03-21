@@ -32,12 +32,11 @@ class Concept(object):
     A class representing a single concept.
     """
     xname = 'blipp'
-    def __init__(self, key='', in_text='',
-                 equivalencies=None, sort_as='', serial=None):
+    def __init__(self, key='', in_text='', sort_as='', serial=None):
         self.__key = key
         self.__serial = serial
         self.__in_text = in_text
-        self.__equivalencies = equivalencies and equivalencies or list()
+        self.__equivalencies = list() #equivalencies and equivalencies or list()
         self.__sort_as = sort_as
         self.__name = self.xname
         
@@ -597,6 +596,7 @@ def parse_command_line(command_line_options):
     # Parse the command line.
     options, args = parser.parse_args()
     return options, args
+
 
 def main():
     """
