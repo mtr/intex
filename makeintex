@@ -26,19 +26,6 @@ intex_re = re.compile('\\\@writefile\{%s\}' \
                       '\{\\\indexentry\{(?P<key>.*)\}\{(?P<page>\d+)\}\}' \
                       % (INTEX_INDEX))
 
-def parse_command_line(command_line_options):
-    """
-    Parse the command line according to the possible COMMAND_LINE_OPTIONS.
-    """
-    parser = optparse.OptionParser(usage = '%prog [options]...',
-                                   version = '%%prog %s' % (__revision__))
-    for option, description in command_line_options:
-        parser.add_option(*option, **description)
-        
-    # Parse the command line.
-    options, args = parser.parse_args()
-    return options, args
-
     
 class Concept(object):
     """
@@ -108,14 +95,13 @@ class Concept(object):
             yield equivalent.__key
 
     keys = property(get_keys, )
-
+    
     def get_equivalencies(self):
         """
         Return the equivalent concepts of SELF.
         """
         return (equivalency
                 for equivalency in self.__equivalencies)
-                #if equivalency.key == key)
 
     equivalencies = property(get_equivalencies, )
 
@@ -134,47 +120,6 @@ class Concept(object):
         raise (NotImplementedError,
                'The %s class does not implement this method.' %
                self.__class__.__name__)
-    
-        equivalency = self.get_equivalencies(key)
-        
-        args = dict(izip(('subentry', 'sort_as', 'concept', 'page'),
-                         cycle([''])))
-        
-        args['index_name'] = 'raw'
-        args['page'] = page
-        
-        if self.__kind == 'acronym':
-            args['concept'] = self.__in_text[0]
-            
-        elif self.__kind == 'person':
-            args['concept'] = ', '.join(self.__in_text)
-        else:
-            args['concept'] = self.__key
-
-        if self.__sort_as:
-            args['sort_as'] = '%s@' % (self.__sort_as)
-        
-        if equivalency:
-            for part in equivalency.__in_text:
-                if part[0] == ':':
-                    args['subentry'] = '!%s' % (part[1:])
-            if equivalency.__sort_as:
-                args['sort_as'] = '%s@' % (equivalency.__sort_as)
-                
-        res = '\indexentry{%(sort_as)s%(concept)s%(subentry)s}{%(page)s}' \
-              % (args)
-        
-        if self.__kind == 'acronym':
-            if len(self.__in_text) > 1:
-                args['typeset'] =  '@' + self.__in_text[1]
-            else:
-                args['typeset'] = ''
-                
-            args['acronym'] = self.__key
-            res += '\n\indexentry{%(acronym)s%(typeset)s' \
-                   '|see{%(concept)s}}{%(page)s}' % (args)
-            
-        return res
 
     def get_typeset(self):
         """
@@ -225,44 +170,6 @@ class Concept(object):
                'The %s class does not implement this method.' %
                self.__class__.__name__)
     
-        res = []
-        if self.__kind == 'concept':
-            res.append('\\new%s{%s}{%s}{}' \
-                       % (self.__kind, self.__key, self.__key))
-            for quiv in self.get_equivalencies(key):
-                res.append('\\new%sequiv{%s}{%s}{%s}{}' \
-                           % (self.__kind, self.__key,
-                              equiv.__key, equiv.__key))
-                
-        kinds = {'acronym': 'acronym',
-                 'person': 'person',}
-        if self.__kind in kinds:
-            if len(self.__in_text) > 1:
-                typeset_as = self.__in_text[1]
-            else:
-                typeset_as = self.__key
-            res.append('\\new%s{%s}{%s}{%s}' \
-                       % (kinds[self.__kind], self.__key, typeset_as,
-                          self.__in_text[0]))
-            
-            for equiv in self.get_equivalencies(key):
-                (full_form, typeset_as) = \
-                            self.expand_typeset_info(\
-                    self.get_full_form_and_typeset_as(equiv.__in_text))
-
-                if not full_form:
-                    full_form = self.__in_text[0]
-                if not typeset_as:
-                    typeset_as = (self.__kind == 'person') \
-                                 and self.__in_text[1] \
-                                 or full_form
-                    
-                res.append('\\new%sequiv{%s}{%s}{%s}{%s}' \
-                           % (kinds[self.__kind], self.__key, typeset_as,
-                              equiv.__key, full_form))
-                
-        return res
-
     @staticmethod
     def is_plain():
         return False
@@ -311,7 +218,6 @@ class Concept(object):
             yield equiv.generate_aux_modification(self)
 
 class PlainConcept(Concept):
-    #__init__ = Concept.__init__
     xname = 'concept'
     
     @staticmethod
@@ -451,7 +357,9 @@ class AcronymEquivalency(Equivalency):
             added = args['sub_concept'].lstrip(args['concept'])
             args['full_form'] = old + added
             
-        if not args['typeset_as']:
+        # If not SELF.IN_TEXT, then we've got no explicit typesetting
+        # info.
+        if (not self.in_text) or (not args['typeset_as']):
             old = parent.in_text and parent.in_text[1] or parent.key
             added = args['sub_concept'].lstrip(args['concept'])
             args['typeset_as'] = old + added
@@ -676,6 +584,20 @@ def resolve_auxiliary_and_args(args):
         
     return auxiliary, args
 
+
+def parse_command_line(command_line_options):
+    """
+    Parse the command line according to the possible COMMAND_LINE_OPTIONS.
+    """
+    parser = optparse.OptionParser(usage = '%prog [options]...',
+                                   version = '%%prog %s' % (__revision__))
+    for option, description in command_line_options:
+        parser.add_option(*option, **description)
+        
+    # Parse the command line.
+    options, args = parser.parse_args()
+    return options, args
+
 def main():
     """
     Module mainline (for standalone execution).
@@ -706,6 +628,8 @@ def main():
     options, args = parse_command_line(command_line_options)
     
     auxiliary, args = resolve_auxiliary_and_args(args)
+
+    logging.root.name = sys.argv[0]
     
     if not auxiliary:
         logging.warning('No LaTeX auxiliary file specified.')
@@ -733,13 +657,13 @@ def main():
 
     for option, meta_information, kind in ((options.index_output,
                                             'index information',
-                                            None),
+                                            'PlainConcept'),
                                            (options.acrodef_output,
                                             'acronym definitions',
-                                            'acronym'),
+                                            'AcronymConcept'),
                                            (options.persondef_output,
                                             '(proper)name definitions',
-                                            'person')):
+                                            'PersonConcept')):
         if (kind and (kind in index.used_kinds) and (not option)):
             logging.error('Missing name for file wherein ' \
                           '%s will be stored.', meta_information)
