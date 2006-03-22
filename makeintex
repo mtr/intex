@@ -9,7 +9,8 @@ Copyright (C) 2005, 2006 by Martin Thorsen Ranang
 __revision__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
-from itertools import count, cycle, ifilter, izip
+from itertools import chain, count, cycle, ifilter, ifilterfalse, islice, izip, repeat
+
 import logging
 import optparse
 import os
@@ -31,33 +32,114 @@ class Concept(object):
     """
     A class representing a single concept.
     """
-    xname = 'blipp'
-    def __init__(self, key='', in_text='', sort_as='', serial=None):
-        self.__key = key
-        self.__serial = serial
-        self.__in_text = in_text
-        self.__equivalencies = list() #equivalencies and equivalencies or list()
-        self.__sort_as = sort_as
-        self.__name = self.xname
-        
-    def __str__(self):
-        return '%s("%s", "%s", %s, "%s", %s)' \
-               % (self.__class__.__name__, self.key, self.in_text,
-                  self.__equivalencies, self.sort_as, self.__serial)
-                              
-        return '%(class)s("%(key)s", ' \
-               'serial=%(serial)s, ' \
-               'in_text="%(in_text)s", ' \
-               'equivalencies=%(equivalencies)s, ' \
-               'sort_as="%(sort_as)s", ' \
-               % dict(list(self.__dict__.items())
-                      + [('class', self.__class__.__name__)])
+    xname = None
     
-    __repr__ = __str__
+    def __init__(self, key, in_text='', sort_as='', parent=None):
+        self.__equivalencies = list()
+        self.__name = self.xname
+        self.key = key
+        self.in_text = in_text
+        self.sort_as = sort_as
+        self.parent = parent
+        
+        self.setup_phenotype()
 
+        typeset_attrs = ('concept',
+                         'sub_concept',
+                         'sub_entry',
+                         'sort_as',
+                         'typeset_as',
+                         'name',
+                         'full_form', )
+        
+        self.__typeset_info = dict((attr, getattr(self, attr))
+                                   for attr in typeset_attrs)
+        
+        if self.parent:
+            parent_attrs = ('typeset_as',
+                            'full_form')
+            self.__typeset_info.update(('parent_%s' % attr,
+                                        getattr(self.parent, attr))
+                                       for attr in parent_attrs)
+            
+    @staticmethod
+    def is_sub_entry(field):
+        try:
+            return field[0] == ':'
+        except IndexError:
+            return True
+
+    def expand_plural_form(self, form):
+        if form and (form[0] == '#'):
+            full = (self.parent.in_text \
+                    and self.parent.in_text[0] \
+                    or self.parent.key)
+            if form[1] == 'y':
+                if full[-1] == 'y':
+                    return full[:-1] + 'ies'
+                else:
+                    logging.warning("'y' --> 'ies' transformation " \
+                                    "specified, but 'y' not last in " \
+                                    "full-form ('%s')", full)
+            elif form[1] == 's':
+                return full + 's'
+        else:
+            return form
+        
+    def setup_phenotype(self):
+        """
+        Defines the attributes used for typesetting this concept (both
+        in the running text and in the index).
+        """
+        if self.parent:
+            self.concept = self.parent.concept
+            self.sub_concept = self.key
+        else:
+            self.concept = self.key
+            self.sub_concept = ''
+
+  
+        self.full_form, self.typeset_as = \
+                        islice(chain(ifilterfalse(self.is_sub_entry,
+                                                  self.in_text),
+                                     repeat('')), 2)
+
+        self.full_form = self.expand_plural_form(self.full_form)
+
+        #print 'self.full_form, self.typeset_as:', [self.full_form, self.typeset_as]
+        
+        # ':sub_entry' (for the index):
+        try:
+            self.sub_entry = '!%s' % ([field[1:] for field in self.in_text
+                                       if self.is_sub_entry(field)][0], )
+        except IndexError:
+            if self.typeset_as:
+                self.sub_entry = '!%s' % (self.typeset_as)
+            else:
+                self.sub_entry = ''
+                
+        if (not self.parent):
+            if (not self.typeset_as):
+                self.typeset_as = self.concept
+
+        # Sort as:
+        if self.sort_as:
+            self.sort_as = '%s@' % (self.sort_as)
+        elif self.full_form:
+            self.sort_as = '%s@' % (self.full_form)
+            
+        self.sort_as = self.sort_as.replace('\-', '')
+        
+    def get_typeset_info(self, **args):
+        if args:
+            args.update(self.__typeset_info)
+            return args
+        else:
+            return self.__typeset_info
+        
     def get_name(self):
         return self.__name
-
+    
     name = property(get_name, )
     
     def add_equivalency(self, equivalency):
@@ -66,33 +148,17 @@ class Concept(object):
         SELF.
         """
         self.__equivalencies.append(equivalency)
-
-    def get_key(self):
-        """
-        Read accessor.  Returns private member __key.
-        """
-        return self.__key
-
-    key = property(get_key, )
-
-    def get_in_text(self):
-        """
-        Read accessor.  Returns private member __in_text.
-        """
-        return self.__in_text
-
-    in_text = property(get_in_text, )
     
     def get_keys(self):
         """
         A generator accessor that yields the key of each concept
         equivalent with the current one.
         """
-        yield self.__key
+        yield self.key
         
-        for equivalent in self.__equivalencies:
-            yield equivalent.__key
-
+        for equivalent in self.equivalencies:
+            yield equivalent.key
+            
     keys = property(get_keys, )
     
     def get_equivalencies(self):
@@ -103,72 +169,7 @@ class Concept(object):
                 for equivalency in self.__equivalencies)
 
     equivalencies = property(get_equivalencies, )
-
-    def get_sort_as(self):
-        """
-        Read accessor.  Returns private member __sort_as.
-        """
-        return self.__sort_as
-
-    sort_as = property(get_sort_as, )
-    
-    def generate_index_entries(self, key, page):
-        """
-        Generate all the index entries for this concept.
-        """
-        raise (NotImplementedError,
-               'The %s class does not implement this method.' %
-               self.__class__.__name__)
-
-    def get_typeset(self):
-        """
-        Accessor that returns instructions as for how this concept
-        should be typeset in the index.
-        """
-        if len(self.__in_text) > 1:
-            return '@' + self.__in_text[1]
-        else:
-            return ''
-
-    typeset = property(get_typeset, )
-    
-    @staticmethod
-    def get_full_form_and_typeset_as(in_text):
-        """
-        Returns the full-form of this concept and how it should be
-        typeset in running text.
-        """
-        candidates = [field for field in in_text if field[0] != [':']]
-        num_candidates = len(candidates) 
-            
-        if num_candidates == 0:
-            return (None, None)
-        elif num_candidates == 1:
-            return (candidates[0], None)
-        else:
-            return (candidates[0], candidates[1])
-        
-    def expand_typeset_info(self, parent, args):
-        for arg in args:
-            if arg and (arg[0] == '#'):
-                full = parent.in_text and parent.in_text[0] or parent.key
-                if arg[1] == 'y':
-                    if full[-1] == 'y':
-                        yield full[:-1] + 'ies'
-                    else:
-                        logging.warning("'y' --> 'ies' transformation " \
-                                        "specified, but 'y' not last in " \
-                                        "full-form ('%s')", full)
-                elif arg[1] == 's':
-                    yield full + 's'
-            else:
-                yield arg
                 
-    def generate_aux_modifications(self, key, page):
-        raise (NotImplementedError,
-               'The %s class does not implement this method.' %
-               self.__class__.__name__)
-    
     @staticmethod
     def is_plain():
         return False
@@ -185,16 +186,10 @@ class Concept(object):
     def is_equivalency():
         return False
 
-    @staticmethod
-    def _setup_index_args(index_name, page, concept, sort_as='',
-                          sub_concept=''):
-        return {
-            'index_name': index_name,
-            'page': page,
-            'concept': concept,
-            'sub_concept': sub_concept,
-            'sort_as': sort_as and ('%s@' % (sort_as)) or '',
-            }
+    def generate_index_entry(self, index_name, page):
+        #args = self._setup_index_args(index_name, page, self.key, self.sort_as)
+        return '\indexentry{%(sort_as)s%(concept)s}{%(page)s}' \
+               % (self.get_typeset_info(index_name=index_name, page=page))
 
     def generate_index_entries(self, index_name, page):
         """
@@ -204,8 +199,12 @@ class Concept(object):
         yield self.generate_index_entry(index_name, page)
         
         for equivalency in self.equivalencies:
-            yield equivalency.generate_index_entry(index_name, page, self)
-            
+            yield equivalency.generate_index_entry(index_name, page)
+
+    def generate_aux_modification(self):
+        return '\\new%(name)s{%(concept)s}{%(typeset_as)s}{%(full_form)s}' \
+               % (self.get_typeset_info())
+    
     def generate_aux_modifications(self):
         """
         Generate all the aux-file modifications (including
@@ -214,7 +213,8 @@ class Concept(object):
         yield self.generate_aux_modification()
         
         for equiv in self.equivalencies:
-            yield equiv.generate_aux_modification(self)
+            yield equiv.generate_aux_modification()
+
 
 class PlainConcept(Concept):
     xname = 'concept'
@@ -223,12 +223,8 @@ class PlainConcept(Concept):
     def is_plain():
         return True
     
-    def generate_index_entry(self, index_name, page):
-        args = self._setup_index_args(index_name, page, self.key, self.sort_as)
-        return '\indexentry{%(sort_as)s%(concept)s}{%(page)s}' % (args)
-    
-    def generate_aux_modification(self):
-        return '\\new%s{%s}{%s}{}' % (self.name, self.key, self.key)
+    #def generate_aux_modification(self):
+    #    return '\\new%s{%s}{%s}{}' % (self.name, self.key, self.key)
             
 class AcronymConcept(Concept):
     xname = 'acronym'
@@ -238,19 +234,9 @@ class AcronymConcept(Concept):
         return True
 
     def generate_index_entry(self, index_name, page):
-        args = self._setup_index_args(index_name, page, self.in_text[0], self.sort_as)
-        args['typeset_as'] = (len(self.in_text) > 1) and self.in_text[1] or self.key
-        
-
-        return '\indexentry{%(sort_as)s%(concept)s}{%(page)s}\n' \
-               '\indexentry{%(typeset_as)s|see{%(concept)s}}{%(page)s}' \
-               % (args)
-
-    def generate_aux_modification(self):
-        typeset_as = (len(self.in_text) > 1) and self.in_text[1] or self.key
-        return '\\new%s{%s}{%s}{%s}' \
-               % (self.name, self.key, typeset_as, self.in_text[0])
-    
+        return '\indexentry{%(sort_as)s%(full_form)s}{%(page)s}\n' \
+               '\indexentry{%(typeset_as)s|see{%(full_form)s}}{%(page)s}' \
+               % (self.get_typeset_info(index_name=index_name, page=page))
             
 class PersonConcept(Concept):
     xname = 'person'
@@ -265,55 +251,40 @@ class Equivalency(Concept):
     @staticmethod
     def is_equivalency():
         return True
-    
-    def generate_index_entry(self, index_name, page, parent):
-        sub_concept = ''
-        for part in self.in_text:
-            if part[0] == ':':
-                sub_concept = '!%s' % (part[1:])
+
+    def setup_phenotype(self):
+        Concept.setup_phenotype(self)
+        
+        if (not self.full_form) and (self.sub_concept.startswith(self.concept)):
+            added = self.sub_concept.replace(self.concept, '', 1)
+            print 'added:', added
+            if added:
+                self.full_form = self.parent.full_form + added
                 
-        args = self._setup_index_args(index_name, page, parent.key,
-                                      self.sort_as, sub_concept)
-        return '\\indexentry{%(sort_as)s%(concept)s%(sub_concept)s}{%(page)s}' \
-               % (args)
+        # If not SELF.IN_TEXT, then we've got no explicit
+        # typesetting info.
+        if (not self.typeset_as):
+            if (self.parent.typeset_as != self.parent.concept) \
+                   and self.sub_concept.startswith(self.concept):
+                added = self.sub_concept.replace(self.concept, '', 1)
+                self.typeset_as = self.parent.typeset_as + added
+            else:
+                self.typeset_as = self.sub_concept
+                
+    def generate_aux_modification(self):
+        return '\\new%(name)s{%(concept)s}{%(typeset_as)s}' \
+               '{%(sub_concept)s}{%(full_form)s}' \
+               % (self.get_typeset_info())
+    
+    def generate_index_entry(self, index_name, page):
+        return '\\indexentry{%(sort_as)s%(concept)s%(sub_entry)s}{%(page)s}' \
+               % (self.get_typeset_info(index_name=index_name, page=page))
     
     def generate_index_entries(self, **args):
         raise (NotImplementedError,
                'The %s class does not implement this method.' %
                self.__class__.__name__)
     
-    def _modify_aux_args(self, args):
-        return args
-    
-    def _setup_aux_args(self, concept, sub_concept=None):
-        full_form, typeset_as = \
-                   self.expand_typeset_info(\
-            concept,
-            self.get_full_form_and_typeset_as(self.in_text))
-
-        #print 'self.in_text:', self.in_text, typeset_as, full_form
-        
-        if not full_form and self.in_text:
-            full_form = self.in_text[0]
-
-        if not typeset_as:
-            typeset_as = self.key       # Should handle "IDs   #y" -> IDs
-            
-        return self._modify_aux_args({
-            'name': self.name,
-            'concept': concept.key,
-            'sub_concept': sub_concept,
-            'full_form': full_form,
-            'typeset_as': typeset_as or full_form,
-            'parent': concept,
-            })
-    
-    def generate_aux_modification(self, parent):
-        args = self._setup_aux_args(parent, self.key)
-
-        return '\\new%(name)s{%(concept)s}{%(typeset_as)s}' \
-               '{%(sub_concept)s}{%(full_form)s}' % (args)
-
     def generate_aux_modifications(self, **args):
         raise (NotImplementedError,
                'The %s class does not implement this method.' %
@@ -322,55 +293,16 @@ class Equivalency(Concept):
 class PlainEquivalency(Equivalency):
     xname = 'conceptequiv'
 
-    def _modify_aux_args(self, args):
-        if args['full_form'][0] == ':':
-            args['full_form'] = args['sub_concept']
-        if args['typeset_as'][0] == ':':            
-            args['typeset_as'] = args['sub_concept']
-            
-        return args
-    
 class AcronymEquivalency(Equivalency):
     xname = 'acronymequiv'
-
-    def generate_index_entry(self, index_name, page, parent):
-        sub_concept = ''
-        for part in self.in_text:
-            if part[0] == ':':
-                sub_concept = '!%s' % (part[1:])
-                
-        args = self._setup_index_args(index_name, page, parent.in_text[0],
-                                      self.sort_as, sub_concept)
-        
-        args['typeset_as'] = (len(self.in_text) > 1) \
-                             and ('@' + self.in_text[1]) or ''
-        
-        return '\\indexentry{%(sort_as)s%(concept)s%(sub_concept)s}{%(page)s}' \
-               % (args)
-
-    def _modify_aux_args(self, args):
-        parent = args['parent']
-        
-        if not args['full_form']:
-            old = parent.in_text and parent.in_text[0] or parent.key
-            added = args['sub_concept'].lstrip(args['concept'])
-            args['full_form'] = old + added
+    
             
-        # If not SELF.IN_TEXT, then we've got no explicit typesetting
-        # info.
-        if (not self.in_text) or (not args['typeset_as']):
-            old = parent.in_text and parent.in_text[1] or parent.key
-            added = args['sub_concept'].lstrip(args['concept'])
-            args['typeset_as'] = old + added
-            
-        return args
-        
+    def generate_index_entry(self, index_name, page):
+        return '\\indexentry{%(sort_as)s%(parent_full_form)s%(sub_entry)s}{%(page)s}' \
+               % (self.get_typeset_info(index_name=index_name, page=page))
+    
 class PersonEquivalency(Equivalency):
     xname = 'personequiv'
-    
-    def modify_aux_args(self, args):
-        args['typeset_as'] = self.in_text[1]
-        return args
 
     
 class InTeX(object):
@@ -406,19 +338,16 @@ class InTeX(object):
 
     @staticmethod
     def handle_fields(fields, serial_number):
-        info = {'serial': serial_number}
+        #info = {'serial': serial_number}
+        info = dict()
         
-        key, fields = fields[0], fields[1:]
-        
-        info['key'] = key
+        info['key'], fields = fields[0], fields[1:]
         
         if fields and fields[-1][0] == '@':
             info['sort_as'] = fields.pop()[1:]
-
+            
         info['in_text'] = tuple(fields)
         
-        #info['kind'] = kind
-
         return info
 
     __kind_class_map = {
@@ -436,7 +365,7 @@ class InTeX(object):
             kind = '%s_equiv' % (kind, )
             fields = self.handle_fields(line.lstrip().split(self.delimiter),
                                         serial_number)
-            #del fields['kind']
+            fields['parent'] = concepts[-1]
             concepts[-1].add_equivalency(self.__kind_class_map[kind](**fields))
             
         else:
