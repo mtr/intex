@@ -113,7 +113,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % typesetting, while the first argument signals whether we're
   % typesetting a\ldots
   %
-  \PackageWarning{marginlabel}{Got (\meaning#1, \meaning#2)}%
+  %\PackageWarning{marginlabel}{Got (\meaning#1, \meaning#2)}%
   \ifcase#1%
   % \ldots plain concept, \ldots
     \if@itx@margin@plain%
@@ -194,20 +194,20 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \ifcase\number#1%
     % Plain.
     % Typeset margin-notes if applicable.
-    \PackageWarning{ZZ}{plain}%
-    \PackageWarning{ZZ}{@itxmarginlabel:enter}%
+    %\PackageWarning{ZZ}{plain}%
+    %\PackageWarning{ZZ}{@itxmarginlabel:enter}%
     \@itxmarginlabel{#1}{#2}%
-    \PackageWarning{ZZ}{@itxmarginlabel:exit}%
+    %\PackageWarning{ZZ}{@itxmarginlabel:exit}%
     % Typeset the concept.
     \itxplaindeffont{\ITX@itxs{#1}{#2}}\nolinebreak %
   \or%
     % Acronym.
     % Typeset the concept.  Note in-between margin label.
-    \PackageWarning{ZZ}{acronym}%
+    %\PackageWarning{ZZ}{acronym}%
     \itxacronymdeffont{%
-      \PackageWarning{ZZ}{ITX@itxl:enter}%
+      %\PackageWarning{ZZ}{ITX@itxl:enter}%
       \ITX@itxl{#1}{#2} %
-      \PackageWarning{ZZ}{ITX@itxl:exit}%
+      %\PackageWarning{ZZ}{ITX@itxl:exit}%
       %\nolinebreak[3] %
       % Typeset margin-notes if applicable.
       \@itxmarginlabel{#1}{#2}%
@@ -218,7 +218,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \or%
     % Person.
     % Typeset the concept.  Note in-between margin label.
-    \PackageWarning{ZZ}{person}%
+    %\PackageWarning{ZZ}{person}%
     \itxpersondeffont{%
       \itxpersonfirstfont{%
         \ITX@itxs{#1}{#2}} %
@@ -244,40 +244,40 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % Record this area:
   \edef\curr@pos{\@itxarea{#1}}%
   % Remember the last area where this concept (second argument) was used.
-  \PackageWarning{plain:x1}{Got (\meaning#1, \meaning#2)}%
+  %\PackageWarning{plain:x1}{Got (\meaning#1, \meaning#2)}%
   \edef\last@pos{\csname itx@last@pos#1@#2\endcsname}%
   \ifx\curr@pos\last@pos%
     % We're still in the same area.  Hence, we do nothing.
   \else%
     % The area has changed.
     \ITX@reset{#2}%
-    \PackageWarning{plain:x2}{reset}%
+    %\PackageWarning{plain:x2}{reset}%
   \fi%
   \expandafter\xdef\csname itx@last@pos#1@#2\endcsname{\curr@pos}%
-  \PackageWarning{plain:x3}{exported position}%
+  %\PackageWarning{plain:x3}{exported position}%
 }
 \newcommand*{\@itxplain}[2]{%
   \@itxrecordarea{#1}{#2}%
   % Then, typeset the concept.
-  \PackageWarning{ZZ}{itxplain:enter}%
+  %\PackageWarning{ZZ}{itxplain:enter}%
   \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
-    \PackageWarning{ZZ}{itxs:enter}%
+    %\PackageWarning{ZZ}{itxs:enter}%
     \itxs{#1}{#2}%
-    \PackageWarning{ZZ}{itxs:exit}%
+    %\PackageWarning{ZZ}{itxs:exit}%
   \else%
-    \PackageWarning{ZZ}{itxf:enter}%
+    %\PackageWarning{ZZ}{itxf:enter}%
     \itxf{#1}{#2}%
-    \PackageWarning{ZZ}{itxf:exit}%
+    %\PackageWarning{ZZ}{itxf:exit}%
   \fi%
-  \PackageWarning{ZZ}{itxplain:exit}%
+  %\PackageWarning{ZZ}{itxplain:exit}%
 }
 \newcommand*{\@itxalias}[2]{%
-  \PackageWarning{x0}{args = (#1, "#2")}%
+  %\PackageWarning{x0}{args = (#1, "#2")}%
   %\edef\equiv{\csname fn\number#1e@#2\endcsname}%
   %\PackageWarning{x1}{value(equiv): "\equiv", meaning: "\meaning\equiv"}%
   \edef\@mainserial{\expandafter\@firstoftwo#2}%
   \edef\@equivserial{\expandafter\@secondoftwo#2}%
-  \PackageWarning{x2}{main: "\@mainserial", equiv: "\@equivserial"}%
+  %\PackageWarning{x2}{main: "\@mainserial", equiv: "\@equivserial"}%
   % Record usage of the main concept entry.
   %\@itxrecordarea{#1}{\@mainserial}%
   %
@@ -326,14 +326,14 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % accordingly and flag the finding by setting |\iffound|.
     \expandafter\ifx\csname fn\number\theco@type e@\@tempb\endcsname\relax%
       \expandafter\ifx\csname fn\number\theco@type @\@tempb\endcsname\relax\else%
-        \PackageWarning{here}{plain found \meaning\@tempb}%
+        %\PackageWarning{here}{plain found \meaning\@tempb}%
         \foundtrue%
         %\@itxplain{\number\theco@type}{\@tempb}%
 \edef\co@id{\csname fn\number\theco@type @\@tempb\endcsname}%
 \@itxplain{\number\theco@type}{\co@id}%
       \fi%
     \else%
-      \PackageWarning{here}{alias found \meaning\@tempb}%
+      %\PackageWarning{here}{alias found \meaning\@tempb}%
       %\@itxalias{\number\theco@type}{\@tempb}%
       \edef\co@id{\csname fn\number\theco@type e@\@tempb\endcsname}%
       \@itxalias{\number\theco@type}{\co@id}%
@@ -347,7 +347,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     % |\if@itx@warn@undef| is \emph{true}.
   \iffound%
   \else%
-    \PackageWarning{InTeX}{Concept `#1' is not defined}%
+    %\PackageWarning{InTeX}{Concept `#1' is not defined}%
     \if@itx@warn@undef%
       \textbf{\itxundefcomment{#1}}%
     \else%
@@ -375,7 +375,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   %\PackageWarning{init}{serial counter = \expandafter\theco@serial}%
   \expandafter\xdef\csname fn\number#1@\@tempb\endcsname{%
     \number\theco@serial}%
-  \PackageWarning{init}{Def: \meaning\csname fn\number#1@\@tempb\endcsname}%
+  %\PackageWarning{init}{Def: \meaning\csname fn\number#1@\@tempb\endcsname}%
   \@itxdefineforms{\theco@serial}{#3}{#4}%
 }
 \newcommand*\newconcept[3]{%
@@ -398,7 +398,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \else%
     \foundtrue%
     \edef\co@id{\csname fn\number#1@\@tempb\endcsname}%
-    \PackageWarning{init}{Found `\@tempb' (type=\number#1, serial=\co@id)}%
+    %\PackageWarning{init}{Found `\@tempb' (type=\number#1, serial=\co@id)}%
     % Store the \emph{short} and the \emph{long}
     % versions of the alias, in that order.
     \stepcounter{co@serial}%
@@ -411,7 +411,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \fi%
   \iffound%
   \else%
-    \PackageWarning{InTeX}{Can't find `#2' for sub-concept `#3'}%
+    %\PackageWarning{InTeX}{Can't find `#2' for sub-concept `#3'}%
   \fi%
 }%
 \newcommand*\newconceptequiv[4]{%

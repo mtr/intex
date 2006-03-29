@@ -604,7 +604,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % typesetting a\ldots
   %
 %    \begin{macrocode}
-  \PackageWarning{marginlabel}{Got (\meaning#1, \meaning#2)}%
+  %\PackageWarning{marginlabel}{Got (\meaning#1, \meaning#2)}%
   \ifcase#1%
 %    \end{macrocode}
   % \ldots plain concept, \ldots
@@ -726,10 +726,10 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     % Plain.
     % Typeset margin-notes if applicable.
 %    \begin{macrocode}
-    \PackageWarning{ZZ}{plain}%
-    \PackageWarning{ZZ}{@itxmarginlabel:enter}%
+    %\PackageWarning{ZZ}{plain}%
+    %\PackageWarning{ZZ}{@itxmarginlabel:enter}%
     \@itxmarginlabel{#1}{#2}%
-    \PackageWarning{ZZ}{@itxmarginlabel:exit}%
+    %\PackageWarning{ZZ}{@itxmarginlabel:exit}%
 %    \end{macrocode}
     % Typeset the concept.
 %    \begin{macrocode}
@@ -739,11 +739,11 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     % Acronym.
     % Typeset the concept.  Note in-between margin label.
 %    \begin{macrocode}
-    \PackageWarning{ZZ}{acronym}%
+    %\PackageWarning{ZZ}{acronym}%
     \itxacronymdeffont{%
-      \PackageWarning{ZZ}{ITX@itxl:enter}%
+      %\PackageWarning{ZZ}{ITX@itxl:enter}%
       \ITX@itxl{#1}{#2} %
-      \PackageWarning{ZZ}{ITX@itxl:exit}%
+      %\PackageWarning{ZZ}{ITX@itxl:exit}%
       %\nolinebreak[3] %
 %    \end{macrocode}
       % Typeset margin-notes if applicable.
@@ -760,7 +760,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     % Person.
     % Typeset the concept.  Note in-between margin label.
 %    \begin{macrocode}
-    \PackageWarning{ZZ}{person}%
+    %\PackageWarning{ZZ}{person}%
     \itxpersondeffont{%
       \itxpersonfirstfont{%
         \ITX@itxs{#1}{#2}} %
@@ -803,7 +803,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
   % Remember the last area where this concept (second argument) was used.
 %    \begin{macrocode}
-  \PackageWarning{plain:x1}{Got (\meaning#1, \meaning#2)}%
+  %\PackageWarning{plain:x1}{Got (\meaning#1, \meaning#2)}%
   \edef\last@pos{\csname itx@last@pos#1@#2\endcsname}%
   \ifx\curr@pos\last@pos%
 %    \end{macrocode}
@@ -814,10 +814,10 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     % The area has changed.
 %    \begin{macrocode}
     \ITX@reset{#2}%
-    \PackageWarning{plain:x2}{reset}%
+    %\PackageWarning{plain:x2}{reset}%
   \fi%
   \expandafter\xdef\csname itx@last@pos#1@#2\endcsname{\curr@pos}%
-  \PackageWarning{plain:x3}{exported position}%
+  %\PackageWarning{plain:x3}{exported position}%
 }
 %    \end{macrocode}
 %  \end{macro}
@@ -833,17 +833,17 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
   % Then, typeset the concept.
 %    \begin{macrocode}
-  \PackageWarning{ZZ}{itxplain:enter}%
+  %\PackageWarning{ZZ}{itxplain:enter}%
   \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
-    \PackageWarning{ZZ}{itxs:enter}%
+    %\PackageWarning{ZZ}{itxs:enter}%
     \itxs{#1}{#2}%
-    \PackageWarning{ZZ}{itxs:exit}%
+    %\PackageWarning{ZZ}{itxs:exit}%
   \else%
-    \PackageWarning{ZZ}{itxf:enter}%
+    %\PackageWarning{ZZ}{itxf:enter}%
     \itxf{#1}{#2}%
-    \PackageWarning{ZZ}{itxf:exit}%
+    %\PackageWarning{ZZ}{itxf:exit}%
   \fi%
-  \PackageWarning{ZZ}{itxplain:exit}%
+  %\PackageWarning{ZZ}{itxplain:exit}%
 }
 %    \end{macrocode}
 % \end{macro}
@@ -858,12 +858,12 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % Finally, reset the definition of the main entry.
 %    \begin{macrocode}
 \newcommand*{\@itxalias}[2]{%
-  \PackageWarning{x0}{args = (#1, "#2")}%
+  %\PackageWarning{x0}{args = (#1, "#2")}%
   %\edef\equiv{\csname fn\number#1e@#2\endcsname}%
   %\PackageWarning{x1}{value(equiv): "\equiv", meaning: "\meaning\equiv"}%
   \edef\@mainserial{\expandafter\@firstoftwo#2}%
   \edef\@equivserial{\expandafter\@secondoftwo#2}%
-  \PackageWarning{x2}{main: "\@mainserial", equiv: "\@equivserial"}%
+  %\PackageWarning{x2}{main: "\@mainserial", equiv: "\@equivserial"}%
   % Record usage of the main concept entry.
   %\@itxrecordarea{#1}{\@mainserial}%
   %
@@ -894,10 +894,11 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % The usage is |\co{|\meta{identity}|}|, where \meta{identity} refers
 % to a concept.  The idea is that the |\co{}| command should be
 % wrapped around every concept the user want to either typeset or
-% index in a special and consistent way or both.  Note that |\co| is
+% index in a special and consistent way (or both).  Note that |\co| is
 % a wrapper for the |\@itx| command.
 
 %    \begin{macrocode}
+% \newcommand{\co}{\@itx}
 \newcommand{\co}{\protect\@itx}
 %    \end{macrocode}
 % \end{macro}
@@ -954,14 +955,14 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \begin{macrocode}
     \expandafter\ifx\csname fn\number\theco@type e@\@tempb\endcsname\relax%
       \expandafter\ifx\csname fn\number\theco@type @\@tempb\endcsname\relax\else%
-        \PackageWarning{here}{plain found \meaning\@tempb}%
+        %\PackageWarning{here}{plain found \meaning\@tempb}%
         \foundtrue%
         %\@itxplain{\number\theco@type}{\@tempb}%
 	\edef\co@id{\csname fn\number\theco@type @\@tempb\endcsname}%
 	\@itxplain{\number\theco@type}{\co@id}%
       \fi%
     \else%
-      \PackageWarning{here}{alias found \meaning\@tempb}%
+      %\PackageWarning{here}{alias found \meaning\@tempb}%
       %\@itxalias{\number\theco@type}{\@tempb}%
       \edef\co@id{\csname fn\number\theco@type e@\@tempb\endcsname}%
       \@itxalias{\number\theco@type}{\co@id}%
@@ -979,7 +980,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \begin{macrocode}
   \iffound%
   \else%
-    \PackageWarning{InTeX}{Concept `#1' is not defined}%
+    %\PackageWarning{InTeX}{Concept `#1' is not defined}%
     \if@itx@warn@undef%
       \textbf{\itxundefcomment{#1}}%
     \else%
@@ -1026,7 +1027,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   %\PackageWarning{init}{serial counter = \expandafter\theco@serial}%
   \expandafter\xdef\csname fn\number#1@\@tempb\endcsname{%
     \number\theco@serial}%
-  \PackageWarning{init}{Def: \meaning\csname fn\number#1@\@tempb\endcsname}%
+  %\PackageWarning{init}{Def: \meaning\csname fn\number#1@\@tempb\endcsname}%
   \@itxdefineforms{\theco@serial}{#3}{#4}%
 }
 %    \end{macrocode}
@@ -1075,7 +1076,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \else%
     \foundtrue%
     \edef\co@id{\csname fn\number#1@\@tempb\endcsname}%
-    \PackageWarning{init}{Found `\@tempb' (type=\number#1, serial=\co@id)}%
+    %\PackageWarning{init}{Found `\@tempb' (type=\number#1, serial=\co@id)}%
 %    \end{macrocode}
     % Store the \emph{short} and the \emph{long}
     % versions of the alias, in that order.
@@ -1092,7 +1093,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \fi%
   \iffound%
   \else%
-    \PackageWarning{InTeX}{Can't find `#2' for sub-concept `#3'}%
+    %\PackageWarning{InTeX}{Can't find `#2' for sub-concept `#3'}%
   \fi%
 }%
 %    \end{macrocode}
