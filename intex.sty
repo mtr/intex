@@ -48,30 +48,36 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \fi
 \RequirePackage{acronym}
 \RequirePackage{marginnote}
+\RequirePackage{ifthen}
 \newcommand*{\InTeX}{\textsl{In}\kern-.07em\TeX}%
 \newcommand\itxplaindeffont[1]{\emph{#1}}
 \newcommand\itxplainfollowfont[1]{#1}
-\newcounter{pl}
+\newcounter{itxpl}
+\newcommand\@itxbasemarginfont[1]{%
+  \stepcounter{itxpl}%
+  \ifthenelse{\isodd{\pageref{itxpl-\theitxpl}}}{%
+    \raggedright\hspace{0pt}\footnotesize\textsf{#1}% odd
+  }{%
+    \raggedleft\hspace{0pt}\footnotesize\textsf{#1}% even
+  }%
+  \label{itxpl-\theitxpl}%
+}
 \newcommand\itxplainmarginfont[1]{%
-  %\stepcounter{pl}\label{pl-\thepl}%
-  %\pageref{pl-\thepl}%
-  %\ifthenelse{\isodd{\pageref{pl-\thepl}}}{odd}{even}%
-  \raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
+  \@itxbasemarginfont{#1}%
 }
 \newcommand{\itxacronymdeffont}[1]{#1}
 \newcommand{\itxacronymdefshortfont}[1]{\emph{#1}}
 \newcommand{\itxacronymshortfont}[1]{#1}
 \newcommand{\itxacronymmarginfont}[1]{%
-  %\stepcounter{pl}\label{pl-\thepl}%
-  %\pageref{pl-\thepl}%
-  %\ifthenelse{\isodd{\pageref{pl-\thepl}}}{odd}{even}%
-  \raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
+  \@itxbasemarginfont{#1}%
+  %\raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
 }
 \newcommand{\itxpersondeffont}[1]{\emph{#1}}
 \newcommand{\itxpersonfirstfont}[1]{#1}
 \newcommand{\itxpersonlastfont}[1]{#1}
 \newcommand{\itxpersonmarginfont}[1]{%
-  \raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
+  \@itxbasemarginfont{#1}%
+  %\raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
 }
 \newcounter{co@serial}%
 \newcounter{co@equiv@serial}%
