@@ -7,9 +7,12 @@
 
 intex: intex.dtx intex.itx
 	latex $@.dtx
-	./makeintex $@ $@.itx -o $@.rix -a acronyms.tex -p persons.tex
+	./makeintex $@ $@.itx --feedback=$@.ito --index-output=$@.rix --acrodef-output=acronyms.tex --persondef-output=persons.tex
 	makeindex $@
 	makeindex -o $@.rid $@.rix
-	latex $@.dtx
+	#latex $@.dtx
+	#./makeintex $@ $@.itx -o $@.rix -a acronyms.tex -p persons.tex
+	#makeindex $@
+	#makeindex -o $@.rid $@.rix
 
 all: intex

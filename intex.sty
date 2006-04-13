@@ -20,26 +20,6 @@
 %% and version 1.2 or later is part of all distributions of LaTeX version
 %% 1999/12/01 or later.
 %% 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 \def\filename{intex}%
 \ProvidesPackage{intex}[2005/08/05 v0.1
 Support for concept, acronym, and proper-name typesetting and indexing]%
@@ -49,8 +29,6 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \newif\if@itx@warn@undef%
 \@itx@warn@undeftrue%
 \DeclareOption{nowarnundef}{\@itx@warn@undeffalse}%
-
-
 \newif\if@itx@margin@plain%
 \newif\if@itx@margin@acronym%
 \newif\if@itx@margin@person%
@@ -68,44 +46,42 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \else%
   \def\@nearverbatim{\expandafter\strip@prefix\meaning}%
 \fi
-
 \RequirePackage{acronym}
-
+\RequirePackage{marginnote}
 \newcommand*{\InTeX}{\textsl{In}\kern-.07em\TeX}%
-
-
-
-\newcommand{\itxplaindeffont}[1]{\emph{#1}}
-\newcommand{\itxplainfollowfont}[1]{#1}
-\newcommand{\itxplainmarginfont}[1]{\raggedleft\footnotesize\textsf{#1}}
-
-
+\newcommand\itxplaindeffont[1]{\emph{#1}}
+\newcommand\itxplainfollowfont[1]{#1}
+\newcounter{pl}
+\newcommand\itxplainmarginfont[1]{%
+  %\stepcounter{pl}\label{pl-\thepl}%
+  %\pageref{pl-\thepl}%
+  %\ifthenelse{\isodd{\pageref{pl-\thepl}}}{odd}{even}%
+  \raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
+}
 \newcommand{\itxacronymdeffont}[1]{#1}
 \newcommand{\itxacronymdefshortfont}[1]{\emph{#1}}
 \newcommand{\itxacronymshortfont}[1]{#1}
-\newcommand{\itxacronymmarginfont}[1]{\raggedleft\footnotesize\textsf{#1}}
-
-
+\newcommand{\itxacronymmarginfont}[1]{%
+  %\stepcounter{pl}\label{pl-\thepl}%
+  %\pageref{pl-\thepl}%
+  %\ifthenelse{\isodd{\pageref{pl-\thepl}}}{odd}{even}%
+  \raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
+}
 \newcommand{\itxpersondeffont}[1]{\emph{#1}}
 \newcommand{\itxpersonfirstfont}[1]{#1}
 \newcommand{\itxpersonlastfont}[1]{#1}
-\newcommand{\itxpersonmarginfont}[1]{\raggedleft\footnotesize\textsf{#1}}
-
+\newcommand{\itxpersonmarginfont}[1]{%
+  \raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
+}
 \newcounter{co@serial}%
 \newcounter{co@equiv@serial}%
 \newcounter{co@type}%
 \newcommand*\itxundefcomment[1]{\emph{(undefined concept ``#1'')}}
-
 \long\def\@firstofthree#1#2#3{#1}%
 \long\def\@secondofthree#1#2#3{%
-  %\PackageWarning{@secondofthree}{#1}%
   #2}%
-
 \def\ITX@reset#1{%
   \global\expandafter\let\csname itx@#1\endcsname\relax}
-
-
-
 \newcommand*\@itxmarginlabel[2]{%
   \hspace{0pt}%
   %
@@ -113,11 +89,11 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % typesetting, while the first argument signals whether we're
   % typesetting a\ldots
   %
-  %\PackageWarning{marginlabel}{Got (\meaning#1, \meaning#2)}%
   \ifcase#1%
   % \ldots plain concept, \ldots
     \if@itx@margin@plain%
       \marginpar{\itxplainmarginfont{\ITX@itxs{#1}{#2}}}%
+      %\marginnote{\itxplainmarginfont{\ITX@itxs{#1}{#2}}}%
     \fi%
   \or%
   % \ldots an acronym, \ldots
@@ -132,15 +108,12 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \fi%
 }
 \newcommand*\ITX@used{@<>@<>@}
-
 \newcommand*\ITX@get[2]{%
-  %\PackageWarning{ITX@get}{#1}%
   \ifx#1\relax%
   \else%
     \expandafter#2#1%
   \fi%
 }
-
 \newcommand*\itxplainarea{\thesubparagraph.\thepage}%
 \newcommand*\itxacronymarea{\thesubparagraph.\thepage}%
 \newcommand*\itxpersonarea{\thesubsubsection}%
@@ -156,17 +129,10 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \def\itx@last@pos0{}%
 \def\itx@last@pos1{}%
 \def\itx@last@pos2{}%
-
 \newcommand*\ITX@itxs[2]{%
-  %\PackageWarning{ITX@itxs}{Got (\meaning#1, \meaning#2)}%
-  %\edef\value{\csname fn\number#1@#2\endcsname}%
-  %\PackageWarning{ITX@itxs:2}{value = \meaning\value = \value}%
-  %\csname fnss@\number\value\endcsname%
   \csname fnss@\number#2\endcsname%
 }
 \newcommand*\ITX@itxl[2]{%
-  %\edef\value{\csname fn#1@#2\endcsname}%
-  %\csname fnsl@\number\value\endcsname%
   \csname fnsl@\number#2\endcsname%
 }
 \newcommand*{\itxs}[2]{%
@@ -192,45 +158,41 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
  }
 \newcommand*{\@itxf}[2]{%
   \ifcase\number#1%
-    % Plain.
-    % Typeset margin-notes if applicable.
-    %\PackageWarning{ZZ}{plain}%
-    %\PackageWarning{ZZ}{@itxmarginlabel:enter}%
+    % \begin{enumerate}
+    % \item Plain concept.
+    % Typeset margin-notes if applicable, \ldots
     \@itxmarginlabel{#1}{#2}%
-    %\PackageWarning{ZZ}{@itxmarginlabel:exit}%
-    % Typeset the concept.
+    % \ldots typeset the concept, \ldots
     \itxplaindeffont{\ITX@itxs{#1}{#2}}\nolinebreak %
   \or%
-    % Acronym.
-    % Typeset the concept.  Note in-between margin label.
-    %\PackageWarning{ZZ}{acronym}%
+    % \item Acronym.  Typeset the concept (note in-between margin
+    % label), \ldots
     \itxacronymdeffont{%
-      %\PackageWarning{ZZ}{ITX@itxl:enter}%
       \ITX@itxl{#1}{#2} %
-      %\PackageWarning{ZZ}{ITX@itxl:exit}%
       %\nolinebreak[3] %
-      % Typeset margin-notes if applicable.
+      % \ldots typeset margin-notes if applicable, \ldots
       \@itxmarginlabel{#1}{#2}%
-      % Continue typesetting the concept.
+      % \ldots continue typesetting the concept.
       \itxacronymdefshortfont{%
         \itxacronymshortfont{(\ITX@itxs{#1}{#2})}}%
     }%
   \or%
-    % Person.
-    % Typeset the concept.  Note in-between margin label.
-    %\PackageWarning{ZZ}{person}%
+    % \item Person.
+    % Typeset the concept (note the in-between margin label),
+    % \ldots
     \itxpersondeffont{%
       \itxpersonfirstfont{%
         \ITX@itxs{#1}{#2}} %
       %\nolinebreak[3] %
-      % Typeset margin-notes if applicable.
+      % \ldots typeset margin-notes if applicable, \ldots
       \@itxmarginlabel{#1}{#2}%
-      % Continue typesetting the concept.
+      % \ldots continue typesetting the concept.
       \itxpersonlastfont{%
         \ITX@itxl{#1}{#2}%
       }%
     }%
   \fi%
+  % \end{enumerate}
   % Now, do the used/unused accounting.
   \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
     %\relax%
@@ -244,43 +206,29 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % Record this area:
   \edef\curr@pos{\@itxarea{#1}}%
   % Remember the last area where this concept (second argument) was used.
-  %\PackageWarning{plain:x1}{Got (\meaning#1, \meaning#2)}%
   \edef\last@pos{\csname itx@last@pos#1@#2\endcsname}%
   \ifx\curr@pos\last@pos%
     % We're still in the same area.  Hence, we do nothing.
   \else%
     % The area has changed.
     \ITX@reset{#2}%
-    %\PackageWarning{plain:x2}{reset}%
   \fi%
   \expandafter\xdef\csname itx@last@pos#1@#2\endcsname{\curr@pos}%
-  %\PackageWarning{plain:x3}{exported position}%
 }
 \newcommand*{\@itxplain}[2]{%
   \@itxrecordarea{#1}{#2}%
   % Then, typeset the concept.
-  %\PackageWarning{ZZ}{itxplain:enter}%
   \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
-    %\PackageWarning{ZZ}{itxs:enter}%
     \itxs{#1}{#2}%
-    %\PackageWarning{ZZ}{itxs:exit}%
   \else%
-    %\PackageWarning{ZZ}{itxf:enter}%
     \itxf{#1}{#2}%
-    %\PackageWarning{ZZ}{itxf:exit}%
   \fi%
-  %\PackageWarning{ZZ}{itxplain:exit}%
 }
 \newcommand*{\@itxalias}[2]{%
-  %\PackageWarning{x0}{args = (#1, "#2")}%
-  %\edef\equiv{\csname fn\number#1e@#2\endcsname}%
-  %\PackageWarning{x1}{value(equiv): "\equiv", meaning: "\meaning\equiv"}%
   \edef\@mainserial{\expandafter\@firstoftwo#2}%
   \edef\@equivserial{\expandafter\@secondoftwo#2}%
-  %\PackageWarning{x2}{main: "\@mainserial", equiv: "\@equivserial"}%
-  % Record usage of the main concept entry.
+    % Record usage of the main concept entry.
   %\@itxrecordarea{#1}{\@mainserial}%
-  %
   \@itxplain{#1}{\@equivserial}%
 }%
 \newcommand{\@itx@fakeindex}[1]{%
@@ -295,21 +243,16 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     }%
   \expandafter\endgroup\@tempa%
 }
-
-
 \newcommand{\co}{\protect\@itx}
 \newcommand*{\@itx}[1]{%
   \def\@tempa{#1}%
   % Handles, e.g., backslashes.
   \edef\@tempb{\@nearverbatim\@tempa}%
-  %\PackageWarning{itx}{tempa = \meaning\@tempa, tempb = \meaning\@tempb}%
-  %\PackageWarning{ITXindex}{index:enter}%
   \if@itx@index%
     \index[raw]{#1}%
   \else%
     \@itx@fakeindex{\@tempb}%
   \fi%
-  %\PackageWarning{ITXindex}{index:exit}%
   \setcounter{co@type}{0}%
   \newif\iffound%
   \loop\ifnum\theco@type<3%
@@ -326,15 +269,13 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % accordingly and flag the finding by setting |\iffound|.
     \expandafter\ifx\csname fn\number\theco@type e@\@tempb\endcsname\relax%
       \expandafter\ifx\csname fn\number\theco@type @\@tempb\endcsname\relax\else%
-        %\PackageWarning{here}{plain found \meaning\@tempb}%
+    % Found plain.
         \foundtrue%
-        %\@itxplain{\number\theco@type}{\@tempb}%
 \edef\co@id{\csname fn\number\theco@type @\@tempb\endcsname}%
 \@itxplain{\number\theco@type}{\co@id}%
       \fi%
     \else%
-      %\PackageWarning{here}{alias found \meaning\@tempb}%
-      %\@itxalias{\number\theco@type}{\@tempb}%
+      % Found alias.
       \edef\co@id{\csname fn\number\theco@type e@\@tempb\endcsname}%
       \@itxalias{\number\theco@type}{\co@id}%
       \foundtrue%
@@ -347,7 +288,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     % |\if@itx@warn@undef| is \emph{true}.
   \iffound%
   \else%
-    %\PackageWarning{InTeX}{Concept `#1' is not defined}%
+    \PackageWarning{InTeX}{Concept `#1' is not defined}%
     \if@itx@warn@undef%
       \textbf{\itxundefcomment{#1}}%
     \else%
@@ -423,6 +364,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \newcommand*\newpersonequiv[4]{%
   \@newentryequiv{2}{#1}{#2}{#3}{#4}%
 }%
+\@input{\jobname.ito}
 \endinput
 %%
 %% End of file `intex.sty'.

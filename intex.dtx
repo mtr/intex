@@ -39,7 +39,6 @@
 %% and version 1.2 or later is part of all distributions of LaTeX version
 %% 1999/12/01 or later.
 %%
-
 \input docstrip.tex
 \keepsilent
 
@@ -243,19 +242,17 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % \maketitle
 %
 % \section{Introduction}
-
 % This package adds functionality to \LaTeX\ that eases typesetting
 % and indexing of phrases, acronyms and names in a consistent manner.
-
+%
 % \DescribeMacro{intex} \DescribeMacro{\co}
 % The really short usage description is that in order to use the
 % package, insert |\usepackage{intex}| at the beginning of your
 % \LaTeX\ source file.  After that, you can wrap the macro
 % |\co{|\meta{concept}|}| around any concept you want to typeset
 % and/or typeset in some special way.
-
+%
 % \section{Background}
-
 % I've been using \LaTeX\ since the spring of 1997.  Since then I've
 % written several technical documents.  I try to present my work in an
 % accessible way.  Additionaly, I believe that \LaTeX\ can help with
@@ -265,7 +262,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % meaningful index, and also to leave some typeset clues to the
 % reader, so that it will be easier to find the key phrases in the
 % document.
-
+%
 % Already there exists packages that provide functionality that eases
 % the \DescribeMacro{acronym}acronym\footnote{The |acronym| package,
 % written by Tobias Oetiker, available from
@@ -280,16 +277,14 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % would be ISes (informed searches).  At the same time, you probably
 % want those two occurences---perhaps typeset several chapters
 % apart---to be indexed as being the same concept.
-
+%
 % The \InTeX\ package was written to reduce the work needed to handle
 % such a task.  This has been done by combining the functionality of
 % the |acronym| and the |index| packages with an external
 % \co{Python}\footnote{\co{Python} is available from
 % \url{http://www.python.org/}.} script.
-
 %
 % \section{Usage}
-
 % How you can use \InTeX\ should be clearer after examining some
 % examples.  The central idea in \InTeX\ is that a phrase or a word
 % worth indexing constitutes some kind of a \co{concept}---in a broad
@@ -298,14 +293,14 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % organization), or of the ``plain'' kind (simply a phrase).  Hence,
 % we will refer to the three kinds of \co{concepts} as
 % \emph{\co{acronym}}, \emph{\co{person}}, and \emph{\co{plain}}.
-
+%
 % In the above paragraph, the word ``concepts'' was defined as a
 % \co{concept} of the \co{plain} kind, and it was defined to be
 % indexed as the word ``concept''.  Furthermore, the words
 % ``acronym'', ``person'', and ``plain'' where also defined as
 % \co{plain concepts}.  However, these concepts are defined as
 % \co{sub-concepts} of ``concept'' and should be indexed accordingly.
-
+%
 % \subsection{Package Options}
 % \begin{optlist}
 %   \item[noindex]: Whether \InTeX\ should generate an index or not.
@@ -317,11 +312,9 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %  whenever \emph{new} concepts of kind \meta{type} are typeset, where
 %  \meta{type} is one of \optname{plain}, \optname{acronym}, or
 %  \optname{person}.
-
 % \end{optlist}
-
+%
 % \subsection{Examples}
-
 % \begin{SideBySideExample}[xrightmargin=5cm]
 %   \makeatletter
 %   \@itx@margin@acronymfalse%
@@ -331,7 +324,6 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %   sub-concepts, like \co{H2O-reserve}.
 % \end{SideBySideExample}
 %
-
 % \begin{SideBySideExample}[xrightmargin=5cm]
 %   \makeatletter
 %   \@itx@margin@acronymfalse%
@@ -339,14 +331,14 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %   We could talk about multiple \co{IDs}, 
 %   or a single \co{ID}. 
 % \end{SideBySideExample}
-
+%
 % In this section, let's assume that we would like to write
 % about the \co{\InTeX\ logo}.  This might be a good time to go drink
 % some \co{H2O}.
-
+%
 % Example text: I believe that the problem of generating good
 % indices is \co{AIC}.  
-
+%
 % \subsubsection{Index Definitions}
 % The concept index definition file used for the above paragraph looks
 % like:
@@ -356,7 +348,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % current section, use a single line that must contain exactly 
 % |"% *|\meta{type}|*"|, where \meta{type} is either |ACRONYMS|,
 % |CONCEPTS|, or |PERSONS|.
-
+%
 % \VerbatimInput[showtabs=true,tabsize=4,numbers=left,fontsize=\small,firstline=2,lastline=10]{intex.itx}
 % the above line should mean that |\co{synsets}| in the text should be
 % indexed as if it read |\co{synset}|.  However, if the plural of the
@@ -368,7 +360,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % word:
 %
 % \VerbatimInput[showtabs=true,tabsize=4,numbers=left,fontsize=\small,firstline=11]{intex.itx}
-
+%
 % \subsection{Compilation}
 % \label{sec:compilation}
 % \DescribeMacro{makeintex} As mentioned earlier, the package includes
@@ -383,7 +375,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % \item |makeindex -o |\meta{name}|.rid |\meta{name}|.rix|
 % \item |latex |\meta{name}|.tex|
 % \end{enumerate}
-
+%
 % \section{Macros}
 %
 % \DescribeMacro{\InTeX}
@@ -429,14 +421,14 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
-
+%
 % \begin{macro}{nomarginplain}
 % \begin{macro}{nomarginacronym}
 % \begin{macro}{nomarginperson}
 % \begin{macro}{\if@itx@margin@plain}
 % \begin{macro}{\if@itx@margin@acronym}
 % \begin{macro}{\if@itx@margin@person}
-
+%
 % The conditionals |\if@itx@margin@|\meta{kind}---where \meta{kind} is
 % one of |plain|, |acronym|, and |person|---control whether the short
 % version of each first-occurrence of a concept (of kind \meta{kind},
@@ -482,14 +474,16 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \fi
 %    \end{macrocode}
 % \end{macro}
-
+%
 % \begin{macro}{acronym}
-% Anyhow, require the |acronym| package to be loaded.
+% Anyhow, require the |acronym| and the |ifthen| packages to be loaded.
 %    \begin{macrocode}
 \RequirePackage{acronym}
+\RequirePackage{marginnote}
+%\RequirePackage{ifthen}
 %    \end{macrocode}
 % \end{macro}
-
+%
 % \subsection{The \InTeX\ Logo}
 % \begin{macro}{\InTeX}
 % Define a \TeX-ish logo for this package.
@@ -497,60 +491,72 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \newcommand*{\InTeX}{\textsl{In}\kern-.07em\TeX}%
 %    \end{macrocode}
 % \end{macro}
-
-
+%
 % \subsection{Font Definitions}
-
+%
 % The following commands define the font-selection commands used to
 % typeset the different kinds of concepts in different situations.
-
+%
 % \begin{macro}{\itxplaindeffont}
 % \begin{macro}{\itxplainfollowfont}
 % \begin{macro}{\itxplainmarginfont}
 % These commands are used to typeset plain concepts.
 %    \begin{macrocode}
-\newcommand{\itxplaindeffont}[1]{\emph{#1}}
-\newcommand{\itxplainfollowfont}[1]{#1}
-\newcommand{\itxplainmarginfont}[1]{\raggedleft\footnotesize\textsf{#1}}
+\newcommand\itxplaindeffont[1]{\emph{#1}}
+\newcommand\itxplainfollowfont[1]{#1}
+\newcounter{pl}
+\newcommand\itxplainmarginfont[1]{%
+  %\stepcounter{pl}\label{pl-\thepl}%
+  %\pageref{pl-\thepl}%
+  %\ifthenelse{\isodd{\pageref{pl-\thepl}}}{odd}{even}%
+  \raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
+}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % \end{macro}
-
+%
 % \begin{macro}{\itxacronymdeffont}
 % \begin{macro}{\itxacronymdefshortfont}
 % \begin{macro}{\itxacronymshortfont}
 % \begin{macro}{\itxacronymmarginfont}
-
+%
 % For acronyms:
 %    \begin{macrocode}
 \newcommand{\itxacronymdeffont}[1]{#1}
 \newcommand{\itxacronymdefshortfont}[1]{\emph{#1}}
 \newcommand{\itxacronymshortfont}[1]{#1}
-\newcommand{\itxacronymmarginfont}[1]{\raggedleft\footnotesize\textsf{#1}}
+\newcommand{\itxacronymmarginfont}[1]{%
+  %\stepcounter{pl}\label{pl-\thepl}%
+  %\pageref{pl-\thepl}%
+  %\ifthenelse{\isodd{\pageref{pl-\thepl}}}{odd}{even}%
+  \raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
+}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
-
+%
 % \begin{macro}{\itxpersondeffont}
 % \begin{macro}{\itxpersonfirstfont}
 % \begin{macro}{\itxpersonlastfont}
 % \begin{macro}{\itxpersonmarginfont}
-
+%
 % For persons:
 %    \begin{macrocode}
 \newcommand{\itxpersondeffont}[1]{\emph{#1}}
 \newcommand{\itxpersonfirstfont}[1]{#1}
 \newcommand{\itxpersonlastfont}[1]{#1}
-\newcommand{\itxpersonmarginfont}[1]{\raggedleft\footnotesize\textsf{#1}}
+\newcommand{\itxpersonmarginfont}[1]{%
+  \raggedleft\hspace{0pt}\footnotesize\textsf{#1}%
+}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
-
+%
 % \subsection{The (Low-Level) Clockwork of the Package}
 %
 % \begin{macro}{\co@serial}
@@ -570,16 +576,15 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \newcommand*\itxundefcomment[1]{\emph{(undefined concept ``#1'')}}
 %    \end{macrocode}
 % \end{macro}
-
+%
 % Define a couple of convenience macros.
 %    \begin{macrocode}
 \long\def\@firstofthree#1#2#3{#1}%
 \long\def\@secondofthree#1#2#3{%
-  %\PackageWarning{@secondofthree}{#1}%
   #2}%
 %\newcommand*\@secondofthree[3]{#2}%
 %    \end{macrocode}
-
+%
 % Make it possible to reset the ``defined'' flag for each concept.
 % After a reset, the next time that concept occurs, it is typeset as
 % if it's the first occurrence of that concept.
@@ -587,13 +592,13 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \def\ITX@reset#1{%
   \global\expandafter\let\csname itx@#1\endcsname\relax}
 %    \end{macrocode}
-
+%
 % \subsubsection{Typesetting of Margin Labels}
 % \begin{macro}{\@itxmarginlabel}
-
+%
 % Define a macro to typeset the concepts at first-occurrence points in
 % the margin.
-
+%
 %    \begin{macrocode}
 \newcommand*\@itxmarginlabel[2]{%
   \hspace{0pt}%
@@ -604,13 +609,13 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % typesetting a\ldots
   %
 %    \begin{macrocode}
-  %\PackageWarning{marginlabel}{Got (\meaning#1, \meaning#2)}%
   \ifcase#1%
 %    \end{macrocode}
   % \ldots plain concept, \ldots
 %    \begin{macrocode}
     \if@itx@margin@plain%
       \marginpar{\itxplainmarginfont{\ITX@itxs{#1}{#2}}}%
+      %\marginnote{\itxplainmarginfont{\ITX@itxs{#1}{#2}}}%
     \fi%
   \or%
 %    \end{macrocode}
@@ -636,11 +641,10 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \newcommand*\ITX@used{@<>@<>@}
 %    \end{macrocode}
 % \end{macro}
-
+%
 % \begin{macro}{\ITX@get}
 %    \begin{macrocode}
 \newcommand*\ITX@get[2]{%
-  %\PackageWarning{ITX@get}{#1}%
   \ifx#1\relax%
   \else%
     \expandafter#2#1%
@@ -648,7 +652,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 }
 %    \end{macrocode}
 % \end{macro}
-
+%
 % \begin{macro}{\itxplainarea}
 % \begin{macro}{\itxacronymarea}
 % \begin{macro}{\itxpersonarea}
@@ -679,18 +683,11 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 % \end{macro}
 % \end{macro}
-
 %    \begin{macrocode}
 \newcommand*\ITX@itxs[2]{%
-  %\PackageWarning{ITX@itxs}{Got (\meaning#1, \meaning#2)}%
-  %\edef\value{\csname fn\number#1@#2\endcsname}%
-  %\PackageWarning{ITX@itxs:2}{value = \meaning\value = \value}%
-  %\csname fnss@\number\value\endcsname%
   \csname fnss@\number#2\endcsname%
 }
 \newcommand*\ITX@itxl[2]{%
-  %\edef\value{\csname fn#1@#2\endcsname}%
-  %\csname fnsl@\number\value\endcsname%
   \csname fnsl@\number#2\endcsname%
 }
 \newcommand*{\itxs}[2]{%
@@ -723,54 +720,49 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \newcommand*{\@itxf}[2]{%
   \ifcase\number#1%
 %    \end{macrocode}
-    % Plain.
-    % Typeset margin-notes if applicable.
+    % \begin{enumerate}
+    % \item Plain concept.
+    % Typeset margin-notes if applicable, \ldots
 %    \begin{macrocode}
-    %\PackageWarning{ZZ}{plain}%
-    %\PackageWarning{ZZ}{@itxmarginlabel:enter}%
     \@itxmarginlabel{#1}{#2}%
-    %\PackageWarning{ZZ}{@itxmarginlabel:exit}%
 %    \end{macrocode}
-    % Typeset the concept.
+    % \ldots typeset the concept, \ldots
 %    \begin{macrocode}
     \itxplaindeffont{\ITX@itxs{#1}{#2}}\nolinebreak %
   \or%
 %    \end{macrocode}
-    % Acronym.
-    % Typeset the concept.  Note in-between margin label.
+    % \item Acronym.  Typeset the concept (note in-between margin
+    % label), \ldots
 %    \begin{macrocode}
-    %\PackageWarning{ZZ}{acronym}%
     \itxacronymdeffont{%
-      %\PackageWarning{ZZ}{ITX@itxl:enter}%
       \ITX@itxl{#1}{#2} %
-      %\PackageWarning{ZZ}{ITX@itxl:exit}%
       %\nolinebreak[3] %
 %    \end{macrocode}
-      % Typeset margin-notes if applicable.
+      % \ldots typeset margin-notes if applicable, \ldots
 %    \begin{macrocode}
       \@itxmarginlabel{#1}{#2}%
 %    \end{macrocode}
-      % Continue typesetting the concept.
+      % \ldots continue typesetting the concept.
 %    \begin{macrocode}
       \itxacronymdefshortfont{%
         \itxacronymshortfont{(\ITX@itxs{#1}{#2})}}%
     }%
   \or%
 %    \end{macrocode}
-    % Person.
-    % Typeset the concept.  Note in-between margin label.
+    % \item Person. 
+    % Typeset the concept (note the in-between margin label),
+    % \ldots
 %    \begin{macrocode}
-    %\PackageWarning{ZZ}{person}%
     \itxpersondeffont{%
       \itxpersonfirstfont{%
         \ITX@itxs{#1}{#2}} %
       %\nolinebreak[3] %
 %    \end{macrocode}
-      % Typeset margin-notes if applicable.
+      % \ldots typeset margin-notes if applicable, \ldots
 %    \begin{macrocode}
       \@itxmarginlabel{#1}{#2}%
 %    \end{macrocode}
-      % Continue typesetting the concept.
+      % \ldots continue typesetting the concept.
 %    \begin{macrocode}
       \itxpersonlastfont{%
         \ITX@itxl{#1}{#2}%
@@ -778,6 +770,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     }%
   \fi%
 %    \end{macrocode}
+  % \end{enumerate}
   % Now, do the used/unused accounting.
 %    \begin{macrocode}
   \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
@@ -803,7 +796,6 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
   % Remember the last area where this concept (second argument) was used.
 %    \begin{macrocode}
-  %\PackageWarning{plain:x1}{Got (\meaning#1, \meaning#2)}%
   \edef\last@pos{\csname itx@last@pos#1@#2\endcsname}%
   \ifx\curr@pos\last@pos%
 %    \end{macrocode}
@@ -814,10 +806,8 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     % The area has changed.
 %    \begin{macrocode}
     \ITX@reset{#2}%
-    %\PackageWarning{plain:x2}{reset}%
   \fi%
   \expandafter\xdef\csname itx@last@pos#1@#2\endcsname{\curr@pos}%
-  %\PackageWarning{plain:x3}{exported position}%
 }
 %    \end{macrocode}
 %  \end{macro}
@@ -833,17 +823,11 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
   % Then, typeset the concept.
 %    \begin{macrocode}
-  %\PackageWarning{ZZ}{itxplain:enter}%
   \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
-    %\PackageWarning{ZZ}{itxs:enter}%
     \itxs{#1}{#2}%
-    %\PackageWarning{ZZ}{itxs:exit}%
   \else%
-    %\PackageWarning{ZZ}{itxf:enter}%
     \itxf{#1}{#2}%
-    %\PackageWarning{ZZ}{itxf:exit}%
   \fi%
-  %\PackageWarning{ZZ}{itxplain:exit}%
 }
 %    \end{macrocode}
 % \end{macro}
@@ -858,15 +842,12 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % Finally, reset the definition of the main entry.
 %    \begin{macrocode}
 \newcommand*{\@itxalias}[2]{%
-  %\PackageWarning{x0}{args = (#1, "#2")}%
-  %\edef\equiv{\csname fn\number#1e@#2\endcsname}%
-  %\PackageWarning{x1}{value(equiv): "\equiv", meaning: "\meaning\equiv"}%
   \edef\@mainserial{\expandafter\@firstoftwo#2}%
   \edef\@equivserial{\expandafter\@secondoftwo#2}%
-  %\PackageWarning{x2}{main: "\@mainserial", equiv: "\@equivserial"}%
-  % Record usage of the main concept entry.
+%    \end{macrocode}
+    % Record usage of the main concept entry.
+%    \begin{macrocode}
   %\@itxrecordarea{#1}{\@mainserial}%
-  %
   \@itxplain{#1}{\@equivserial}%
 }%
 %    \end{macrocode}
@@ -889,14 +870,14 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\co}
-
+%
 % The |\co| command is the only command the user should need to use.
 % The usage is |\co{|\meta{identity}|}|, where \meta{identity} refers
 % to a concept.  The idea is that the |\co{}| command should be
 % wrapped around every concept the user want to either typeset or
 % index in a special and consistent way (or both).  Note that |\co| is
 % a wrapper for the |\@itx| command.
-
+%
 %    \begin{macrocode}
 % \newcommand{\co}{\@itx}
 \newcommand{\co}{\protect\@itx}
@@ -911,7 +892,6 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % Handles, e.g., backslashes.
 %    \begin{macrocode}
   \edef\@tempb{\@nearverbatim\@tempa}%
-  %\PackageWarning{itx}{tempa = \meaning\@tempa, tempb = \meaning\@tempb}%
 %    \end{macrocode}
 %
 % If \InTeX\ should generate an index, simply use the |index| package
@@ -923,13 +903,11 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \emph{page} equal to 0 will be written instead.
 %
 %    \begin{macrocode}
-  %\PackageWarning{ITXindex}{index:enter}%
   \if@itx@index%
     \index[raw]{#1}%
   \else%
     \@itx@fakeindex{\@tempb}%
   \fi%
-  %\PackageWarning{ITXindex}{index:exit}%
 %    \end{macrocode}
 %
 % Define a new conditional, |\iffound|, to signal whether the
@@ -955,15 +933,17 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \begin{macrocode}
     \expandafter\ifx\csname fn\number\theco@type e@\@tempb\endcsname\relax%
       \expandafter\ifx\csname fn\number\theco@type @\@tempb\endcsname\relax\else%
-        %\PackageWarning{here}{plain found \meaning\@tempb}%
+%    \end{macrocode}
+    % Found plain.
+%    \begin{macrocode}
         \foundtrue%
-        %\@itxplain{\number\theco@type}{\@tempb}%
 	\edef\co@id{\csname fn\number\theco@type @\@tempb\endcsname}%
 	\@itxplain{\number\theco@type}{\co@id}%
       \fi%
     \else%
-      %\PackageWarning{here}{alias found \meaning\@tempb}%
-      %\@itxalias{\number\theco@type}{\@tempb}%
+%    \end{macrocode}
+      % Found alias.
+%    \begin{macrocode}
       \edef\co@id{\csname fn\number\theco@type e@\@tempb\endcsname}%
       \@itxalias{\number\theco@type}{\co@id}%
       \foundtrue%
@@ -980,7 +960,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \begin{macrocode}
   \iffound%
   \else%
-    %\PackageWarning{InTeX}{Concept `#1' is not defined}%
+    \PackageWarning{InTeX}{Concept `#1' is not defined}%
     \if@itx@warn@undef%
       \textbf{\itxundefcomment{#1}}%
     \else%
@@ -1120,6 +1100,15 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
+% \end{macro}
+%
+% \subsection{The Internal \InTeX\ File}
+% \begin{macro}{\InTeX}
+% After the first run of Make\InTeX The file |\jobname.ito| will
+% contain the different concept definitions.
+%    \begin{macrocode}
+\@input{\jobname.ito}
+%    \end{macrocode}
 % \end{macro}
 %
 % \printindex[raw]
