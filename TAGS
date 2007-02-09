@@ -1,69 +1,55 @@
 
-makeintex,3913
-def parse_command_line(command_line_options):parse_command_line29,572
-class Concept(object):Concept43,1062
-    def __init__(self, key='', in_text='',__init__48,1164
-    def __str__(self):__str__57,1507
-    def get_name(self):get_name72,2105
-    def add_equivalency(self, equivalency):add_equivalency77,2194
-    def get_key(self):get_key84,2397
-    def get_in_text(self):get_in_text92,2556
-    def get_keys(self):get_keys100,2739
-    def get_equivalencies(self):get_equivalencies112,3044
-    def get_sort_as(self):get_sort_as122,3330
-    def generate_index_entries(self, key, page):generate_index_entries130,3513
-    def get_typeset(self):get_typeset179,5169
-    def get_full_form_and_typeset_as(in_text):get_full_form_and_typeset_as192,5504
-    def expand_typeset_info(self, parent, args):expand_typeset_info207,6013
-    def generate_aux_modifications(self, key, page):generate_aux_modifications223,6699
-    def is_plain():is_plain267,8505
-    def is_acronym():is_acronym271,8565
-    def is_person():is_person275,8627
-    def is_equivalency():is_equivalency279,8688
-    def _setup_index_args(index_name, page, concept, sort_as='',_setup_index_args283,8754
-    def generate_index_entries(self, index_name, page):generate_index_entries293,9094
-    def generate_aux_modifications(self):generate_aux_modifications303,9469
-class PlainConcept(Concept):PlainConcept313,9787
-    def is_plain():is_plain318,9894
-    def generate_index_entry(self, index_name, page):generate_index_entry321,9935
-    def generate_aux_modification(self):generate_aux_modification325,10146
-class AcronymConcept(Concept):AcronymConcept328,10269
-    def is_acronym():is_acronym332,10345
-    def generate_index_entry(self, index_name, page):generate_index_entry335,10388
-    def generate_aux_modification(self):generate_aux_modification344,10790
-class PersonConcept(Concept):PersonConcept350,11033
-    def is_person():is_person354,11107
-class Equivalency(Concept):Equivalency357,11153
-    def is_equivalency():is_equivalency361,11224
-    def generate_index_entry(self, index_name, page, parent_key):generate_index_entry364,11275
-    def generate_index_entries(self, **args):generate_index_entries375,11742
-    def _modify_aux_args(self, args):_modify_aux_args380,11933
-    def _setup_aux_args(self, concept, sub_concept=None):_setup_aux_args383,11996
-    def generate_aux_modification(self, parent):generate_aux_modification406,12776
-    def generate_aux_modifications(self, **args):generate_aux_modifications412,13002
-class PlainEquivalency(Equivalency):PlainEquivalency417,13197
-    def _modify_aux_args(self, args):_modify_aux_args420,13262
-class AcronymEquivalency(Equivalency):AcronymEquivalency428,13536
-    def generate_index_entry(self, index_name, page, parent_key):generate_index_entry431,13603
-    def _modify_aux_args(self, args):_modify_aux_args454,14309
-class PersonEquivalency(Equivalency):PersonEquivalency469,14867
-    def modify_aux_args(self, args):modify_aux_args472,14936
-class InTeX(object):InTeX477,15044
-    def __init__(self, filenames):__init__480,15091
-    def __str__(self):__str__499,15687
-    def __contains__(self, key):__contains__502,15746
-    def __getitem__(self, key):__getitem__505,15824
-    def handle_fields(fields, serial_number):handle_fields509,15918
-    def parse_line(self, line, concepts, kind, serial_number=0):parse_line534,16566
-    def parse(self, filename):parse549,17311
-def get_entries(filename):get_entries576,18203
-def handle_auxiliary(aux_filename, index, index_file, tmp_aux_file):handle_auxiliary584,18434
-def copy(src_name, dst_name):copy617,19449
-def generate_acrodefs(index):generate_acrodefs635,19966
-def generate_persondefs(index):generate_persondefs649,20452
-def resolve_auxiliary_and_args(args):resolve_auxiliary_and_args662,20983
-def main():main687,21827
-
-Makefile,0
-
-auto/intex.el,0
+makeintex,3170
+class Concept(object):Concept34,746
+    def __init__(self, key, in_text='', sort_as='', parent=None):__init__40,850
+    def is_plural(self):is_plural71,1956
+    def is_sub_entry(field):is_sub_entry75,2033
+    def expand_plural_form(self, form):expand_plural_form81,2162
+    def setup_phenotype(self):setup_phenotype101,2882
+    def get_typeset_info(self, **args):get_typeset_info142,4262
+    def get_name(self):get_name149,4450
+    def add_equivalency(self, equivalency):add_equivalency154,4543
+    def get_keys(self):get_keys161,4750
+    def get_equivalencies(self):get_equivalencies173,5065
+    def is_plain():is_plain183,5341
+    def is_acronym():is_acronym187,5401
+    def is_person():is_person191,5463
+    def is_equivalency():is_equivalency195,5524
+    def generate_index_entry(self, index_name, page):generate_index_entry198,5572
+    def generate_index_entries(self, index_name, page, key):generate_index_entries202,5767
+    def generate_aux_modification(self):generate_aux_modification214,6200
+    def generate_aux_modifications(self):generate_aux_modifications218,6366
+class PlainConcept(Concept):PlainConcept229,6681
+    def is_plain():is_plain233,6755
+class AcronymConcept(Concept):AcronymConcept236,6808
+    def is_acronym():is_acronym240,6884
+    def generate_index_entry(self, index_name, page):generate_index_entry243,6927
+class PersonConcept(Concept):PersonConcept254,7484
+    def is_person():is_person258,7558
+class Equivalency(Concept):Equivalency261,7604
+    def is_equivalency():is_equivalency265,7675
+    def setup_phenotype(self):setup_phenotype268,7722
+    def generate_aux_modification(self):generate_aux_modification297,8914
+    def generate_index_entry(self, index_name, page):generate_index_entry302,9117
+    def generate_index_entries(self, **args):generate_index_entries306,9358
+    def generate_aux_modifications(self, **args):generate_aux_modifications311,9549
+class PlainEquivalency(Equivalency):PlainEquivalency316,9744
+class AcronymEquivalency(Equivalency):AcronymEquivalency319,9809
+    def generate_index_entry(self, index_name, page):generate_index_entry322,9888
+class PersonEquivalency(Equivalency):PersonEquivalency333,10473
+class InTeX(object):InTeX337,10543
+    def __init__(self, filenames):__init__340,10590
+    def __str__(self):__str__359,11186
+    def __contains__(self, key):__contains__362,11245
+    def __getitem__(self, key):__getitem__365,11323
+    def handle_fields(fields, serial_number):handle_fields369,11417
+    def parse_line(self, line, concepts, kind, serial_number=0):parse_line390,12001
+    def parse(self, filename):parse405,12758
+def get_entries(filename):get_entries432,13650
+def handle_auxiliary(aux_filename, index, index_file, tmp_aux_file):handle_auxiliary440,13881
+def copy(src_name, dst_name):copy474,14991
+def generate_acrodefs(index):generate_acrodefs492,15527
+def generate_persondefs(index):generate_persondefs506,16013
+def resolve_auxiliary_and_args(args):resolve_auxiliary_and_args519,16544
+def parse_command_line(command_line_options):parse_command_line545,17389
+def main():main559,17875
