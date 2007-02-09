@@ -1,0 +1,692 @@
+#! /usr/bin/python
+# -*- coding: latin-1 -*-
+# $Id: makeintex 336 2006-04-13 12:25:43Z mtr $
+"""
+MakeInTeX, a program for easeing the creation of consistent indices in
+LaTeX.
+
+Copyright (C) 2005, 2006 by Martin Thorsen Ranang
+"""
+
+__revision__ = "$Rev: 336 $"
+__author__ = "Martin Thorsen Ranang"
+
+from itertools import (chain, count, cycle, ifilter, ifilterfalse,
+                       islice, izip, repeat)
+
+import logging
+import optparse
+import os
+import re
+import sys
+import tempfile
+
+INTEX_INDEX = 'raw'
+INTEX_INPUT_EXT = 'intex'
+INTEX_OUTPUT_EXT = 'ito'
+
+READ_BUF_SIZE = 4096
+
+intex_re = re.compile('\\\@writefile\{%s\}' \
+                      '\{\\\indexentry\{(?P<key>.*)\}\{(?P<page>\d+)\}\}' \
+                      % (INTEX_INDEX))
+
+class Concept(object):
+    """
+    A class representing a single concept.
+    """
+    xname = None
+    
+    def __init__(self, key, in_text='', sort_as='', parent=None):
+        self.__equivalencies = list()
+        self.__name = self.xname
+        self.key = key
+        self.in_text = in_text
+        self.sort_as = sort_as
+        self.parent = parent
+        self.__plural = False
+        
+        self.setup_phenotype()
+
+        typeset_attrs = ('concept',
+                         'sub_concept',
+                         'sub_entry',
+                         'sort_as',
+                         'typeset_as',
+                         'name',
+                         'full_form', )
+        
+        self.__typeset_info = dict((attr, getattr(self, attr))
+                                   for attr in typeset_attrs)
+        
+        if self.parent:
+            parent_attrs = ('typeset_as',
+                            'sort_as',
+                            'full_form',
+                            'concept')
+            self.__typeset_info.update(('parent_%s' % attr,
+                                        getattr(self.parent, attr))
+                                       for attr in parent_attrs)
+
+    def is_plural(self):
+        return self.__plural
+    
+    @staticmethod
+    def is_sub_entry(field):
+        try:
+            return field[0] == ':'
+        except IndexError:
+            return True
+
+    def expand_plural_form(self, form):
+        if form and (form[0] == '#'):
+            self.__plural = True
+            
+            full = (self.parent.in_text \
+                    and self.parent.in_text[0] \
+                    or self.parent.key)
+            if form[1] == 'y':
+                if full[-1] == 'y':
+                    return full[:-1] + 'ies'
+                else:
+                    logging.warning("'y' --> 'ies' transformation " \
+                                    "specified, but 'y' not last in " \
+                                    "full-form ('%s')", full)
+            elif form[1] == 's':
+                return full + 's'
+            
+        else:
+            return form
+        
+    def setup_phenotype(self):
+        """
+        Defines the attributes used for typesetting this concept (both
+        in the running text and in the index).
+        """
+        if self.parent:
+            self.concept = self.parent.concept
+            self.sub_concept = self.key
+        else:
+            self.concept = self.key
+            self.sub_concept = ''
+
+  
+        self.full_form, self.typeset_as = \
+                        islice(chain(ifilterfalse(self.is_sub_entry,
+                                                  self.in_text),
+                                     repeat('')), 2)
+        
+        self.full_form = self.expand_plural_form(self.full_form)
+
+        try:
+            self.sub_entry = '!%s' % ([field[1:] for field in self.in_text
+                                       if self.is_sub_entry(field)][0], )
+        except IndexError:
+            if self.typeset_as:
+                self.sub_entry = '!%s' % (self.typeset_as)
+            else:
+                self.sub_entry = ''
+
+        if (not self.parent):
+            if (not self.typeset_as):
+                self.typeset_as = self.concept
+
+        # Sort as:
+        if self.sort_as:
+            self.sort_as = '%s@' % (self.sort_as)
+        elif self.full_form:
+            self.sort_as = '%s@' % (self.full_form)
+            
+        self.sort_as = self.sort_as.replace('\-', '')
+        
+    def get_typeset_info(self, **args):
+        if args:
+            args.update(self.__typeset_info)
+            return args
+        else:
+            return self.__typeset_info
+        
+    def get_name(self):
+        return self.__name
+    
+    name = property(get_name, )
+    
+    def add_equivalency(self, equivalency):
+        """
+        Add a concept that is defined to be equivalent/synonymous with
+        SELF.
+        """
+        self.__equivalencies.append(equivalency)
+    
+    def get_keys(self):
+        """
+        A generator accessor that yields the key of each concept
+        equivalent with the current one.
+        """
+        yield self.key
+        
+        for equivalent in self.equivalencies:
+            yield equivalent.key
+            
+    keys = property(get_keys, )
+    
+    def get_equivalencies(self):
+        """
+        Return the equivalent concepts of SELF.
+        """
+        return (equivalency
+                for equivalency in self.__equivalencies)
+
+    equivalencies = property(get_equivalencies, )
+                
+    @staticmethod
+    def is_plain():
+        return False
+
+    @staticmethod
+    def is_acronym():
+        return False
+
+    @staticmethod
+    def is_person():
+        return False
+
+    @staticmethod
+    def is_equivalency():
+        return False
+
+    def generate_index_entry(self, index_name, page):
+        return '\indexentry{%(sort_as)s%(concept)s}{%(page)s}' \
+               % (self.get_typeset_info(index_name=index_name, page=page))
+
+    def generate_index_entries(self, index_name, page, key):
+        """
+        Generate all the index entries (including sub-entries) for
+        this concept.
+        """
+        if self.key == key:
+            yield self.generate_index_entry(index_name, page)
+        
+        for equivalency in self.equivalencies:
+            if equivalency.key == key:
+                yield equivalency.generate_index_entry(index_name, page)
+
+    def generate_aux_modification(self):
+        return '\\new%(name)s{%(concept)s}{%(typeset_as)s}{%(full_form)s}' \
+               % (self.get_typeset_info())
+    
+    def generate_aux_modifications(self):
+        """
+        Generate all the aux-file modifications (including
+        sub-entries) for this concept.
+        """
+        yield self.generate_aux_modification()
+        
+        for equiv in self.equivalencies:
+            yield equiv.generate_aux_modification()
+
+
+class PlainConcept(Concept):
+    xname = 'concept'
+    
+    @staticmethod
+    def is_plain():
+        return True
+            
+class AcronymConcept(Concept):
+    xname = 'acronym'
+    
+    @staticmethod
+    def is_acronym():
+        return True
+
+    def generate_index_entry(self, index_name, page):
+        info = self.get_typeset_info(index_name=index_name, page=page)
+        #if info['sort_as'].rstrip('@') == info['full_form']:
+        #    return '\indexentry{%(full_form)s}{%(page)s}\n' \
+        #           '\indexentry{%(typeset_as)s|see{%(full_form)s}}{%(page)s}' \
+        #           % (info)
+        #else:
+        return '\indexentry{%(sort_as)s%(full_form)s}{%(page)s}\n' \
+               '\indexentry{%(typeset_as)s|see{%(full_form)s}}{%(page)s}' \
+               % (info)
+            
+class PersonConcept(Concept):
+    xname = 'person'
+    
+    @staticmethod
+    def is_person():
+        return True
+    
+class Equivalency(Concept):
+    xname = 'equiv'
+    
+    @staticmethod
+    def is_equivalency():
+        return True
+
+    def setup_phenotype(self):
+        Concept.setup_phenotype(self)
+
+        if self.sub_concept.startswith(self.concept):
+            added = self.sub_concept.replace(self.concept, '', 1)
+
+            if (not self.full_form):
+                if added:
+                    self.full_form = self.parent.full_form + added
+
+            # If not SELF.IN_TEXT, then we've got no explicit
+            # typesetting info.
+            if (not self.typeset_as):
+                if (self.parent.typeset_as != self.parent.concept):
+                    self.typeset_as = self.parent.typeset_as + added
+                else:
+                    if self.is_plural():
+                        self.sort_as = self.parent.sort_as
+
+                    self.typeset_as = self.sub_concept
+                    
+            if (not self.sub_entry) and (not self.is_plural()):
+                self.sub_entry = '!%s' % (added, )
+
+            if (not self.sort_as) and (not self.is_plural()):
+                self.sort_as = '%s@' % (self.parent.sort_as.rstrip('@') + added, )
+                #print 'sort_as', self.sort_as
+                #self.sort_as = self.sort_as.replace('-', ' ')
+        if not self.full_form:
+            #print 'no full form:', self.concept
+            self.full_form = self.concept
+            if not self.typeset_as:
+                self.typeset_as = self.full_form
+            
+    def generate_aux_modification(self):
+        return '\\new%(name)s{%(concept)s}{%(typeset_as)s}' \
+               '{%(sub_concept)s}{%(full_form)s}' \
+               % (self.get_typeset_info())
+    
+    def generate_index_entry(self, index_name, page):
+        return '\\indexentry{%(sort_as)s%(concept)s%(sub_entry)s}{%(page)s}' \
+               % (self.get_typeset_info(index_name=index_name, page=page, parent=self.parent.concept))
+    
+    def generate_index_entries(self, **args):
+        raise (NotImplementedError,
+               'The %s class does not implement this method.' %
+               self.__class__.__name__)
+    
+    def generate_aux_modifications(self, **args):
+        raise (NotImplementedError,
+               'The %s class does not implement this method.' %
+               self.__class__.__name__)
+    
+class PlainEquivalency(Equivalency):
+    xname = 'conceptequiv'
+
+class AcronymEquivalency(Equivalency):
+    xname = 'acronymequiv'
+            
+    def generate_index_entry(self, index_name, page):
+        parent_info = self.parent.get_typeset_info()
+        #info = self.get_typeset_info()
+        #print 'parent_info:', parent_info
+        #print 'child_info:', info
+        
+        return '\\indexentry{%(sort_as)s%(parent_full_form)s%(sub_entry)s}{%(page)s}' \
+               % (self.get_typeset_info(index_name=index_name, page=page))
+        #return '\\indexentry{%(fuck)s%(sub_entry)s}{%(page)s}' \
+        #       % (self.get_typeset_info(index_name=index_name, page=page, fuck=parent_info['sort_as'].rstrip('@')))
+    
+class PersonEquivalency(Equivalency):
+    xname = 'personequiv'
+
+    
+class InTeX(object):
+    delimiter = '\t'
+    
+    def __init__(self, filenames):
+        identifiers = dict()
+        
+        for filename in filenames:
+            identifiers[filename] = self.parse(filename)
+            
+        self.index = dict()
+        seen_kinds = set()
+        
+        for filename, concepts in identifiers.items():
+            for concept in concepts:
+                seen_kinds.add(concept.__class__.__name__)
+                
+                for key in concept.get_keys():
+                    self.index[key] = concept
+        
+        self.identifiers = identifiers
+        self.used_kinds = tuple(seen_kinds)
+
+    def __str__(self):
+        return str(self.index)
+    
+    def __contains__(self, key):
+        return self.index.__contains__(key)
+
+    def __getitem__(self, key):
+        return self.index.__getitem__(key)
+
+    @staticmethod
+    def handle_fields(fields, serial_number):
+        info = dict()
+        
+        info['key'], fields = fields[0], fields[1:]
+        
+        if fields and fields[-1][0] == '@':
+            info['sort_as'] = fields.pop()[1:]
+            
+        info['in_text'] = tuple(fields)
+        
+        return info
+
+    __kind_class_map = {
+        'person': PersonConcept,
+        'acronym': AcronymConcept,
+        'concept': PlainConcept,
+        'person_equiv': PersonEquivalency,
+        'acronym_equiv': AcronymEquivalency,
+        'concept_equiv': PlainEquivalency,
+        }
+    
+    def parse_line(self, line, concepts, kind, serial_number=0):
+        if line[0].isspace():
+            # An equivalent form of the current index entry.
+            kind = '%s_equiv' % (kind, )
+            fields = self.handle_fields(line.lstrip().split(self.delimiter),
+                                        serial_number)
+            fields['parent'] = concepts[-1]
+            concepts[-1].add_equivalency(self.__kind_class_map[kind](**fields))
+            
+        else:
+            # A new index entry.  Can be 'person', 'acronym', or 'plain'.
+            fields = self.handle_fields(line.split(self.delimiter),
+                                        serial_number)
+            concepts.append(self.__kind_class_map[kind](**fields))
+            
+    def parse(self, filename):
+        concepts = []
+        mode_switch_re = re.compile('^%[ ]*\*' \
+                                    '(?P<kind>persons|acronyms|concepts)\*',
+                                    re.IGNORECASE)
+        kind = 'concept'                # Default "mode".
+
+        serial_number = 1
+        in_file = open(filename, 'r')
+        for line in in_file:
+            line = line.rstrip("\n")
+            if not line:
+                continue
+            if line[0] == '%':
+                match = mode_switch_re.match(line)
+                if match:
+                    # New current KIND (or mode).
+                    kind = match.group('kind')[:-1].lower()
+                continue
+            
+            self.parse_line(line, concepts, kind, serial_number)
+            serial_number += 1
+            
+        in_file.close()
+        
+        return concepts
+
+def get_entries(filename):
+    for line in open(filename, 'r'):
+        match = intex_re.match(line.rstrip())
+        if not match:
+            yield (False, line)
+            continue
+        yield (True, match.groups())
+        
+def handle_auxiliary(aux_filename, index, index_file, tmp_aux_file):
+    not_found = []
+    already_handled = set()
+    already_printed = set()
+    
+    for is_concept, data in get_entries(aux_filename):
+        if not is_concept:
+            #tmp_aux_file.write(data)
+            continue
+        
+        key, page = data
+        
+        if key not in index:
+            not_found.append((key, page))
+            continue
+        
+        concept = index[key]
+
+        for line in concept.generate_index_entries(INTEX_INDEX, page, key):
+            if line not in already_printed:
+                #logging.warn('(key = %s, concept = %s, adding: %s', key, concept, line)
+                print >> index_file, line
+                already_printed.add(line)
+                
+        if key not in already_handled:
+            for line in concept.generate_aux_modifications():
+                if line not in already_printed:
+                    print >> tmp_aux_file, line
+                    already_printed.add(line)
+                    
+            already_handled.add(key)
+            
+    return not_found
+
+def copy(src_name, dst_name):
+    src, dst = open(src_name, 'r'), open(dst_name, 'w')
+    while True:
+        data = src.read(READ_BUF_SIZE)
+        if data == '':
+            break
+        dst.write(data)
+        
+    dst.close()
+    src.close()
+
+auto_edit_warning = '''
+%%%% This file was automatically generated by MakeInTeX revision %s,
+%%%% copyright (C) 2005, 2006 by Martin Thorsen Ranang.  Any manual changes
+%%%% made to this file will be lost the next time MakeInTeX is run with the
+%%%% same arguments.
+''' % (__revision__)
+
+def generate_acrodefs(index):
+    res = []
+    for concepts in index.identifiers.values():
+        for concept in ifilter(lambda concept: concept.is_acronym(), concepts):
+            if len(concept.in_text) > 1:
+                typeset_as = concept.in_text[1]
+            else:
+                typeset_as = concept.key
+
+            res.append('\\newacronym{%s}{%s}{%s}' \
+                       % (concept.key, typeset_as,
+                          concept.in_text[0]))
+    return res
+
+def generate_persondefs(index):
+    res = []
+    for concepts in index.identifiers.values():
+        for concept in ifilter(lambda concept: concept.is_person(), concepts):
+            if len(concept.in_text) > 1:
+                res.append('\\newperson{%s}{%s}{%s}' \
+                           % (concept.key, concept.in_text[1],
+                              concept.in_text[0]))
+            else:
+                res.append('\\newperson{%s}{%s}' \
+                           % (concept.key, concept.in_text[0]))
+    return res
+
+def resolve_auxiliary_and_args(args):
+    aux_re = re.compile('^.*\.aux$', re.IGNORECASE)
+    auxiliary = [arg for arg in args
+                 if aux_re.match(arg) and os.path.exists(arg)]
+    args = [arg for arg in args if arg not in auxiliary]
+
+    attempts = count(-2)
+    
+    while attempts.next():
+        if len(auxiliary) > 1:
+            logging.error('Please explicitly specify the ' \
+                          'LaTeX auxiliary (.aux) file to use.')
+            sys.exit(1)
+            
+        elif not auxiliary:
+            auxiliary = ['%s.aux' % (arg) for arg in args
+                         if os.path.exists('%s.aux' % (arg))]
+            args = [arg for arg in args if '%s.aux' % (arg) not in auxiliary]
+            
+        else:
+            auxiliary = auxiliary[0]
+            break
+        
+    return auxiliary, args
+
+
+def parse_command_line(command_line_options):
+    """
+    Parse the command line according to the possible COMMAND_LINE_OPTIONS.
+    """
+    parser = optparse.OptionParser(usage = '%prog [options]...',
+                                   version = '%%prog %s' % (__revision__))
+    for option, description in command_line_options:
+        parser.add_option(*option, **description)
+        
+    # Parse the command line.
+    options, args = parser.parse_args()
+    return options, args
+
+
+def main():
+    """
+    Module mainline (for standalone execution).
+    """
+    command_line_options = [
+        (['-O', '--feedback'],
+         {'dest': 'feedback',
+          'default': None,
+          'metavar': 'FILE',
+          'help': 'output the new internal InTeX information to FILE ' \
+          '(default: %default)'}),
+        (['-o', '--index-output'],
+         {'dest': 'index_output',
+          'default': None,
+          'metavar': 'FILE',
+          'help': 'output the new indexing information to FILE ' \
+          '(default: %default)'}),
+        (['-a', '--acrodef-output'],
+         {'dest': 'acrodef_output',
+          'default': None,
+          'metavar': 'FILE',
+          'help': 'output acronym definitions to FILE ' \
+          '(default: %default)'}),
+        (['-p', '--persondef-output'],
+         {'dest': 'persondef_output',
+          'default': None,
+          'metavar': 'FILE',
+          'help': 'output (person) name definitions to FILE ' \
+          '(default: %default)'}),
+        (['-V', '--verbose'],
+         {'dest': 'verbose',
+          'default': False,
+          'action': 'store_true',
+          'help': 'whether or not to output verbose information'}),
+        ]
+    
+    options, args = parse_command_line(command_line_options)
+
+    logging.root.name = sys.argv[0]
+    
+    if options.verbose:
+        logging.getLogger().setLevel(logging.INFO)
+        
+    auxiliary, args = resolve_auxiliary_and_args(args)
+    
+    
+    
+    if not auxiliary:
+        logging.warning('No LaTeX auxiliary file specified.')
+        sys.exit(1)
+        
+    if len(args) == 0:
+        suffix_re = re.compile('^.*\.%s$' % (INTEX_INPUT_EXT))
+        
+        filenames = [filename
+                     for filename in os.listdir(os.getcwd())
+                     if suffix_re.match(filename)]
+    else:
+        filenames = args
+    
+    for filename in filenames:
+        if not os.path.exists(filename):
+            logging.error("File '%s' not found", filename)
+            sys.exit(1)
+            
+    if options.verbose:
+        logging.info('LaTeX auxiliary file: %s', auxiliary)
+        logging.info('InTeX input concept files: %s', ', '.join(filenames))
+        
+    index = InTeX(filenames)
+    
+    for option, meta_information, kind in [
+        (options.index_output, 'index information', 'PlainConcept'),
+        (options.acrodef_output, 'acronym definitions', 'AcronymConcept'),
+        (options.persondef_output, '(proper)name definitions', 'PersonConcept'),
+        ]:
+        if (kind and (kind in index.used_kinds) and (not option)):
+            logging.error('Missing name for file wherein ' \
+                          '%s will be stored.', meta_information)
+            return 1
+        elif (kind and option and (kind not in index.used_kinds)):
+            logging.warning("name for file wherein " \
+                            "%s will be stored was  supplied ('%s'), " \
+                            "but no such input occur.",
+                            meta_information, option)
+
+    persondef_file = open(options.persondef_output, 'w')
+    print >> persondef_file, auto_edit_warning
+    print >> persondef_file, '\n'.join(generate_persondefs(index))
+    persondef_file.close()
+    
+    acrodef_file = open(options.acrodef_output, 'w')
+    print >> acrodef_file, auto_edit_warning
+    print >> acrodef_file, '\n'.join(generate_acrodefs(index))
+    acrodef_file.close()
+    
+    index_file = open(options.index_output, 'w')
+    #logging.warn('index_file = %s', index_file.name)
+    
+    # We first create a temporary file.  If any "shit hits the fan"
+    # before we're done, the original LaTeX .aux file will be
+    # untouched and the temporary version can be inspected.
+    #tmp_aux_fd, tmp_aux_filename = tempfile.mkstemp('.%s' % (INTEX_INPUT_EXT))
+    #tmp_aux_file = os.fdopen(tmp_aux_fd, 'w')
+    latex_internal_file = open(options.feedback, 'w')
+        
+    not_found = handle_auxiliary(auxiliary, index,
+                                 index_file, latex_internal_file)
+    
+    index_file.close()
+    #tmp_aux_file.close()
+    latex_internal_file.close()
+    
+    # Everything seems to have worked OK so far.  Now, let's backup
+    # the original .aux file and rename the temporarily created one to
+    # take the place of the original.
+    #os.rename(auxiliary, '%s~' % (auxiliary))
+    #copy(tmp_aux_filename, auxiliary)
+    #os.unlink(tmp_aux_filename)
+    
+    if not_found:
+        logging.warning('The following phrases ' \
+                        'could not be handled:\n%s',
+                        ('\n'.join('%s\t%s' % item for item in not_found)))
+        
+    return
+
+if __name__ == "__main__":
+    main()
