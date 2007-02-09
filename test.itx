@@ -1,0 +1,347 @@
+% *ACRONYMS*:
+% <acronym>	<full-form>	<len(t & remove)typeset-as>
+%   <equivalent>	[full-form]	[typeset-as]	[:sub-index-as]
+%
+
+AI	Artificial Intelligence
+AIE	artificially intelligent encyclopedia
+ALEPH	A Learning Engine for Proposing Hypothesis
+API	application program[ming] interface
+CFG	Context-Free Grammar
+CLIR	Cross Language Information Retrieval
+CS	Computer Science
+CSG	Context-Sensitive Grammar
+ConSensiCAL	Context-Sensitive-Categorial-Attribute-Logic
+CtWN	Catalan WordNet
+DAG	directed acyclic graph
+  DAGs	#s
+DCG	Definite Clause Grammar
+DTD	document type definition
+EL	Event Logic
+ERG	English Resource Grammar
+EU	European Union
+EUWN	EuroWordNet	EuroWordNet
+FOPC	First Order Predicate Calculus
+FS	feature structure
+  FSs	#s
+HPSG	Head-Driven Phrase Structure Grammar
+HTML	Hypertext Markup Language
+I/O	input/output
+ILP	Inductive Logic Programming
+IE	Information Extraction
+IR	Information Retrieval
+IS	Information Systems
+KB	knowledgebase
+  KBs	#s
+LDOCE	Longman Dictionary of Contemporary English
+LFG	Lexical-Functional Grammar
+LinGO	Linguistic Grammars Online
+LKB	Linguistic Knowledge Builder
+LOGON	Leksikon, ordsemantikk, grammatikk og oversettelse for norsk
+MDL	minimal description length
+MLE	maximum likelihood estimation
+MRD	machine-readable dictionary
+  MRDs	#s
+MRS	Minimal Recursion Semantics
+MT	Machine Translation
+MTRs	MRS transfer rules
+NL	natural language
+NLP	Natural Language Processing
+NLU	Natural Language Understanding
+NLTK	Natural Language Toolkit
+  NLTK Lite	:Lite
+NorGram	Norsk komputasjonell grammatikk
+NorKompLeks	Norsk komputasjonelt leksikon
+NorSource	Norwegian Resource Grammar
+NP	noun phrase
+NTNU	Norwegian University of Science and Technology
+OO	object-oriented
+PAC	probably approximately correct
+POS	part of speech
+PP	prepositional phrase
+  PPs	#s
+QA	question-answering
+SBD	sentence-boundary detection
+SNL	Store norske leksikon
+SpWN	Spanish WordNet
+SQL	Structured Query Language
+STrie	Static Trie
+TDAG	translation DAG
+TQL	TUC Query Language
+TUC	The Understanding Computer
+VSM	vector-space model
+WN	WordNet	WordNet
+WN20	WordNet 2.0	WN 2.0
+WN21	WordNet 2.1	WN 2.1
+WSD	word-sense disambiguation
+WSJ	Wall Street Journal
+XLE	Xerox Linguistic Environment
+XML	Extensible Markup Language
+  XML-format	:-format
+synset	synonym set
+  synsets	#s
+regexp	regular expression
+
+% Translational resources:
+%
+NKL	Norsk komputasjonelt leksikon
+NorEng	Norsk-engelsk stor ordbok
+EngNor	Engelsk-norsk stor ordbok
+ComboNorEng	a combination of NorEng and EngNor
+
+% *CONCEPTS*:
+% [^]<index_as> [full_form [typeset_as]] [@sort_as]
+%   <in_text>
+%   [equivalent phrase]
+
+adjective
+  adjectives	#s
+adverb
+  adverbs	#s
+ANSI C
+approximate string matching
+antonymy
+  Antonymy
+  antonym
+  antonyms	#s
+  direct antonymy	:direct
+  direct antonyms	#s	:direct
+  indirect antonymy	:indirect
+  indirect antonyms	#s	:indirect
+
+attribute-logic
+auxiliary verb
+  auxiliary verbs
+base form
+  root form
+BirdQuest
+BusTUC
+
+categorial
+category
+  categories	#y
+class
+  classes	#s
+collocation
+compound
+  compounds	#s
+  endocentric compounds	:endocentric
+compound-word analysis
+compression
+concept
+conceptual density
+content word
+  content words	#s
+context-sensitive
+coordinate terms
+corpora
+  parsed corpora	:parsed
+CYC
+
+determiner
+  determiners	#s
+document retrieval
+
+EuroWordNet
+examples
+  positive examples	:positive
+  negative examples	:negative
+ExamTUC
+Extraposition Grammar
+
+F-measure
+first-order predicate logic
+function word
+  function words
+  grammatical words
+generality
+Generative Lexicon
+GeneTUC
+grammar
+  grammars	#s
+grammatical head
+graph
+  acyclic
+  cyclic
+  directed
+  edge
+  node
+  tree
+  undirected
+  vertex
+graph theory
+
+hash index
+heterarchy
+  heterarchies	#y
+hierarchy
+  hierarchies	#y
+holonym
+  part holonyms	:part
+homograph
+  homographs	#s
+hypernymy
+  hypernym
+  hypernyms	#s
+  instance hypernymy	:instance
+hyponymy
+  hyponym
+  hyponyms	#s
+  is-a-kind-of
+  is-a
+  instance hyponymy	:instance
+hypothesis
+
+interjection
+  interjections	#s
+knowledge representation
+Kunnskapsforlaget
+
+lattice
+learning
+  compact hypothesis
+  over-fitting
+  smoothing
+lexeme
+  lexemes	#s
+  lexical item
+  lexical items	#s
+lexical category
+  lexical categories	#y
+  lexical class
+  lexical classes	#s
+lexicon
+  lexicons	#s
+
+meronymy
+  meronym
+  meronyms	#s
+mirror semantics
+MURAX
+
+named-entity recognition
+native XML database
+nominal
+  nominals	#s
+nominalization
+  nominalizations	#s
+  deverbal nominalization	:deverbal
+  deverbal nominalizations	#s
+noun
+  nouns	#s
+NRL
+
+Ockham's razor
+OMEGA
+ontology
+  ontologies
+
+phrase
+PostgreSQL
+polysemy
+power set
+precision
+preposition
+  prepositions
+programming language
+  Prolog
+  Python
+proposition
+  propositions
+
+recall
+related word
+
+search
+  search space	:space
+  search strategy	:strategy
+semantic network
+  semantic networks	#s
+  lexical semantic network
+semantic type checking
+semantically redundant
+sense
+  senses	#s
+SENSUS
+sentence frames
+set
+SICStus
+similarity
+  similar
+SIMPLE
+Snowball
+stationary
+stemmer
+Subversion
+synonymy
+  synonym
+  synonyms	#s
+  propositional synonyms
+  absolute synonymy
+  synonymous
+
+taxonomy
+tokenization
+  Tokenizing
+translation paths
+tree
+trie
+Trivial Pursuit
+troponymy
+TUClopedia
+type hierarchy
+unit testing
+
+verb
+  verbs	#s
+verb frame
+  verb frames	#s
+verbal complements
+version control system
+Verto
+
+Wikipedia
+word class
+  word classes	#s
+  closed word class		:closed
+  closed word classes	#s	:closed
+  open word class		:open
+  open word classes	#s	:open
+
+word form
+  word forms
+  morphosyntactic word
+World Book Encyclopedia
+
+Zipf's law
+
+% *PERSONS*:
+%
+AA	Aamodt	Agnar
+TA	Amble	Tore
+MEB	Bayegan	May Elisabeth
+TB	Bruland	Tore
+JC	Cassens	Jörg
+%MDV	Dimitrova-Vulchanova	Mila
+HD	Dyvik	Helge
+KME	Eide	Kristin Melum
+LdV	da Vinci	Leonardo
+ZCF	Fulup	Zoran \ldots
+GG	Gorrell	Genevieve
+MF	Fodstad	Marte
+MLH	Hetland	Magnus Lie
+JBJ	Johannessen	Janne Bondi
+HM	Midelfart	Herman
+TN	Nordgård	Torbjørn
+SBN	Norås	Sindre Bjørnar
+AT	Tveit	Amund
+MDV	Vulchanova	Mila
+GKZ	Zipf	George Kingsley
+
+%%% Local Variables: 
+%%% mode: latex
+%%% buffer-file-coding-system: latin-1-unix
+%%% TeX-master: "main"
+%%% ispell-local-dictionary: "american"
+%%% mode: flyspell
+%%% End: 

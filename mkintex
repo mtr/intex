@@ -2,15 +2,84 @@
 # -*- coding: utf-8 -*-
 # $Id$
 """
-Copyright (C) 2007 by Linpro AS
+Copyright (C) 2007 by Martin Thorsen Ranang
 """
-__revision__ = "$Rev$"
+__version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
 
+
+import logging
+import optparse
+import os
+
+COMMENT_SIGN = '%'
+
+class Index(list):
+    def __init__(self, filename=None, index_name='default'):
+        list.__init__(self)
+
+        self.__index_name = index_name
+        
+    @classmethod
+    def from_file(cls, filename):
+        self = cls()
+        
+def parse_command_line(command_line_options):
+    """Parse the command line according to the possible
+    COMMAND_LINE_OPTIONS.
+    """
+    parser = optparse.OptionParser(usage='%prog [options]...',
+                                   version='%%prog %s' % (__version__))
+    for option, description in command_line_options:
+        parser.add_option(*option, **description)
+        
+    # Parse the command line.
+    return parser.parse_args()
+        
 def main():
     """Module mainline (for standalone execution).
     """
-    pass
-#
+    command_line_options = [
+        (['-O', '--feedback'],
+         {'dest': 'feedback',
+          'default': None,
+          'metavar': 'FILE',
+          'help': 'output the new internal InTeX information to FILE ' \
+          '(default: %default)'}),
+        (['-o', '--index-output'],
+         {'dest': 'index_output',
+          'default': None,
+          'metavar': 'FILE',
+          'help': 'output the new indexing information to FILE ' \
+          '(default: %default)'}),
+        (['-a', '--acrodef-output'],
+         {'dest': 'acrodef_output',
+          'default': None,
+          'metavar': 'FILE',
+          'help': 'output acronym definitions to FILE ' \
+          '(default: %default)'}),
+        (['-p', '--persondef-output'],
+         {'dest': 'persondef_output',
+          'default': None,
+          'metavar': 'FILE',
+          'help': 'output (person) name definitions to FILE ' \
+          '(default: %default)'}),
+        (['-V', '--verbose'],
+         {'dest': 'verbose',
+          'default': False,
+          'action': 'store_true',
+          'help': 'whether or not to output verbose information'}),
+        ]
+
+    options, args = parse_command_line(command_line_options)
+
+    logging.root.name = os.path.basename(__file__)
+
+    if options.verbose:
+        logging.getLogger().setLevel(logging.INFO)
+
+    indices = [Index.from_file(filename) for filename in args]
+    
+        
 if __name__ == "__main__":
     main()
