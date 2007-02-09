@@ -1,0 +1,16 @@
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+# $Id$
+"""
+Copyright (C) 2007 by Linpro AS
+"""
+__revision__ = "$Rev$"
+__author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
+
+def main():
+    """Module mainline (for standalone execution).
+    """
+    pass
+
+if __name__ == "__main__":
+    main()
