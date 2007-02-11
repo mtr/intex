@@ -1,5 +1,6 @@
 % $Id$
-% name=main
+%
+% name=default
 % 
 % Copyright (C) 2007 by Martin Thorsen Ranang
 %
@@ -9,3 +10,10 @@
 % *PERSONS*
 
 % *CONCEPTS*
+
+% Local Variables: 
+% mode: latex
+% TeX-master: t
+% ispell-local-dictionary: "american"
+% mode: flyspell
+% End: 

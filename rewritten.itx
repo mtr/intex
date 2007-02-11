@@ -1,11 +1,46 @@
 % $Id$
+%
 % name=main
 % 
 % Copyright (C) 2007 by Martin Thorsen Ranang
 %
 
 % *ACRONYMS*
+DAG	directed acyclic graph
+GNU	GNU is not Unix
+H2O	dihydrogen monoxide	H$_{2}$O
+WN20    WordNet 2.0     WN 2.0
+% The following entry should support both \co{XML} and
+% \co{XML-format}.  The resulting index should have the following
+% entries:
+%   
+XML     Extensible Markup Language
+  :-format
 
 % *PERSONS*
+JFK	Kennedy, John Fitzgerald
+MLK	King, Martin Luther
 
 % *CONCEPTS*
+antonym	:#s
+  :direct -
+  :indirect -
+antonymy
+  :direct -
+  :indirect -
+
+category :#y
+
+% For the following entries, the parenthesis surrounding each '-'
+% indicates that the part signified by - should not be included in the
+% index.
+example :#s
+  :positive (-)                 
+  :negative (-)
+
+% Local Variables: 
+% mode: latex
+% TeX-master: t
+% ispell-local-dictionary: "american"
+% mode: flyspell
+% End: 

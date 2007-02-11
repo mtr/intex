@@ -12,8 +12,38 @@ import logging
 import optparse
 import os
 
-COMMENT_SIGN = '%'
+TOKEN_COMMENT              = '%'
+TOKEN_SHORT_PLURAL_FORM    = '#'
+TOKEN_TYPESET_SUB_ENTRY_AS = ':'
 
+class IndexEntry(object):
+    def to_latex(self):
+        raise NotImplementedError
+
+class AcronymEntry(IndexEntry):
+    def __init__(self, acronym, full_form, typeset_as=None,
+                 plural=None, index_as=None, sort_as=None):
+        self.__initials = initials
+        self.__last_name = last_name,
+        self.__first_name = first_name
+
+class PersonEntry(IndexEntry):
+    def __init__(self, initials, last_name, first_name=None,
+                 index_as=None, sort_as=None):
+        self.__initials = initials
+        self.__last_name = last_name,
+        self.__first_name = first_name
+
+class PlainEntry(IndexEntry):
+    def __init__(self, concept,
+                 plural=None, index_as=None, sort_as=None):
+        self.__plural = plural
+        self.__sub_entry = sub_entry
+        
+        self.__initials = initials
+        self.__last_name = last_name,
+        self.__first_name = first_name
+        
 class Index(list):
     def __init__(self, filename=None, index_name='default'):
         list.__init__(self)
