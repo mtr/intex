@@ -11,10 +11,11 @@ __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
 import logging
 import optparse
 import os
+import re
 
-TOKEN_COMMENT              = '%'
-TOKEN_SHORT_PLURAL_FORM    = '#'
-TOKEN_TYPESET_SUB_ENTRY_AS = ':'
+TOKEN_COMMENT           = '%'
+TOKEN_SHORT_PLURAL_FORM = '#'
+TOKEN_ENTRY_META_INFO   = ':'
 
 class IndexEntry(object):
     def to_latex(self):
@@ -45,14 +46,66 @@ class PlainEntry(IndexEntry):
         self.__first_name = first_name
         
 class Index(list):
+    __concept_types = ['ACRONYMS', 'PERSONS', 'CONCEPTS']
+    __index_attrbiutes = {
+        'name': None,
+        }
+    __meta_directive_re = re.compile('''
+    ^                                   # Starts with
+    %s                                  # the comment token,
+    \s*                                 # possibly some whitespace,
+    (                                   # then either
+     (?P<attribute>\w+)\s*              #  an attribute
+     =                                  #  sat to
+     \s*(?P<value>\w+)                  #  some value,
+     |                                  # or
+     (?P<context>\*(%s)\*)              #  a context switch
+    )                                   # followed by
+    \s*                                 # possibly trailing whitespace
+    $                                   # at the end.
+    ''' % (TOKEN_COMMENT, '|'.join(__concept_types)), re.VERBOSE)
+    
     def __init__(self, filename=None, index_name='default'):
         list.__init__(self)
-
-        self.__index_name = index_name
         
+        self.__name = index_name
+        
+    # Accessors for the 'name' property:
+    def get_name(self):
+        return self.__name
+        
+    def set_name(self, name):
+        self.__name = name
+        
+    name = property(get_name, set_name, None, 'The name of the index.')
+
+    def handle_meta_directive(self, meta_directive):
+        if meta_directive['attribute']:
+            setattr(self, meta_directive['attribute'],
+                    meta_directive['value'])
+
+  
     @classmethod
     def from_file(cls, filename):
         self = cls()
+
+        match_handler = {
+            self.__meta_directive_re: self.handle_meta_directive,
+            # FIXME: Continue here!
+            }
+        
+        stream = open(filename, 'r')
+        
+        for line in stream:
+            for matcher in (self.__meta_directive_re, ):
+                for match in matcher.finditer(line):
+                    match_handler[matcher](match.groupdict())
+            #for match in self.__meta_directive_re.finditer(line):
+
+
+        stream.close()
+        
+        return self
         
 def parse_command_line(command_line_options):
     """Parse the command line according to the possible
