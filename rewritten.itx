@@ -9,12 +9,12 @@
 DAG	directed acyclic graph
 GNU	GNU is not Unix
 H2O	dihydrogen monoxide	H$_{2}$O
-WN20    WordNet 2.0     WN 2.0
+WN20	WordNet 2.0     WN 2.0
 % The following entry should support both \co{XML} and
 % \co{XML-format}.  The resulting index should have the following
 % entries:
 %   
-XML     Extensible Markup Language
+XML	Extensible Markup Language
   :-format
 
 % *PERSONS*
@@ -25,7 +25,7 @@ MLK	King, Martin Luther
 antonym	:#s
   :direct -
   :indirect -
-antonymy
+antonymy\, nisse
   :direct -
   :indirect -
 
