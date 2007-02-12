@@ -17,7 +17,7 @@ WN20	WordNet 2.0     WN 2.0
 XML	Extensible Markup Language
   :-format
 
-% *PERSONS*
+% *PEOPLE*
 JFK	Kennedy, John Fitzgerald
 MLK	King, Martin Luther
 
@@ -35,7 +35,7 @@ category :#y
 % indicates that the part signified by - should not be included in the
 % index.
 example :#s
-  :positive (-)                 
+  :positive (-) :#y
   :negative (-)
 
 % Local Variables: 

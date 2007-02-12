@@ -46,7 +46,7 @@ class PlainEntry(IndexEntry):
         self.__first_name = first_name
         
 class Index(list):
-    __concept_types = ['ACRONYMS', 'PERSONS', 'CONCEPTS']
+    __concept_types = ['ACRONYMS', 'PEOPLE', 'CONCEPTS']
     __index_attrbiutes = {
         'name': None,
         }
@@ -55,18 +55,69 @@ class Index(list):
         'FIELD': '''
         [^%(COMMENT_TOKEN)s:\s]         # Non-comment and non-meta.
         (                               # Either
-         \\\\[%(FIELD_SEPARATORS)s]     #  escaped field separators
+                                        #  escaped field separators
+         \\\\[%(FIELD_SEPARATORS)s%(META_TOKEN)s] 
         |                               # or
-         [^%(FIELD_SEPARATORS)s]        #  non-field-separators
+                                        #  non-field-separators
+         [^%(FIELD_SEPARATORS)s%(META_TOKEN)s] 
         )+                              # repeated.
         ''',
         'FIELD_SEPARATORS': '\t,',
-        'CONCEPT_TYPES': '|'.join(__concept_types),
         'COMMENT_TOKEN': TOKEN_COMMENT,
         'META_TOKEN': TOKEN_ENTRY_META_INFO,
         }
     __re_macros['FIELD'] = __re_macros['FIELD'] % __re_macros
     
+    # Regular expressions, one pattern matcher for each context:
+    __concept_re = re.compile('''
+    ^                                   # Starts with
+    (?P<indent>\s+)?                    # (possible) indentation,
+    (?P<entry>%(FIELD)s)?               # an entry,
+    [%(FIELD_SEPARATORS)s]*             # a separator,
+    (?P<typeset_as>%(FIELD)s)?          # the full form,
+    [%(FIELD_SEPARATORS)s]*             # another separator,
+    (?P<meta>%(META_TOKEN)s.+)?         # meta information
+    $                                   # at the end.
+    ''' % __re_macros, re.VERBOSE)
+
+    __acronym_re = re.compile('''
+    ^                                   # Starts with
+    (?P<indent>\s+)?                    # (possible) indentation,
+    (?P<acronym>%(FIELD)s)?               # an entry,
+    [%(FIELD_SEPARATORS)s]*             # a separator,
+    (?P<full_form>%(FIELD)s)?           # the full form,
+    [%(FIELD_SEPARATORS)s]*             # another separator,
+    (?P<typeset_as>%(FIELD)s)?          # the full form,
+    [%(FIELD_SEPARATORS)s]*             # another separator,
+    (?P<meta>%(META_TOKEN)s.+)?         # meta information
+    $                                   # at the end.
+    ''' % __re_macros, re.VERBOSE)
+
+    __person_re = re.compile('''
+    ^                                   # Starts with
+    (?P<indent>\s+)?                    # (possible) indentation,
+    (?P<initials>%(FIELD)s)?               # an entry,
+    [%(FIELD_SEPARATORS)s]*             # a separator,
+    (?P<last_name>%(FIELD)s)?           # the full form,
+    [%(FIELD_SEPARATORS)s]*             # another separator,
+    (?P<first_name>%(FIELD)s)?          # the full form,
+    [%(FIELD_SEPARATORS)s]*             # another separator,
+    (?P<meta>%(META_TOKEN)s.+)?         # meta information
+    $                                   # at the end.
+    ''' % __re_macros, re.VERBOSE)
+
+    # A map between context names and the match patterns:
+    __context_matcher = {
+        'ACRONYMS': __acronym_re,
+        'CONCEPTS': __concept_re,
+        'PEOPLE': __person_re,
+        }
+
+    # Add a macro definition to the values available when constructing
+    # the regular expressions below.
+    __re_macros['CONCEPT_TYPES'] = '|'.join(__context_matcher.keys())
+
+    # A pattern to match meta directives:
     __meta_directive_re = re.compile('''
     ^                                   # Starts with
     %(COMMENT_TOKEN)s                   # the comment token,
@@ -81,29 +132,27 @@ class Index(list):
     \s*                                 # possibly trailing whitespace
     $                                   # at the end.
     ''' % __re_macros, re.VERBOSE)
-    
+
+    # A pattern to match comment-only lines.
     __pure_comment_re = re.compile('''
     ^                                   # Starts with
     \s*                                 # possibly some whitespace
     %(COMMENT_TOKEN)s                   # and the comment token,
     .*                                  # followed by anything.
     ''' % __re_macros, re.VERBOSE)
-    
-    __entry_re = re.compile('''
-    ^                                   # Starts with
-    (?P<indent>\s+)?                    # (possible) indentation,
-    (?P<entry>%(FIELD)s)?               # an entry,
-    [%(FIELD_SEPARATORS)s]*             # a separator,
-    (?P<full_form>%(FIELD)s)?           # the full form,
-    [%(FIELD_SEPARATORS)s]*             # another separator,
-    (?P<typeset_as>%(FIELD)s)?          # the full form,
-    (?P<meta>%(META_TOKEN)s.+)?         # meta information.
-    ''' % __re_macros, re.VERBOSE)
+
+    # A list used to instantiate the context dependent parser.
+    __matchers = [
+        __meta_directive_re,
+        __pure_comment_re,
+        None,               # The current context will be placed here.
+        ]
     
     def __init__(self, filename=None, index_name='default'):
         list.__init__(self)
         
         self.__name = index_name
+        self.__current_matchers = list(Index.__matchers)
         
     # Accessors for the 'name' property:
     def get_name(self):
@@ -118,25 +167,38 @@ class Index(list):
         if attribute:
             setattr(self, attribute, value)
         elif context:
-            self.__context = context
+            self.__context = context[1:-1]
+            print 'Switching context to: "%s"' % (self.__context, )
+            self.__matchers[-1] = self.__context_matcher[self.__context]
+            
 
     def handle_comment(self):
+        """Seriously, do nothing.
+        """
         pass
         
-    def handle_entry(self, **d):
-        print d
-        
+    def handle_acronym(self, acronym=None, full_form=None, typeset_as=None,
+                       indent=None, meta=None):
+        print indent and indent or '\r',
+        print acronym, full_form, typeset_as, meta
+
+    def handle_concept(self, entry=None, typeset_as=None,
+                       indent=None, meta=None):
+        print indent and indent or '\r',
+        print entry, typeset_as, meta
+
+
+    def handle_person(self, initials=None, last_name=None, first_name=None,
+                      indent=None, meta=None):
+        print initials, last_name, first_name
+
     __match_handler = {
         __meta_directive_re: handle_meta_directive,
         __pure_comment_re: handle_comment,
-        __entry_re: handle_entry,
+        __concept_re: handle_concept,
+        __acronym_re: handle_acronym,
+        __person_re: handle_person,
         }
-
-    __matchers = (
-        __meta_directive_re,
-        __pure_comment_re,
-        __entry_re,
-        )
     
     @classmethod
     def from_file(cls, filename):
@@ -148,8 +210,11 @@ class Index(list):
             if line.isspace():
                 continue
 
-            line = line.rstrip()        # Remove trailing whitespace.
+            # Remove trailing whitespace.
+            line = line.rstrip()        
             
+            # Parse the line trying different matchers.  Quit trying
+            # after the first applicable matcher is used.
             for matcher in self.__matchers:
                 for match in matcher.finditer(line):
                     self.__match_handler[matcher](self, **match.groupdict())
