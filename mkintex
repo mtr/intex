@@ -84,15 +84,15 @@ class Index(list):
             setattr(self, meta_directive['attribute'],
                     meta_directive['value'])
 
-  
+
+    match_handler = {
+        __meta_directive_re: handle_meta_directive,
+        # FIXME: Continue here!
+        }
+
     @classmethod
     def from_file(cls, filename):
         self = cls()
-
-        match_handler = {
-            self.__meta_directive_re: self.handle_meta_directive,
-            # FIXME: Continue here!
-            }
         
         stream = open(filename, 'r')
         
