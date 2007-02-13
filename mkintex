@@ -18,26 +18,52 @@ TOKEN_SHORT_PLURAL_FORM = '#'
 TOKEN_ENTRY_META_INFO   = ':'
 
 class IndexEntry(object):
+    def __init__(self, entries, parent):
+        entries.append(self)
+        self.__identity = (len(entries) - 1)
+        self.__entries = entries
+
+        logging.info('Added entry #%d.', self.identity)
+        
+    # Accessors for the 'identity' property (__-prefixed to force
+    # access through the property):
+    def __get_identity(self):
+        return self.__identity
+        
+    def __set_identity(self, identity):
+        self.__identity = identity
+        
+    identity = property(__get_identity, __set_identity, None,
+                        'The identity of the index.')
+    
     def to_latex(self):
         raise NotImplementedError
 
 class AcronymEntry(IndexEntry):
     def __init__(self, acronym, full_form, typeset_as=None,
-                 plural=None, index_as=None, sort_as=None):
-        self.__initials = initials
-        self.__last_name = last_name,
-        self.__first_name = first_name
+                 plural=None, index_as=None, sort_as=None, entries=None,
+                 parent =None):
+        IndexEntry.__init__(self, entries, parent)
+        
+        self.__acronym = acronym
+        self.__full_form = full_form
+        self.__typeset_as = typeset_as
 
 class PersonEntry(IndexEntry):
     def __init__(self, initials, last_name, first_name=None,
-                 index_as=None, sort_as=None):
+                 index_as=None, sort_as=None, entries=None, parent=None):
+        IndexEntry.__init__(self, entries, parent)
+        
         self.__initials = initials
-        self.__last_name = last_name,
+        self.__last_name = last_name
         self.__first_name = first_name
 
 class PlainEntry(IndexEntry):
     def __init__(self, concept,
-                 plural=None, index_as=None, sort_as=None):
+                 plural=None, index_as=None, sort_as=None, entries=None,
+                 parent=None):
+        IndexEntry.__init__(self, entries, parent)
+                
         self.__plural = plural
         self.__sub_entry = sub_entry
         
@@ -149,10 +175,19 @@ class Index(list):
         ]
     
     def __init__(self, filename=None, index_name='default'):
+        """The constructor.
+        """
         list.__init__(self)
         
         self.__name = index_name
         self.__current_matchers = list(Index.__matchers)
+
+        self.__indentation_level = {
+            '': 0,
+            }
+
+        self.__elements = []  # A stack of elements used when parsing.
+        self.__entries = []  # A list of all the entries in the index.
         
     # Accessors for the 'name' property (__-prefixed to force access
     # through the property):
@@ -174,25 +209,63 @@ class Index(list):
             self.__matchers[-1] = self.__context_matcher[self.__context]
 
     def handle_comment(self):
-        """Seriously, do nothing.
+        """Do nothing.  (Seriously.)
         """
         pass
+
+    def __get_indentation_level(self, indent):
+        if indent == None:
+            indent = ''
+            
+        # Make sure that indentation by tabs are expanded.
+        indent = indent.expandtabs()
+        
+        if indent not in self.__indentation_level:
+            if len(indent) < max(len(key) for key in self.__indentation_level):
+                # The indentation levels should be monotonically
+                # increasing.  The first time an indentation level is
+                # used, it is also defined and available for the rest
+                # of the session.
+                raise IndentationError, \
+                      'On line %d in file "%s:\n%s' \
+                      % ((self.__line_num + 1), self.__current_file,
+                         self.__current_line)
+            else:
+                self.__indentation_level[indent] = len(self.__indentation_level)
+                
+        return self.__indentation_level[indent]
         
     def handle_acronym(self, acronym=None, full_form=None, typeset_as=None,
                        indent=None, meta=None):
         print indent and indent or '\r',
         print acronym, full_form, typeset_as, meta
 
+    def __prepare_element_stack(self, indent):
+        level = self.__get_indentation_level(indent)
+
+        while level < len(self.__elements):
+            self.__elements.pop()
+        
     def handle_concept(self, entry=None, typeset_as=None,
                        indent=None, meta=None):
-        print indent and indent or '\r',
+        self.__prepare_element_stack(indent)
+        print 'stack:', self.__elements
+        #print '--' * level,
         print entry, typeset_as, meta
-
+        #self.__elements.append(entry)
 
     def handle_person(self, initials=None, last_name=None, first_name=None,
                       indent=None, meta=None):
-        print initials, last_name, first_name
+        self.__prepare_element_stack(indent)
 
+        parent = self.__elements and self.__elements[-1].identity or None
+            
+        self.__elements.append(PersonEntry(initials, last_name, first_name,
+                                           entries=self.__entries,
+                                           parent=parent))
+        
+        #self.__entries.append(self.__elements[-1])
+        
     __match_handler = {
         __meta_directive_re: handle_meta_directive,
         __pure_comment_re: handle_comment,
@@ -204,13 +277,19 @@ class Index(list):
     @classmethod
     def from_file(cls, filename):
         self = cls()
+
+        self.__current_file = filename
         
         stream = open(filename, 'r')
         
-        for line in stream:
+        for self.__line_num, line in enumerate(stream):
             if line.isspace():
                 continue
 
+            # Keep a copy of the original line (for error messages,
+            # etc.)
+            self.__current_line = line
+            
             # Remove trailing whitespace.
             line = line.rstrip()        
             
@@ -218,6 +297,8 @@ class Index(list):
             # after the first applicable matcher is used.
             for matcher in self.__matchers:
                 for match in matcher.finditer(line):
+                    # Call the appropriate handler, given the current
+                    # context.
                     self.__match_handler[matcher](self, **match.groupdict())
                     break               # To avoid the else clause.
                 else:
@@ -225,6 +306,8 @@ class Index(list):
                 break                   # Skip the remaining matchers.
             
         stream.close()            # Explicitly close the input stream.
+
+        self.__current_file = None
         
         return self
         
