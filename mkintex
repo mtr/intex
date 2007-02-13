@@ -22,8 +22,11 @@ class IndexEntry(object):
         entries.append(self)
         self.__identity = (len(entries) - 1)
         self.__entries = entries
-
-        logging.info('Added entry #%d.', self.identity)
+        self.__parent = parent
+        self.__children = set()
+        
+        logging.info('Added entry #%d (parent=%s).',
+                     self.identity, self.parent)
         
     # Accessors for the 'identity' property (__-prefixed to force
     # access through the property):
@@ -34,7 +37,33 @@ class IndexEntry(object):
         self.__identity = identity
         
     identity = property(__get_identity, __set_identity, None,
-                        'The identity of the index.')
+                        'The identity of this entry.')
+
+    # Accessors for the 'parent' property (__-prefixed to force
+    # access through the property):
+    def __get_parent(self):
+        if self.__parent == None:
+            return None
+        return self.__entries[self.__parent]
+        
+    def __set_parent(self, parent):
+        self.__parent = parent
+        
+    parent = property(__get_parent, __set_parent, None,
+                        'The parent of this entry.')
+
+    # Accessors for the 'children' property (__-prefixed to force
+    # access through the property):
+    def __get_children(self):
+        if self.__children == None:
+            return None
+        return self.__entries[self.__children]
+        
+    #def __set_parent(self, parent):
+    #    self.__parent = parent
+        
+    children = property(__get_children, None, None,
+                        'The children of this entry.')
     
     def to_latex(self):
         raise NotImplementedError
