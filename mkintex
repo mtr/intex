@@ -154,23 +154,24 @@ class Index(list):
         self.__name = index_name
         self.__current_matchers = list(Index.__matchers)
         
-    # Accessors for the 'name' property:
-    def get_name(self):
+    # Accessors for the 'name' property (__-prefixed to force access
+    # through the property):
+    def __get_name(self):
         return self.__name
         
-    def set_name(self, name):
+    def __set_name(self, name):
         self.__name = name
         
-    name = property(get_name, set_name, None, 'The name of the index.')
+    name = property(__get_name, __set_name, None, 'The name of the index.')
 
     def handle_meta_directive(self, attribute=None, value=None, context=None):
         if attribute:
+            # Set an attribute describing this index (e.g., its name).
             setattr(self, attribute, value)
         elif context:
             self.__context = context[1:-1]
-            print 'Switching context to: "%s"' % (self.__context, )
+            logging.info('Switching context to: "%s"', self.__context, )
             self.__matchers[-1] = self.__context_matcher[self.__context]
-            
 
     def handle_comment(self):
         """Seriously, do nothing.
@@ -278,11 +279,11 @@ def main():
 
     logging.root.name = os.path.basename(__file__)
 
-    if options.verbose:
-        logging.getLogger().setLevel(logging.INFO)
-
-    indices = [Index.from_file(filename) for filename in args]
+    # Configure the logging module.
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
+                        level=(options.verbose and logging.INFO or None))
     
+    indices = [Index.from_file(filename) for filename in args]
         
 if __name__ == "__main__":
     main()
