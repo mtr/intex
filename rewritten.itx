@@ -1,7 +1,8 @@
 % $Id$
 %
 % name=main
-% 
+% default_inflection=singular
+%
 % Copyright (C) 2007 by Martin Thorsen Ranang
 %
 
@@ -30,7 +31,11 @@ antonymy\, nisse
   :direct -
   :indirect -
 
-category :#y
+buses	:#+
+
+category
+
+cows	:#+
 
 % For the following entries, the parenthesis surrounding each '-'
 % indicates that the part signified by - should not be included in the

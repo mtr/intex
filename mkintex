@@ -5,7 +5,7 @@
 Copyright (C) 2007 by Martin Thorsen Ranang
 """
 __version__ = "$Rev$"
-__author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
+__author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 
 import logging
@@ -17,17 +17,32 @@ TOKEN_COMMENT           = '%'
 TOKEN_SHORT_PLURAL_FORM = '#'
 TOKEN_ENTRY_META_INFO   = ':'
 
+FIELD_SEPARATORS = '\t,'
+
 class IndexEntry(object):
-    def __init__(self, entries, parent):
-        entries.append(self)
-        self.__identity = (len(entries) - 1)
-        self.__entries = entries
+    (
+        META_PLURAL_FORM,
+        META_GIVEN_INFLECTION,
+        META_TEXT_VS_INDEX_HINT,
+    ) = ((1 << i) for i in xrange(3))
+    
+    __unescape_re = re.compile(r'(?P<pre>.*?)[\\](?P<post>[%s])' \
+                               % FIELD_SEPARATORS)
+        
+    def __init__(self, index, parent):
+        index.append(self)
+        self.__identity = (len(index) - 1)
+        self.__index = index
         self.__parent = parent
         self.__children = set()
-        
-        logging.info('Added entry #%d (parent=%s).',
-                     self.identity, self.parent)
-        
+
+        if self.parent:
+            # Include ourselves among our parent's children.
+            self.parent.add_child(self.__identity)
+
+    def unescape(self, string):
+        return self.__unescape_re.sub('\g<pre>\g<post>', string)
+    
     # Accessors for the 'identity' property (__-prefixed to force
     # access through the property):
     def __get_identity(self):
@@ -44,23 +59,22 @@ class IndexEntry(object):
     def __get_parent(self):
         if self.__parent == None:
             return None
-        return self.__entries[self.__parent]
+        return self.__index[self.__parent]
         
     def __set_parent(self, parent):
         self.__parent = parent
         
     parent = property(__get_parent, __set_parent, None,
-                        'The parent of this entry.')
+                      'The parent of this entry.')
 
+    def add_child(self, child_identity):
+        self.__children.add(child_identity)
+        
     # Accessors for the 'children' property (__-prefixed to force
     # access through the property):
     def __get_children(self):
-        if self.__children == None:
-            return None
-        return self.__entries[self.__children]
-        
-    #def __set_parent(self, parent):
-    #    self.__parent = parent
+        return [self.__index[child_id]
+                for child_id in sorted(self.__children)]
         
     children = property(__get_children, None, None,
                         'The children of this entry.')
@@ -69,35 +83,119 @@ class IndexEntry(object):
         raise NotImplementedError
 
 class AcronymEntry(IndexEntry):
-    def __init__(self, acronym, full_form, typeset_as=None,
-                 plural=None, index_as=None, sort_as=None, entries=None,
-                 parent =None):
-        IndexEntry.__init__(self, entries, parent)
+
+    def __init__(self, index, parent, acronym=None,
+                 full_form=None, typeset_as=None, plural=None,
+                 index_as=None, sort_as=None, meta=None, **rest):
+        # Register this entry in the INDEX, set our PARENT and if we
+        # do have a parent, add ourselves to that PARENT's set of
+        # children.
+        IndexEntry.__init__(self, index, parent)
         
         self.__acronym = acronym
         self.__full_form = full_form
         self.__typeset_as = typeset_as
 
+class ConceptEntry(IndexEntry):
+    __meta_split_re = re.compile(r'''
+    (?<![\\])              # If the previous token was not a "\", then
+    %s                     # match a TOKEN_ENTRY_META_INFO.
+    ''' % (TOKEN_ENTRY_META_INFO), re.VERBOSE)
+
+    def __init__(self, index, parent, concept=None,
+                 plural=None, index_as=None, sort_as=None, meta=None,
+                 **rest):
+        
+        IndexEntry.__init__(self, index, parent)
+
+        if concept:
+            self.__concept = self.unescape(concept.strip())
+        else:
+            self.__concept = ''
+
+        self.__meta = {}
+        if meta:
+            self.__parse_meta(meta.strip())
+        
+        self.__in_text = []
+        self.__in_index = []
+
+        self.__setup()
+
+        print self
+        
+    def __str__(self):
+        return self.__concept
+
+    @staticmethod
+    def __inflect(word, hint):
+        inflection_re = re.compile('''
+        ^                               # Starts with
+        (?P<stem>.*)                    # some stem, or base, 
+        (                               # followed by either
+         (?P<plural_suffix>s|ies)       #  a plural suffix
+         |                              # or
+         (?P<singular_suffix>y)         #  a plural suffix
+         #|                              # or
+         #(?P<singular_nonsuffix>[^y])   #  a plural non-suffix
+        )                               # 
+        $                               # at the end.
+        ''', re.VERBOSE)
+
+        inflection = {'y': 'ies', 's': 's'}
+        for match in inflection_re.finditer(word):
+            parts = match.groupdict()
+            if 'plural_suffix' in parts:
+                return parts['stem'] + hint
+            if 'singular_suffix' in parts:
+                return parts['stem'] + inflection[hint]
+        if hint == 'y':
+            if word.endswith('y'):
+                return word[:-1] + 'ies'
+            elif word.endswith('ies'):
+                return word[:-3] + 'y'
+            
+            
+    def __setup(self):
+        if self.__concept:
+            self.__in_text.append(self.__concept)
+
+            if self.META_PLURAL_FORM in self.__meta:
+                base = self.__in_text[0]
+                
+            if self.META_GIVEN_INFLECTION in self.__meta:
+                print self.__inflect(self.__in_text[0],
+                                     self.__meta[self.META_GIVEN_INFLECTION])
+            
+    def __parse_meta(self, meta):
+        parts = self.__meta_split_re.split(meta)
+
+        assert(parts[0] == '')
+        del parts[0]
+
+        for part in parts:
+            if not part:
+                logging.error('Unsuspected data in meta directive.')
+                
+            if not part.startswith('#'):
+                self.__meta[self.META_TEXT_VS_INDEX_HINT] = part
+                continue
+            
+            if len(part) == 2:
+                self.__meta[self.META_GIVEN_INFLECTION] = part[1:]
+            else:
+                self.__meta[self.META_PLURAL_FORM] = part[1:]
+            
+        print self.__meta
+        
 class PersonEntry(IndexEntry):
-    def __init__(self, initials, last_name, first_name=None,
-                 index_as=None, sort_as=None, entries=None, parent=None):
-        IndexEntry.__init__(self, entries, parent)
+    def __init__(self, index, parent, initials=None,
+                 last_name=None, first_name=None, index_as=None,
+                 sort_as=None, meta=None, **rest):
+        IndexEntry.__init__(self, index, parent)
         
         self.__initials = initials
         self.__last_name = last_name
-        self.__first_name = first_name
-
-class PlainEntry(IndexEntry):
-    def __init__(self, concept,
-                 plural=None, index_as=None, sort_as=None, entries=None,
-                 parent=None):
-        IndexEntry.__init__(self, entries, parent)
-                
-        self.__plural = plural
-        self.__sub_entry = sub_entry
-        
-        self.__initials = initials
-        self.__last_name = last_name,
         self.__first_name = first_name
         
 class Index(list):
@@ -117,7 +215,7 @@ class Index(list):
          [^%(FIELD_SEPARATORS)s%(META_TOKEN)s] 
         )+                              # repeated.
         ''',
-        'FIELD_SEPARATORS': '\t,',
+        'FIELD_SEPARATORS': FIELD_SEPARATORS,
         'COMMENT_TOKEN': TOKEN_COMMENT,
         'META_TOKEN': TOKEN_ENTRY_META_INFO,
         }
@@ -168,6 +266,12 @@ class Index(list):
         'PEOPLE': __person_re,
         }
 
+    __context_class = {
+        'ACRONYMS': AcronymEntry,
+        'CONCEPTS': ConceptEntry,
+        'PEOPLE': PersonEntry,
+        }
+        
     # Add a macro definition to the values available when constructing
     # the regular expressions below.
     __re_macros['CONCEPT_TYPES'] = '|'.join(__context_matcher.keys())
@@ -216,7 +320,7 @@ class Index(list):
             }
 
         self.__elements = []  # A stack of elements used when parsing.
-        self.__entries = []  # A list of all the entries in the index.
+        #self.__entries = []  # A list of all the entries in the index.
         
     # Accessors for the 'name' property (__-prefixed to force access
     # through the property):
@@ -233,15 +337,16 @@ class Index(list):
             # Set an attribute describing this index (e.g., its name).
             setattr(self, attribute, value)
         elif context:
-            self.__context = context[1:-1]
+            self.__context = context[1:-1] # Remove pre and post '*'s.
             logging.info('Switching context to: "%s"', self.__context, )
             self.__matchers[-1] = self.__context_matcher[self.__context]
-
+            self.__entry_class = self.__context_class[self.__context]
+            
     def handle_comment(self):
-        """Do nothing.  (Seriously.)
+        """Do nothing.  (Yes, seriously.)
         """
         pass
-
+    
     def __get_indentation_level(self, indent):
         if indent == None:
             indent = ''
@@ -263,44 +368,31 @@ class Index(list):
                 self.__indentation_level[indent] = len(self.__indentation_level)
                 
         return self.__indentation_level[indent]
-        
-    def handle_acronym(self, acronym=None, full_form=None, typeset_as=None,
-                       indent=None, meta=None):
-        print indent and indent or '\r',
-        print acronym, full_form, typeset_as, meta
 
     def __prepare_element_stack(self, indent):
         level = self.__get_indentation_level(indent)
 
         while level < len(self.__elements):
             self.__elements.pop()
-        
-    def handle_concept(self, entry=None, typeset_as=None,
-                       indent=None, meta=None):
-        self.__prepare_element_stack(indent)
-        print 'stack:', self.__elements
-        #print '--' * level,
-        print entry, typeset_as, meta
-        #self.__elements.append(entry)
 
-    def handle_person(self, initials=None, last_name=None, first_name=None,
-                      indent=None, meta=None):
-        self.__prepare_element_stack(indent)
-
-        parent = self.__elements and self.__elements[-1].identity or None
-            
-        self.__elements.append(PersonEntry(initials, last_name, first_name,
-                                           entries=self.__entries,
-                                           parent=parent))
+    def __get_current_parent(self):
+        return self.__elements and self.__elements[-1].identity or None
         
-        #self.__entries.append(self.__elements[-1])
+    def handle_entry(self, indent=None, **rest):
+        self.__prepare_element_stack(indent)
+        self.__elements.append(self.__entry_class(self,
+                                                  self.__get_current_parent(),
+                                                  **rest))
         
     __match_handler = {
         __meta_directive_re: handle_meta_directive,
         __pure_comment_re: handle_comment,
-        __concept_re: handle_concept,
-        __acronym_re: handle_acronym,
-        __person_re: handle_person,
+        __concept_re: handle_entry,
+        __acronym_re: handle_entry,
+        __person_re: handle_entry,
+        #__concept_re: handle_concept,
+        #__acronym_re: handle_acronym,
+        #__person_re: handle_person,
         }
     
     @classmethod
