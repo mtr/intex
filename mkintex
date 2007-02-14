@@ -32,7 +32,8 @@ class IndexEntry(object):
         'inflection_plural',
         'inflection_singular',
         ):
-        exec("%s='%s'" % (constant.upper(), constant))
+        exec("%s='%s'" % (constant.upper(),
+                          ''.join(constant.split('_', 1)[1:])))
 
     __shorthand_inflection = {
         '+': INFLECTION_PLURAL,
@@ -121,6 +122,14 @@ class IndexEntry(object):
         
     children = property(__get_children, None, None,
                         'The children of this entry.')
+
+    # Accessors for the 'index' property (__-prefixed to force
+    # access through the property):
+    def __get_index(self):
+        return self.__index
+
+    index = property(__get_index, None, None,
+                     'The index that this entry belongs to.')
     
     def to_latex(self):
         raise NotImplementedError
@@ -140,6 +149,22 @@ class AcronymEntry(IndexEntry):
         self.__typeset_as = typeset_as
 
 class ConceptEntry(IndexEntry):
+    # Note that the order is significant (also when the pairs are
+    # reversed below).
+    __plural_singular = [
+        ('ies', 'y'),
+        ('ses', 's'),
+        ('s', ''),
+        ]
+
+    __singular_plural = [(singular, plural)
+                         for plural, singular in __plural_singular]
+
+    __inflection_pair = {
+        IndexEntry.INFLECTION_PLURAL:   __plural_singular,
+        IndexEntry.INFLECTION_SINGULAR: __singular_plural,
+        }
+    
     def __init__(self, index, parent, concept=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
                  **rest):
@@ -194,33 +219,6 @@ class ConceptEntry(IndexEntry):
             elif word.endswith('ies'):
                 return word[:-3] + 'y'
 
-    # Note that the order is significant (also when the pairs are
-    # reversed below).
-    __plural_singular = [
-        ('ies', 'y'),
-        ('ses', 's'),
-        ('s', ''),
-        ]
-
-    __singular_plural = [(singular, plural)
-                         for plural, singular in __plural_singular]
-    
-#     def inflect_singular(self, plural):
-#         for plural_suffix, singular_suffix in self.__plural_singular:
-#             if plural.endswith(plural_suffix):
-#                 offset = (- len(plural_suffix)) or None
-#                 return plural[:offset] + singular_suffix
-            
-#         return plural
-
-#     def inflect_plural(self, plural):
-#         for plural_suffix, singular_suffix in self.__singular_plural:
-#             if plural.endswith(plural_suffix):
-#                 offset = (- len(plural_suffix)) or None
-#                 return plural[:offset] + singular_suffix
-            
-#         return plural
-
     def change_inflection(self, word, inflection_pairs):
         for suffix, replacement in inflection_pairs:
             if word.endswith(suffix):
@@ -228,31 +226,22 @@ class ConceptEntry(IndexEntry):
                 return word[:offset] + replacement
             
         return word
-    
-#     __inflect_other = {
-#         IndexEntry.INFLECTION_PLURAL: inflect_singular,
-#         IndexEntry.INFLECTION_SINGULAR: inflect_plural,
-#         }
-
-    __inflection_pair = {
-        IndexEntry.INFLECTION_PLURAL:   __plural_singular,
-        IndexEntry.INFLECTION_SINGULAR: __singular_plural,
-        }
 
     def __setup(self):
         print self.__concept
         if self.__concept:
             self.__in_text.append(self.__concept)
-
+            
             if self.META_GIVEN_INFLECTION in self.__meta:
-                given_inflection = self.__meta[self.META_GIVEN_INFLECTION]
-                #self.__in_text.append(\
-                #    self.__inflect_other[given_inflection](self,
-                #                                           self.__in_text[0]))
+                current_inflection = self.__meta[self.META_GIVEN_INFLECTION]
+            else:
+                current_inflection = self.index.default_inflection
 
-                self.__in_text.append(\
+            inflection_pairs = self.__inflection_pair[current_inflection]
+            
+            self.__in_text.append(\
                     self.change_inflection(self.__in_text[0],
-                                           self.__inflection_pair[given_inflection]))
+                                           inflection_pairs))
                         
             #for key, value in self.__meta.items():
             #    if key == self.META_GIVEN_INFLECTION:
