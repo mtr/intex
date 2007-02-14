@@ -23,11 +23,11 @@ JFK	Kennedy, John Fitzgerald
 MLK	King, Martin Luther
 
 % *CONCEPTS*
-antonym	:#s
+antonym	:#-
   :direct -
   :indirect -
     :perhaps
-antonymy\, nisse
+antonymy
   :direct -
   :indirect -
 
@@ -40,8 +40,8 @@ cows	:#+
 % For the following entries, the parenthesis surrounding each '-'
 % indicates that the part signified by - should not be included in the
 % index.
-example :#s
-  :positive (-) :#y
+example
+  :positive (-)
   :negative (-)
 
 % Local Variables: 

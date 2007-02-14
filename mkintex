@@ -24,13 +24,16 @@ class IndexEntry(object):
     # as an all-uppercase "constant".  That is 'this_value' is
     # assigned to __class__.THIS_VALUE.
     for constant in (
-        # Different meta fields.
+        # Different meta fields:
         'meta_plural_form',
         'meta_given_inflection',
         'meta_text_vs_index_hint',
-        # Some inflection values.
+        # Some inflection values:
         'inflection_plural',
         'inflection_singular',
+        # Meaning of placeholders:
+        'placeholder_in_text_and_index',
+        'placeholder_in_text_only',
         ):
         exec("%s='%s'" % (constant.upper(),
                           ''.join(constant.split('_', 1)[1:])))
@@ -164,6 +167,11 @@ class ConceptEntry(IndexEntry):
         IndexEntry.INFLECTION_PLURAL:   __plural_singular,
         IndexEntry.INFLECTION_SINGULAR: __singular_plural,
         }
+
+    placeholder_meaning = {
+        '-':   IndexEntry.PLACEHOLDER_IN_TEXT_AND_INDEX,
+        '(-)': IndexEntry.PLACEHOLDER_IN_TEXT_ONLY,
+        }
     
     def __init__(self, index, parent, concept=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
@@ -189,35 +197,7 @@ class ConceptEntry(IndexEntry):
         print self
         
     def __str__(self):
-        return '{' + ', '.join(map(repr, self.__in_text)) + '}'
-
-    @staticmethod
-    def __inflect(word, hint):
-        inflection_re = re.compile('''
-        ^                               # Starts with
-        (?P<stem>.*)                    # some stem, or base, 
-        (                               # followed by either
-         (?P<plural_suffix>s|ies)       #  a plural suffix
-         |                              # or
-         (?P<singular_suffix>y)         #  a plural suffix
-         #|                              # or
-         #(?P<singular_nonsuffix>[^y])   #  a plural non-suffix
-        )                               # 
-        $                               # at the end.
-        ''', re.VERBOSE)
-
-        inflection = {'y': 'ies', 's': 's'}
-        for match in inflection_re.finditer(word):
-            parts = match.groupdict()
-            if 'plural_suffix' in parts:
-                return parts['stem'] + hint
-            if 'singular_suffix' in parts:
-                return parts['stem'] + inflection[hint]
-        if hint == 'y':
-            if word.endswith('y'):
-                return word[:-1] + 'ies'
-            elif word.endswith('ies'):
-                return word[:-3] + 'y'
+        return 'in_text: {' + ', '.join(map(repr, self.__in_text)) + '}'
 
     def change_inflection(self, word, inflection_pairs):
         for suffix, replacement in inflection_pairs:
@@ -228,7 +208,7 @@ class ConceptEntry(IndexEntry):
         return word
 
     def __setup(self):
-        print self.__concept
+            
         if self.__concept:
             self.__in_text.append(self.__concept)
             
@@ -243,12 +223,25 @@ class ConceptEntry(IndexEntry):
                     self.change_inflection(self.__in_text[0],
                                            inflection_pairs))
                         
-            #for key, value in self.__meta.items():
-            #    if key == self.META_GIVEN_INFLECTION:
-            #        print self.__inflect(self.__in_text[0],
-            #                             self.__meta[self.META_GIVEN_INFLECTION])
-            
-        
+        elif self.__meta[self.META_TEXT_VS_INDEX_HINT]:
+            hint_re = re.compile('''
+            (?P<placeholder>
+              \(%(placeholder)s\)?
+             |
+              %(placeholder)s
+            )
+            ''' % {'placeholder': '-'}, re.VERBOSE)
+
+            template = self.__meta[self.META_TEXT_VS_INDEX_HINT]
+            for match in hint_re.finditer(template):
+                placeholder = match.group('placeholder')
+                i, j = match.span('placeholder')
+                self.__in_text.extend([
+                    template[:i] + variant + template[j:]
+                    for variant in  self.parent.__in_text])
+                
+                print template[i:j]
+                
 class PersonEntry(IndexEntry):
     def __init__(self, index, parent, initials=None,
                  last_name=None, first_name=None, index_as=None,
