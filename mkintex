@@ -25,10 +25,15 @@ class IndexEntry(object):
         META_GIVEN_INFLECTION,
         META_TEXT_VS_INDEX_HINT,
     ) = ((1 << i) for i in xrange(3))
+
+    (
+        INFLECTION_PLURAL,
+        INFLECTION_SINGULAR,
+    ) = ((1 << i) for i in xrange(2))
     
     __unescape_re = re.compile(r'(?P<pre>.*?)[\\](?P<post>[%s])' \
                                % FIELD_SEPARATORS)
-        
+    
     def __init__(self, index, parent):
         index.append(self)
         self.__identity = (len(index) - 1)
@@ -102,6 +107,11 @@ class ConceptEntry(IndexEntry):
     %s                     # match a TOKEN_ENTRY_META_INFO.
     ''' % (TOKEN_ENTRY_META_INFO), re.VERBOSE)
 
+    __shorthand_inflection = {
+        '+': INFLECTION_PLURAL,
+        '-': INFLECTION_SINGULAR,
+        }
+
     def __init__(self, index, parent, concept=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
                  **rest):
@@ -170,6 +180,7 @@ class ConceptEntry(IndexEntry):
     def __parse_meta(self, meta):
         parts = self.__meta_split_re.split(meta)
 
+      
         assert(parts[0] == '')
         del parts[0]
 
