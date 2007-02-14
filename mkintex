@@ -168,11 +168,14 @@ class ConceptEntry(IndexEntry):
         IndexEntry.INFLECTION_SINGULAR: __singular_plural,
         }
 
-    placeholder_meaning = {
+    __placeholder_meaning = {
         '-':   IndexEntry.PLACEHOLDER_IN_TEXT_AND_INDEX,
         '(-)': IndexEntry.PLACEHOLDER_IN_TEXT_ONLY,
         }
-    
+
+    __hint_re = re.compile('(?P<placeholder>%s)' \
+                           % '|'.join(map(re.escape, __placeholder_meaning)))
+        
     def __init__(self, index, parent, concept=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
                  **rest):
@@ -224,16 +227,8 @@ class ConceptEntry(IndexEntry):
                                            inflection_pairs))
                         
         elif self.__meta[self.META_TEXT_VS_INDEX_HINT]:
-            hint_re = re.compile('''
-            (?P<placeholder>
-              \(%(placeholder)s\)?
-             |
-              %(placeholder)s
-            )
-            ''' % {'placeholder': '-'}, re.VERBOSE)
-
             template = self.__meta[self.META_TEXT_VS_INDEX_HINT]
-            for match in hint_re.finditer(template):
+            for match in self.__hint_re.finditer(template):
                 placeholder = match.group('placeholder')
                 i, j = match.span('placeholder')
                 self.__in_text.extend([
