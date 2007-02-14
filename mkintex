@@ -20,19 +20,32 @@ TOKEN_ENTRY_META_INFO   = ':'
 FIELD_SEPARATORS = '\t,'
 
 class IndexEntry(object):
-    (
-        META_PLURAL_FORM,
-        META_GIVEN_INFLECTION,
-        META_TEXT_VS_INDEX_HINT,
-    ) = ((1 << i) for i in xrange(3))
+    # Define a number of class constants, each string will be defined
+    # as an all-uppercase "constant".  That is 'this_value' is
+    # assigned to __class__.THIS_VALUE.
+    for constant in (
+        # Different meta fields.
+        'meta_plural_form',
+        'meta_given_inflection',
+        'meta_text_vs_index_hint',
+        # Some inflection values.
+        'inflection_plural',
+        'inflection_singular',
+        ):
+        exec("%s='%s'" % (constant.upper(), constant))
 
-    (
-        INFLECTION_PLURAL,
-        INFLECTION_SINGULAR,
-    ) = ((1 << i) for i in xrange(2))
+    __shorthand_inflection = {
+        '+': INFLECTION_PLURAL,
+        '-': INFLECTION_SINGULAR,
+        }
     
     __unescape_re = re.compile(r'(?P<pre>.*?)[\\](?P<post>[%s])' \
                                % FIELD_SEPARATORS)
+
+    __meta_split_re = re.compile(r'''
+    (?<![\\])              # If the previous token was not a "\", then
+    %s                     # match a TOKEN_ENTRY_META_INFO.
+    ''' % (TOKEN_ENTRY_META_INFO), re.VERBOSE)
     
     def __init__(self, index, parent):
         index.append(self)
@@ -44,6 +57,31 @@ class IndexEntry(object):
         if self.parent:
             # Include ourselves among our parent's children.
             self.parent.add_child(self.__identity)
+
+    def parse_meta(self, meta):
+        parts = self.__meta_split_re.split(meta)
+        
+        info = dict()
+        
+        assert(parts[0] == '')
+
+        for part in parts[1:]:
+            if not part:
+                logging.error('Unsuspected data in meta directive.')
+                
+            if not part.startswith('#'):
+                info[self.META_TEXT_VS_INDEX_HINT] = part
+                continue
+            
+            if len(part) == 2:
+                assert(part[-1] in self.__shorthand_inflection)
+                info[self.META_GIVEN_INFLECTION] = \
+                            self.__shorthand_inflection[part[1:]]
+                
+            else:
+                info[self.META_PLURAL_FORM] = part[1:]
+            
+        return info
 
     def unescape(self, string):
         return self.__unescape_re.sub('\g<pre>\g<post>', string)
@@ -102,16 +140,6 @@ class AcronymEntry(IndexEntry):
         self.__typeset_as = typeset_as
 
 class ConceptEntry(IndexEntry):
-    __meta_split_re = re.compile(r'''
-    (?<![\\])              # If the previous token was not a "\", then
-    %s                     # match a TOKEN_ENTRY_META_INFO.
-    ''' % (TOKEN_ENTRY_META_INFO), re.VERBOSE)
-
-    __shorthand_inflection = {
-        '+': INFLECTION_PLURAL,
-        '-': INFLECTION_SINGULAR,
-        }
-
     def __init__(self, index, parent, concept=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
                  **rest):
@@ -123,10 +151,11 @@ class ConceptEntry(IndexEntry):
         else:
             self.__concept = ''
 
-        self.__meta = {}
         if meta:
-            self.__parse_meta(meta.strip())
-        
+            self.__meta = self.parse_meta(meta.strip())
+        else:
+            self.__meta = dict()
+            
         self.__in_text = []
         self.__in_index = []
 
@@ -135,7 +164,7 @@ class ConceptEntry(IndexEntry):
         print self
         
     def __str__(self):
-        return self.__concept
+        return '{' + ', '.join(map(repr, self.__in_text)) + '}'
 
     @staticmethod
     def __inflect(word, hint):
@@ -164,40 +193,72 @@ class ConceptEntry(IndexEntry):
                 return word[:-1] + 'ies'
             elif word.endswith('ies'):
                 return word[:-3] + 'y'
+
+    # Note that the order is significant (also when the pairs are
+    # reversed below).
+    __plural_singular = [
+        ('ies', 'y'),
+        ('ses', 's'),
+        ('s', ''),
+        ]
+
+    __singular_plural = [(singular, plural)
+                         for plural, singular in __plural_singular]
+    
+#     def inflect_singular(self, plural):
+#         for plural_suffix, singular_suffix in self.__plural_singular:
+#             if plural.endswith(plural_suffix):
+#                 offset = (- len(plural_suffix)) or None
+#                 return plural[:offset] + singular_suffix
             
+#         return plural
+
+#     def inflect_plural(self, plural):
+#         for plural_suffix, singular_suffix in self.__singular_plural:
+#             if plural.endswith(plural_suffix):
+#                 offset = (- len(plural_suffix)) or None
+#                 return plural[:offset] + singular_suffix
             
+#         return plural
+
+    def change_inflection(self, word, inflection_pairs):
+        for suffix, replacement in inflection_pairs:
+            if word.endswith(suffix):
+                offset = (- len(suffix)) or None
+                return word[:offset] + replacement
+            
+        return word
+    
+#     __inflect_other = {
+#         IndexEntry.INFLECTION_PLURAL: inflect_singular,
+#         IndexEntry.INFLECTION_SINGULAR: inflect_plural,
+#         }
+
+    __inflection_pair = {
+        IndexEntry.INFLECTION_PLURAL:   __plural_singular,
+        IndexEntry.INFLECTION_SINGULAR: __singular_plural,
+        }
+
     def __setup(self):
+        print self.__concept
         if self.__concept:
             self.__in_text.append(self.__concept)
 
-            if self.META_PLURAL_FORM in self.__meta:
-                base = self.__in_text[0]
-                
             if self.META_GIVEN_INFLECTION in self.__meta:
-                print self.__inflect(self.__in_text[0],
-                                     self.__meta[self.META_GIVEN_INFLECTION])
-            
-    def __parse_meta(self, meta):
-        parts = self.__meta_split_re.split(meta)
+                given_inflection = self.__meta[self.META_GIVEN_INFLECTION]
+                #self.__in_text.append(\
+                #    self.__inflect_other[given_inflection](self,
+                #                                           self.__in_text[0]))
 
-      
-        assert(parts[0] == '')
-        del parts[0]
-
-        for part in parts:
-            if not part:
-                logging.error('Unsuspected data in meta directive.')
-                
-            if not part.startswith('#'):
-                self.__meta[self.META_TEXT_VS_INDEX_HINT] = part
-                continue
+                self.__in_text.append(\
+                    self.change_inflection(self.__in_text[0],
+                                           self.__inflection_pair[given_inflection]))
+                        
+            #for key, value in self.__meta.items():
+            #    if key == self.META_GIVEN_INFLECTION:
+            #        print self.__inflect(self.__in_text[0],
+            #                             self.__meta[self.META_GIVEN_INFLECTION])
             
-            if len(part) == 2:
-                self.__meta[self.META_GIVEN_INFLECTION] = part[1:]
-            else:
-                self.__meta[self.META_PLURAL_FORM] = part[1:]
-            
-        print self.__meta
         
 class PersonEntry(IndexEntry):
     def __init__(self, index, parent, initials=None,
@@ -236,7 +297,7 @@ class Index(list):
     __concept_re = re.compile('''
     ^                                   # Starts with
     (?P<indent>\s+)?                    # (possible) indentation,
-    (?P<entry>%(FIELD)s)?               # an entry,
+    (?P<concept>%(FIELD)s)?             # an entry,
     [%(FIELD_SEPARATORS)s]*             # a separator,
     (?P<typeset_as>%(FIELD)s)?          # the full form,
     [%(FIELD_SEPARATORS)s]*             # another separator,
