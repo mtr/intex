@@ -9,8 +9,8 @@
 % *ACRONYMS*
 DAG	directed acyclic graph
 GNU	GNU is not Unix
-H2O	dihydrogen monoxide	H$_{2}$O
-WN20	WordNet 2.0     WN 2.0
+H2O@H$_{2}$O	dihydrogen monoxide
+WN20@(WN 2.0)	WordNet 2.0
 % The following entry should support both \co{XML} and
 % \co{XML-format}.  The resulting index should have the following
 % entries:
@@ -43,6 +43,12 @@ cows	:#+
 example
   :positive (-)
   :negative (-)
+
+InTeX@{\InTeX}
+  :- example@Xample
+
+LaTeX@{\LaTeX}
+  :- macros
 
 % Local Variables: 
 % mode: latex

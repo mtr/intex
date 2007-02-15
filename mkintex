@@ -19,6 +19,13 @@ TOKEN_ENTRY_META_INFO   = ':'
 
 FIELD_SEPARATORS = '\t,'
 
+def normalize(string, token=None):
+    """Returns a new string where multiple consecutive occurences of
+    TOKEN have been replaced by a single occurence.  If TOKEN is None,
+    it is interpreted as white-space.
+    """
+    return (token or ' ').join(string.split(token))
+
 class IndexEntry(object):
     # Define a number of class constants, each string will be defined
     # as an all-uppercase "constant".  That is 'this_value' is
@@ -46,6 +53,8 @@ class IndexEntry(object):
     __unescape_re = re.compile(r'(?P<pre>.*?)[\\](?P<post>[%s])' \
                                % FIELD_SEPARATORS)
 
+    # Regular expression for splitting inside meta-fields, but taking
+    # care of not splitting on escaped "split-tokens".
     __meta_split_re = re.compile(r'''
     (?<![\\])              # If the previous token was not a "\", then
     %s                     # match a TOKEN_ENTRY_META_INFO.
@@ -179,7 +188,6 @@ class ConceptEntry(IndexEntry):
     def __init__(self, index, parent, concept=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
                  **rest):
-        
         IndexEntry.__init__(self, index, parent)
 
         if concept:
@@ -193,8 +201,10 @@ class ConceptEntry(IndexEntry):
             self.__meta = dict()
             
         self.__in_text = []
+        self.__typeset_in_text = []
         self.__in_index = []
-
+        self.__typeset_in_index = []
+        
         self.__setup()
         
         print self
@@ -215,7 +225,6 @@ class ConceptEntry(IndexEntry):
         return word
 
     def __setup(self):
-            
         if self.__concept:
             self.__in_text.append(self.__concept)
             
@@ -229,16 +238,26 @@ class ConceptEntry(IndexEntry):
             self.__in_text.append(\
                     self.change_inflection(self.__in_text[0],
                                            inflection_pairs))
-                        
+            
         elif self.__meta[self.META_TEXT_VS_INDEX_HINT]:
             template = self.__meta[self.META_TEXT_VS_INDEX_HINT]
             for match in self.__hint_re.finditer(template):
                 placeholder = match.group('placeholder')
                 i, j = match.span('placeholder')
-                self.__in_text.extend([
-                    template[:i] + variant + template[j:]
-                    for variant in  self.parent.__in_text])
-                
+                for variant in  self.parent.__in_text:
+                    # Construct the new phrase.
+                    phrase = template[:i] + variant + template[j:]
+                    
+                    # Add the new phrase to the in-text variants.
+                    self.__in_text.append(phrase)
+                    
+                    if self.__placeholder_meaning[placeholder] \
+                           == self.PLACEHOLDER_IN_TEXT_AND_INDEX:
+                        self.__in_index.append(phrase)
+                    else:
+                        normalized = normalize(template[:i] + template[j:])
+                        self.__in_index.append(normalized)
+                        
                 print template[i:j]
                 
 class PersonEntry(IndexEntry):
