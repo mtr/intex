@@ -5,7 +5,7 @@
 Copyright (C) 2007 by Linpro AS
 """
 __revision__ = "$Rev$"
-__author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
+__author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 for value in ['A', 'B', 'c']:
     exec('%s="%s"' % (value, value))
@@ -13,11 +13,20 @@ for value in ['A', 'B', 'c']:
 import re
 
 class MiniParser(object):
-    __scope_open_re = re.compile()
+    __delimiter_pair = {
+        '(': ')',
+        '{': '}',
+        }
+    
+    __scope_open_re = re.compile('''
+    (?<![\\])                           # Do not match escaped tokens.
+    [%s]                                # Any of the scope openers. 
+    ''' % (''.join(__delimiter_pair), re.VERBOSE)
+    
     def parse(self, string):
         # A stack of opened scopes.
         opened_scopes = []
-
+        
         
         
 
