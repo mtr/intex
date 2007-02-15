@@ -196,11 +196,15 @@ class ConceptEntry(IndexEntry):
         self.__in_index = []
 
         self.__setup()
-
+        
         print self
         
     def __str__(self):
-        return 'in_text: {' + ', '.join(map(repr, self.__in_text)) + '}'
+        return '\n'.join(description + ': {' \
+                         + ', '.join(map(repr, variants)) + '}'
+                         for description, variants \
+                         in [('in_text', self.__in_text),
+                             ('in_index', self.__in_index),])
 
     def change_inflection(self, word, inflection_pairs):
         for suffix, replacement in inflection_pairs:
@@ -460,7 +464,7 @@ class Index(list):
             # etc.)
             self.__current_line = line
             
-            # Remove trailing whitespace.
+            # Remove trailing white-space.
             line = line.rstrip()        
             
             # Parse the line trying different matchers.  Quit trying
