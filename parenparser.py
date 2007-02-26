@@ -10,18 +10,26 @@ __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 import re
 
+class UnexpectedClosingError(ValueError):
+    """Error indicating that an ParenParser detected an unexpected
+    closing.
+    """ 
+    pass
+
 class ParenParser(object):
     ESCAPE_TOKEN = '\\'
 
     __default_paren_pair = {
         '(': ')',
         '{': '}',
+        '[': ']',
         }
     
     def __init__(self, paren_pair=__default_paren_pair):
         self.__paren_pair = paren_pair
+        self.__closings = set(self.__paren_pair.values())
         
-    def __setup(self):
+    def __reset(self):
         self.__consecutive_escapes = 0  # The number of consecutive escapes.
         self.__opened_scopes = []       # A stack of opened scopes.
         self.__expected_closing = None
@@ -34,7 +42,7 @@ class ParenParser(object):
             self.__expected_closing = None
         
     def get_scope_spans(self, string):
-        self.__setup()
+        self.__reset()
         
         for i in xrange(len(string)):
             token = string[i]
@@ -43,14 +51,27 @@ class ParenParser(object):
                 self.__consecutive_escapes += 1
                 continue
             
-            # If the CONSECUTIVE_ESCAPES is zero or odd...
+            # If the current TOKEN is not escaped; that is, the
+            # __CONSECUTIVE_ESCAPES is zero or odd (bit-wise "& 1")...
             if not (self.__consecutive_escapes & 1):
+                # If the TOKEN is an expected closing...
                 if token == self.__expected_closing:
-                    # Yield the start and end index for the closing scope.
+                    # Yield the start and end index for the closing
+                    # scope.
                     yield self.__opened_scopes.pop()[1], (i + 1)
                     
                     self.__update_expected_closing()
-                    
+
+                # If TOKEN is an unexpected closing...
+                elif token in self.__closings:
+                    reason = "received unexpected closing '%s' at " \
+                             "input position %d:\n%s\n" \
+                             "Expected closing was '%s'." \
+                             % (token, i, string[self.__opened_scopes[-1][1]:i],
+                                self.__expected_closing)
+                    raise UnexpectedClosingError, reason
+                
+                # If TOKEN is a legal opening token...
                 elif (token in self.__paren_pair):
                     self.__opened_scopes.append((token, i))
                     self.__update_expected_closing()
@@ -60,13 +81,24 @@ class ParenParser(object):
 
 def main():
     """Module mainline (for standalone execution)."""
-    strings = ['H2O@H$_{2}$O', 'ABC@($a$, {$b$^$c$})', 'LaTeX@{\LaTeX}']
+    latex_tests = ['H2O@H$_{2}$O', 'ABC@($a$, {$b$^$c$})', 'LaTeX@{\LaTeX}']
 
+    tests_fail = [
+        '(])',
+        '{)}',
+        '[)]',
+        ]
+    
     p = ParenParser()
     
-    for string in strings:
+    for string in latex_tests:
         for i, j in p.get_scope_spans(string):
             print string[i:j]
+
+    for string in tests_fail:
+        for i, j in p.get_scope_spans(string):
+            print string[i:j]
+
         
 if __name__ == "__main__":
     main()
