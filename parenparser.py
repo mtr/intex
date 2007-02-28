@@ -41,10 +41,10 @@ class ParenParser(object):
         else:
             self.__expected_closing = None
         
-    def get_scope_spans(self, string):
+    def get_scope_spans(self, string, start_index=0):
         self.__reset()
         
-        for i in xrange(len(string)):
+        for i in xrange(start_index, len(string)):
             token = string[i]
             
             if token == self.ESCAPE_TOKEN:
@@ -64,10 +64,12 @@ class ParenParser(object):
 
                 # If TOKEN is an unexpected closing...
                 elif token in self.__closings:
-                    reason = "received unexpected closing '%s' at " \
-                             "input position %d:\n%s\n" \
+                    j = self.__opened_scopes[-1][1]
+                    reason = "Received unexpected closing '%s' at " \
+                             "input position %d.  " \
+                             "Input (from position %d):\n%s\n" \
                              "Expected closing was '%s'." \
-                             % (token, i, string[self.__opened_scopes[-1][1]:i],
+                             % (token, i, j, string[j:(i + 1)],
                                 self.__expected_closing)
                     raise UnexpectedClosingError, reason
                 
