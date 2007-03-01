@@ -12,14 +12,12 @@ import unittest
 
 def cartesian(*sequences):
     """Returns the cartesian product of the SEQUENCES.
-
-    Written by Guido van Rossum.
     """
     if len(sequences) == 0:
         yield []
     else:
         head, tail = sequences[:-1], sequences[-1]
-        tail = list(tail)          # <--- This is what I was proposing
+        tail = list(tail)
         for x in cartesian(*head):
             for y in tail:
                 yield x + [y]
@@ -32,7 +30,6 @@ class SimpleParenParserTestCase(unittest.TestCase):
         ]
 
     closing = dict(matching_pairs)
-    opening = dict((right, left) for (left, right) in matching_pairs)
     
     def setUp(self):
         self.parser = parenparser.ParenParser()
@@ -70,12 +67,24 @@ class NestedScopesTestCase(SimpleParenParserTestCase):
                 
             self.assertEqual(indices,
                              list(self.get_all_indices(''.join(combo))))
-            
+
+class LaTeXTestCase(SimpleParenParserTestCase):
+    def runTest(self):
+        # Find all the scopes in each string, innermost scopes first.
+        for string, scopes in [
+            ('H2O@H$_{2}$O', ['{2}']),
+            ('ABC@($a$, {$b$^$c$})', ['{$b$^$c$}', '($a$, {$b$^$c$})']),
+            ('LaTeX@{\LaTeX}', ['{\LaTeX}']),
+            ]:
+            for k, (i, j) in enumerate(self.get_all_indices(string)):
+                self.assertEqual(scopes[k], string[i:j])
+                
 class ParenParserTestSuite(unittest.TestSuite):
     def __init__(self):
         unittest.TestSuite.__init__(self, [
             NonMatchingClosingTestCase(),
             NestedScopesTestCase(),
+            LaTeXTestCase(),
             ])
         
 def main():

@@ -82,25 +82,9 @@ class ParenParser(object):
             self.__consecutive_escapes = 0
 
 def main():
-    """Module mainline (for standalone execution)."""
-    latex_tests = ['H2O@H$_{2}$O', 'ABC@($a$, {$b$^$c$})', 'LaTeX@{\LaTeX}']
-
-    tests_fail = [
-        '(])',
-        '{)}',
-        '[)]',
-        ]
-    
-    p = ParenParser()
-    
-    for string in latex_tests:
-        for i, j in p.get_scope_spans(string):
-            print string[i:j]
-
-    for string in tests_fail:
-        for i, j in p.get_scope_spans(string):
-            print string[i:j]
-
+    """Module mainline (for standalone execution).
+    """
+    pass
         
 if __name__ == "__main__":
     main()
