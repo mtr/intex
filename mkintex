@@ -13,6 +13,8 @@ import optparse
 import os
 import re
 
+from parenparser import ParenParser
+
 TOKEN_COMMENT           = '%'
 TOKEN_SHORT_PLURAL_FORM = '#'
 TOKEN_ENTRY_META_INFO   = ':'

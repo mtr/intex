@@ -81,10 +81,51 @@ class ParenParser(object):
             # Reset the escape-token counter.
             self.__consecutive_escapes = 0
 
+    def isplit(self, string, separator=None, maxsplit=None):
+        """Returns a generator that yields the words in STRING, using
+        SEPARATOR as the delimiter string and respecting scopes
+        defined by parenthesis.  If maxsplit is given, at most
+        maxsplit splits are done.
+        """
+        # Make sure only outermost scopes are considered.
+        indices = sorted(self.get_scope_spans(string))
+        removable = []
+        current_scope = None
+        for k in xrange(len(indices)):
+            if (not current_scope) or (current_scope[1] < indices[k][0]):
+                current_scope = indices[k]
+                continue
+            
+            removable.append(k)
+
+        for k in reversed(removable):
+            del indices[k]
+        
+        k = None
+        
+        for i, j in indices:
+            yield string[k:i]
+            k = j
+
+        if k < len(string):
+            yield string[k:None]
+            
+    def split(self, string, separator=None, maxsplit=None):
+        """Returns a list containing the results from the generator
+        returned by isplit().
+        """
+        return list(self.isplit(string, separator, maxsplit))
+    
 def main():
     """Module mainline (for standalone execution).
     """
-    pass
+    p = ParenParser()
+    
+    for string in [
+        'Hello, my (little one).  You are (should I say) a funny person.',
+        'Hello, my {(little one).  You} are (should I say) a funny person.',
+        ]:
+        print p.split(string)
         
 if __name__ == "__main__":
     main()
