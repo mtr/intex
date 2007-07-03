@@ -506,11 +506,11 @@ class Index(list):
         
         return self
         
-def parse_command_line(command_line_options):
+def parse_command_line(command_line_options, usage):
     """Parse the command line according to the possible
     COMMAND_LINE_OPTIONS.
     """
-    parser = optparse.OptionParser(usage='%prog [options]...',
+    parser = optparse.OptionParser(usage=usage,
                                    version='%%prog %s' % (__version__))
     for option, description in command_line_options:
         parser.add_option(*option, **description)
@@ -553,15 +553,21 @@ def main():
           'help': 'whether or not to output verbose information'}),
         ]
 
-    options, args = parse_command_line(command_line_options)
+    # Parse the command line options.
+    options, args = parse_command_line(command_line_options,
+                                       usage='%%prog [options] ' \
+                                       '<index> [index ...]',)
 
+    # Sort out the name for the basic log.
     logging.root.name = os.path.basename(__file__)
-
+    
     # Configure the logging module.
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         level=(options.verbose and logging.INFO or None))
-    
+
+    # Instatiate one Index object per file specified on the command
+    # line.
     indices = [Index.from_file(filename) for filename in args]
-        
+    
 if __name__ == "__main__":
     main()
