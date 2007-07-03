@@ -16,12 +16,12 @@ from index_entry import AcronymEntry, ConceptEntry, PersonEntry
 
 
 class Index(list):
-    __concept_types = ['ACRONYMS', 'PEOPLE', 'CONCEPTS']
-    __index_attrbiutes = {
+    _concept_types = ['ACRONYMS', 'PEOPLE', 'CONCEPTS']
+    _index_attrbiutes = {
         'name': None,
         }
 
-    __re_macros = {
+    _re_macros = {
         'FIELD': '''
         [^%(COMMENT_TOKEN)s:\s]         # Non-comment and non-meta.
         (                               # Either
@@ -36,10 +36,10 @@ class Index(list):
         'COMMENT_TOKEN': TOKEN_COMMENT,
         'META_TOKEN': TOKEN_ENTRY_META_INFO,
         }
-    __re_macros['FIELD'] = __re_macros['FIELD'] % __re_macros
+    _re_macros['FIELD'] = _re_macros['FIELD'] % _re_macros
     
     # Regular expressions, one pattern matcher for each context:
-    __concept_re = re.compile('''
+    _concept_re = re.compile('''
     ^                                   # Starts with
     (?P<indent>\s+)?                    # (possible) indentation,
     (?P<concept>%(FIELD)s)?             # an entry,
@@ -48,9 +48,9 @@ class Index(list):
     [%(FIELD_SEPARATORS)s]*             # another separator,
     (?P<meta>%(META_TOKEN)s.+)?         # meta information
     $                                   # at the end.
-    ''' % __re_macros, re.VERBOSE)
+    ''' % _re_macros, re.VERBOSE)
 
-    __acronym_re = re.compile('''
+    _acronym_re = re.compile('''
     ^                                     # Starts with
     (?P<indent>\s+)?                      # (possible) indentation,
     (?P<acronym>%(FIELD)s)?               # an entry,
@@ -61,9 +61,9 @@ class Index(list):
     [%(FIELD_SEPARATORS)s]*               # another separator,
     (?P<meta>%(META_TOKEN)s.+)?           # meta information
     $                                     # at the end.
-    ''' % __re_macros, re.VERBOSE)
+    ''' % _re_macros, re.VERBOSE)
 
-    __person_re = re.compile('''
+    _person_re = re.compile('''
     ^                                      # Starts with
     (?P<indent>\s+)?                       # (possible) indentation,
     (?P<initials>%(FIELD)s)?               # an entry,
@@ -74,16 +74,16 @@ class Index(list):
     [%(FIELD_SEPARATORS)s]*                # another separator,
     (?P<meta>%(META_TOKEN)s.+)?            # meta information
     $                                      # at the end.
-    ''' % __re_macros, re.VERBOSE)
+    ''' % _re_macros, re.VERBOSE)
 
     # A map between context names and the match patterns:
-    __context_matcher = {
-        'ACRONYMS': __acronym_re,
-        'CONCEPTS': __concept_re,
-        'PEOPLE': __person_re,
+    _context_matcher = {
+        'ACRONYMS': _acronym_re,
+        'CONCEPTS': _concept_re,
+        'PEOPLE': _person_re,
         }
 
-    __context_class = {
+    _context_class = {
         'ACRONYMS': AcronymEntry,
         'CONCEPTS': ConceptEntry,
         'PEOPLE': PersonEntry,
@@ -91,10 +91,10 @@ class Index(list):
         
     # Add a macro definition to the values available when constructing
     # the regular expressions below.
-    __re_macros['CONCEPT_TYPES'] = '|'.join(__context_matcher.keys())
+    _re_macros['CONCEPT_TYPES'] = '|'.join(_context_matcher.keys())
 
     # A pattern to match meta directives:
-    __meta_directive_re = re.compile('''
+    _meta_directive_re = re.compile('''
     ^                                   # Starts with
     %(COMMENT_TOKEN)s                   # the comment token,
     \s*                                 # possibly some whitespace,
@@ -107,145 +107,148 @@ class Index(list):
     )                                   # followed by
     \s*                                 # possibly trailing whitespace
     $                                   # at the end.
-    ''' % __re_macros, re.VERBOSE)
+    ''' % _re_macros, re.VERBOSE)
 
     # A pattern to match comment-only lines.
-    __pure_comment_re = re.compile('''
+    _pure_comment_re = re.compile('''
     ^                                   # Starts with
     \s*                                 # possibly some whitespace
     %(COMMENT_TOKEN)s                   # and the comment token,
     .*                                  # followed by anything.
-    ''' % __re_macros, re.VERBOSE)
+    ''' % _re_macros, re.VERBOSE)
 
     # A list used to instantiate the context dependent parser.
-    __matchers = [
-        __meta_directive_re,
-        __pure_comment_re,
+    _matchers = [
+        _meta_directive_re,             # For matching meta directives.
+        _pure_comment_re,               # For matching pure comments.
         None,               # The current context will be placed here.
         ]
     
     def __init__(self, filename=None, index_name='default'):
         """The constructor.
         """
-        list.__init__(self)
+        list.__init__(self)             # Initialize the base class.
         
-        self.__name = index_name
-        self.__current_matchers = list(Index.__matchers)
-
-        self.__indentation_level = {
+        self._name = index_name # FIXME:  The index's name for use in/by ...
+        self._current_matchers = list(Index._matchers)
+        
+        self._indentation_level = {
             '': 0,
             }
-
-        self.__elements = []  # A stack of elements used when parsing.
+        
+        self._elements = []  # A stack of elements used when parsing.
         #self.__entries = []  # A list of all the entries in the index.
         
-    # Accessors for the 'name' property (__-prefixed to force access
+    # Accessors for the 'name' property (_-prefixed to force access
     # through the property):
-    def __get_name(self):
-        return self.__name
+    def _get_name(self):
+        return self._name
         
-    def __set_name(self, name):
-        self.__name = name
+    def _set_name(self, name):
+        self._name = name
         
-    name = property(__get_name, __set_name, None, 'The name of the index.')
+    name = property(_get_name, _set_name, None, 'The name of the index.')
 
     def handle_meta_directive(self, attribute=None, value=None, context=None):
         if attribute:
             # Set an attribute describing this index (e.g., its name).
             setattr(self, attribute, value)
         elif context:
-            self.__context = context[1:-1] # Remove pre and post '*'s.
-            logging.info('Switching context to: "%s"', self.__context, )
-            self.__matchers[-1] = self.__context_matcher[self.__context]
-            self.__entry_class = self.__context_class[self.__context]
+            self._context = context[1:-1] # Remove pre and post '*'s.
+            logging.info('Switching context to: "%s"', self._context, )
+            self._matchers[-1] = self._context_matcher[self._context]
+            self._entry_class = self._context_class[self._context]
             
     def handle_comment(self):
         """Do nothing.  (Yes, seriously.)
         """
         pass
     
-    def __get_indentation_level(self, indent):
+    def _get_indentation_level(self, indent):
         if indent == None:
             indent = ''
             
         # Make sure that indentation by tabs are expanded.
         indent = indent.expandtabs()
         
-        if indent not in self.__indentation_level:
-            if len(indent) < max(len(key) for key in self.__indentation_level):
+        if indent not in self._indentation_level:
+            if len(indent) < max(len(key) for key in self._indentation_level):
                 # The indentation levels should be monotonically
                 # increasing.  The first time an indentation level is
                 # used, it is also defined and available for the rest
                 # of the session.
                 raise IndentationError, \
                       'On line %d in file "%s:\n%s' \
-                      % ((self.__line_num + 1), self.__current_file,
-                         self.__current_line)
+                      % ((self._line_num + 1), self._current_file,
+                         self._current_line)
             else:
-                self.__indentation_level[indent] = len(self.__indentation_level)
+                self._indentation_level[indent] = len(self._indentation_level)
                 
-        return self.__indentation_level[indent]
+        return self._indentation_level[indent]
 
-    def __prepare_element_stack(self, indent):
-        level = self.__get_indentation_level(indent)
+    def _prepare_element_stack(self, indent):
+        level = self._get_indentation_level(indent)
 
-        while level < len(self.__elements):
-            self.__elements.pop()
+        while level < len(self._elements):
+            self._elements.pop()
 
-    def __get_current_parent(self):
-        return self.__elements and self.__elements[-1].identity or None
+    def _get_current_parent(self):
+        return self._elements and self._elements[-1].identity or None
         
     def handle_entry(self, indent=None, **rest):
-        self.__prepare_element_stack(indent)
-        self.__elements.append(self.__entry_class(self,
-                                                  self.__get_current_parent(),
+        self._prepare_element_stack(indent)
+        self._elements.append(self._entry_class(self,
+                                                  self._get_current_parent(),
                                                   **rest))
         
-    __match_handler = {
-        __meta_directive_re: handle_meta_directive,
-        __pure_comment_re: handle_comment,
-        __concept_re: handle_entry,
-        __acronym_re: handle_entry,
-        __person_re: handle_entry,
-        #__concept_re: handle_concept,
-        #__acronym_re: handle_acronym,
-        #__person_re: handle_person,
+    _match_handler = {
+        _meta_directive_re: handle_meta_directive,
+        _pure_comment_re: handle_comment,
+        _concept_re: handle_entry,
+        _acronym_re: handle_entry,
+        _person_re: handle_entry,
+        #_concept_re: handle_concept,
+        #_acronym_re: handle_acronym,
+        #_person_re: handle_person,
         }
     
     @classmethod
     def from_file(cls, filename):
         self = cls()
 
-        self.__current_file = filename
+        self._current_file = filename
         
         stream = open(filename, 'r')
         
-        for self.__line_num, line in enumerate(stream):
+        for self._line_num, line in enumerate(stream):
+            # Ignore whitespace-only lines.
             if line.isspace():
                 continue
-
+            
             # Keep a copy of the original line (for error messages,
             # etc.)
-            self.__current_line = line
+            self._current_line = line
             
             # Remove trailing white-space.
             line = line.rstrip()        
             
             # Parse the line trying different matchers.  Quit trying
             # after the first applicable matcher is used.
-            for matcher in self.__matchers:
+            for matcher in self._matchers:
                 for match in matcher.finditer(line):
                     # Call the appropriate handler, given the current
                     # context.
-                    self.__match_handler[matcher](self, **match.groupdict())
+                    self._match_handler[matcher](self, **match.groupdict())
                     break               # To avoid the else clause.
                 else:
-                    continue            # The matcher didn't apply.
+                    continue            # The matcher didn't apply, so
+                                        # let's try the next one.
+                
                 break                   # Skip the remaining matchers.
             
         stream.close()            # Explicitly close the input stream.
 
-        self.__current_file = None
+        self._current_file = None
         
         return self
 

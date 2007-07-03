@@ -6,17 +6,49 @@
 % Copyright (C) 2007 by Martin Thorsen Ranang
 %
 
+% In general, to refer to the full-form of a concept, use the \cof
+% macro.
+%
 % *ACRONYMS*
+%                   	SHORT FORM		FULL FORM
+%   - referred to as	\co{DAG}
+%   - sorted as 	"DAG"			"directed acyclic graph"
+%   - typeset as 	"DAG" 			"directed acyclic graph"
 DAG	directed acyclic graph
+
 GNU	GNU is not Unix
+
+%                   	SHORT FORM		FULL FORM
+%   - referred to as	\co{H2O}
+%   - sorted as 	"H2O"			"dihydrogen monoxide"
+%   - typeset as 	"H$_{2}$O"		"dihydrogen monoxide"
 H2O@H$_{2}$O	dihydrogen monoxide
+
+%                   	SHORT FORM		FULL FORM
+%   - referred to as	\co{LL}
+%   - sorted as 	"LL"			"LaTeX Lover"
+%   - typeset as 	"LL"			"\LaTeX Lover"
+LL	(LaTeX Lover)@{\LaTeX Lover}
+
+%                   	SHORT FORM		FULL FORM
+%   - referred to as	\co{WN20}
+%   - sorted as 	"WN20"			"WordNet 2.0"
+%   - typeset as 	"WN 2.0"		"WordNet 2.0"
+% Hence, the parentheses are used for keeping multiple words gathered.
 WN20@(WN 2.0)	WordNet 2.0
-% The following entry should support both \co{XML} and
-% \co{XML-format}.  The resulting index should have the following
-% entries:
-%   
+
+%                   	SHORT FORM		FULL FORM
+%   - referred to as	\co{XML}
 XML	Extensible Markup Language
+%   - referred to as	\co{XML-format}		\cof{XML-format}
+%   - sorted as 	"XML, format"		"XML, format"
   :-format
+% The resulting index should have the following entries:
+%   
+% * Extensible Markup Language <pages>,
+%     -format <pages>
+%
+% * XML, see Extensible Markup Language
 
 % *PEOPLE*
 JFK	Kennedy, John Fitzgerald
