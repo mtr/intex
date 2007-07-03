@@ -8,6 +8,7 @@ __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
 __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
+import logging
 import re
 
 from config import FIELD_SEPARATORS, TOKEN_COMMENT, TOKEN_ENTRY_META_INFO

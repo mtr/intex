@@ -1,6 +1,6 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
-# $Id: makeintex 336 2006-04-13 12:25:43Z mtr $
+# $Id$
 """
 MakeInTeX, a program for easeing the creation of consistent indices in
 LaTeX.
@@ -8,7 +8,7 @@ LaTeX.
 Copyright (C) 2005, 2006 by Martin Thorsen Ranang
 """
 
-__revision__ = "$Rev: 336 $"
+__revision__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
 from itertools import (chain, count, cycle, ifilter, ifilterfalse,
