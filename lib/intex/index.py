@@ -13,7 +13,7 @@ import re
 
 from config import FIELD_SEPARATORS, TOKEN_COMMENT, TOKEN_ENTRY_META_INFO
 from index_entry import AcronymEntry, ConceptEntry, PersonEntry
-
+from stack import Stack
 
 class Index(list):
     _concept_types = ['ACRONYMS', 'PEOPLE', 'CONCEPTS']
@@ -36,6 +36,9 @@ class Index(list):
         'COMMENT_TOKEN': TOKEN_COMMENT,
         'META_TOKEN': TOKEN_ENTRY_META_INFO,
         }
+    # Instantiate/format the FIELD macro value by supplying the other
+    # (i.e., FIELD_SEPARATORS, COMMENT_TOKEN, and META_TOKEN) mappings
+    # in _RE_MACROS.
     _re_macros['FIELD'] = _re_macros['FIELD'] % _re_macros
     
     # Regular expressions, one pattern matcher for each context:
@@ -136,7 +139,7 @@ class Index(list):
             '': 0,
             }
         
-        self._elements = []  # A stack of elements used when parsing.
+        self._elements = Stack()  # A stack of elements used when parsing.
         #self.__entries = []  # A list of all the entries in the index.
         
     # Accessors for the 'name' property (_-prefixed to force access
@@ -185,21 +188,24 @@ class Index(list):
                 self._indentation_level[indent] = len(self._indentation_level)
                 
         return self._indentation_level[indent]
-
-    def _prepare_element_stack(self, indent):
-        level = self._get_indentation_level(indent)
-
-        while level < len(self._elements):
-            self._elements.pop()
-
+    
     def _get_current_parent(self):
         return self._elements and self._elements[-1].identity or None
-        
+    
     def handle_entry(self, indent=None, **rest):
-        self._prepare_element_stack(indent)
-        self._elements.append(self._entry_class(self,
-                                                  self._get_current_parent(),
-                                                  **rest))
+        indent_level = self._get_indentation_level(indent)
+        
+        # Reduce the _ELEMENTS stack until its length equals the
+        # current INDENT_LEVEL.
+        while indent_level < len(self._elements):
+            self._elements.pop()
+
+        # Push the new entry onto the stack.  The current _ENTRY_CLASS
+        # is set by the different meta directives (see
+        # handle_meta_directive()).
+        self._elements.push(self._entry_class(index=self,
+                                              parent=self._get_current_parent(),
+                                              **rest))
         
     _match_handler = {
         _meta_directive_re: handle_meta_directive,
@@ -207,9 +213,6 @@ class Index(list):
         _concept_re: handle_entry,
         _acronym_re: handle_entry,
         _person_re: handle_entry,
-        #_concept_re: handle_concept,
-        #_acronym_re: handle_acronym,
-        #_person_re: handle_person,
         }
     
     @classmethod
@@ -247,11 +250,10 @@ class Index(list):
                 break                   # Skip the remaining matchers.
             
         stream.close()            # Explicitly close the input stream.
-
+        
         self._current_file = None
         
         return self
-
 
 def main():
     """Module mainline (for standalone execution)."""

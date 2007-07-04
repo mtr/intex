@@ -8,6 +8,7 @@ __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
 __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
+import logging
 import re
 
 from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO
@@ -19,7 +20,7 @@ def normalize(string, token=None):
     """
     return (token or ' ').join(string.split(token))
 
-class IndexEntry(object):
+class Entry(object):
     # Define a number of class constants, each string will be defined
     # as an all-uppercase "constant".  That is 'this_value' is
     # assigned to __class__.THIS_VALUE.
@@ -38,34 +39,34 @@ class IndexEntry(object):
         exec("%s='%s'" % (constant.upper(),
                           ''.join(constant.split('_', 1)[1:])))
 
-    __shorthand_inflection = {
+    _shorthand_inflection = {
         '+': INFLECTION_PLURAL,
         '-': INFLECTION_SINGULAR,
         }
     
-    __unescape_re = re.compile(r'(?P<pre>.*?)[\\](?P<post>[%s])' \
+    _unescape_re = re.compile(r'(?P<pre>.*?)[\\](?P<post>[%s])' \
                                % FIELD_SEPARATORS)
 
     # Regular expression for splitting inside meta-fields, but taking
     # care of not splitting on escaped "split-tokens".
-    __meta_split_re = re.compile(r'''
+    _meta_split_re = re.compile(r'''
     (?<![\\])              # If the previous token was not a "\", then
     %s                     # match a TOKEN_ENTRY_META_INFO.
     ''' % (TOKEN_ENTRY_META_INFO), re.VERBOSE)
     
     def __init__(self, index, parent):
         index.append(self)
-        self.__identity = (len(index) - 1)
-        self.__index = index
-        self.__parent = parent
-        self.__children = set()
+        self._identity = (len(index) - 1)
+        self._index = index
+        self._parent = parent
+        self._children = set()
 
         if self.parent:
             # Include ourselves among our parent's children.
-            self.parent.add_child(self.__identity)
+            self.parent.add_child(self._identity)
 
     def parse_meta(self, meta):
-        parts = self.__meta_split_re.split(meta)
+        parts = self._meta_split_re.split(meta)
         
         info = dict()
         
@@ -80,66 +81,66 @@ class IndexEntry(object):
                 continue
             
             if len(part) == 2:
-                assert(part[-1] in self.__shorthand_inflection)
+                assert(part[-1] in self._shorthand_inflection)
                 info[self.META_GIVEN_INFLECTION] = \
-                            self.__shorthand_inflection[part[1:]]
+                                         self._shorthand_inflection[part[1:]]
                 
             else:
                 info[self.META_PLURAL_FORM] = part[1:]
-            
+                
         return info
 
     def unescape(self, string):
-        return self.__unescape_re.sub('\g<pre>\g<post>', string)
+        return self._unescape_re.sub('\g<pre>\g<post>', string)
     
-    # Accessors for the 'identity' property (__-prefixed to force
+    # Accessors for the 'identity' property (_-prefixed to force
     # access through the property):
-    def __get_identity(self):
-        return self.__identity
+    def _get_identity(self):
+        return self._identity
         
-    def __set_identity(self, identity):
-        self.__identity = identity
+    def _set_identity(self, identity):
+        self._identity = identity
         
-    identity = property(__get_identity, __set_identity, None,
+    identity = property(_get_identity, _set_identity, None,
                         'The identity of this entry.')
 
-    # Accessors for the 'parent' property (__-prefixed to force
+    # Accessors for the 'parent' property (_-prefixed to force
     # access through the property):
-    def __get_parent(self):
-        if self.__parent == None:
+    def _get_parent(self):
+        if self._parent == None:
             return None
-        return self.__index[self.__parent]
+        return self._index[self._parent]
         
-    def __set_parent(self, parent):
-        self.__parent = parent
+    def _set_parent(self, parent):
+        self._parent = parent
         
-    parent = property(__get_parent, __set_parent, None,
+    parent = property(_get_parent, _set_parent, None,
                       'The parent of this entry.')
 
     def add_child(self, child_identity):
-        self.__children.add(child_identity)
+        self._children.add(child_identity)
         
-    # Accessors for the 'children' property (__-prefixed to force
+    # Accessors for the 'children' property (_-prefixed to force
     # access through the property):
-    def __get_children(self):
-        return [self.__index[child_id]
-                for child_id in sorted(self.__children)]
+    def _get_children(self):
+        return [self._index[child_id]
+                for child_id in sorted(self._children)]
         
-    children = property(__get_children, None, None,
+    children = property(_get_children, None, None,
                         'The children of this entry.')
 
-    # Accessors for the 'index' property (__-prefixed to force
+    # Accessors for the 'index' property (_-prefixed to force
     # access through the property):
-    def __get_index(self):
-        return self.__index
+    def _get_index(self):
+        return self._index
 
-    index = property(__get_index, None, None,
+    index = property(_get_index, None, None,
                      'The index that this entry belongs to.')
     
     def to_latex(self):
         raise NotImplementedError
 
-class AcronymEntry(IndexEntry):
+class AcronymEntry(Entry):
 
     def __init__(self, index, parent, acronym=None,
                  full_form=None, typeset_as=None, plural=None,
@@ -147,58 +148,60 @@ class AcronymEntry(IndexEntry):
         # Register this entry in the INDEX, set our PARENT and if we
         # do have a parent, add ourselves to that PARENT's set of
         # children.
-        IndexEntry.__init__(self, index, parent)
+        Entry.__init__(self, index, parent)
         
-        self.__acronym = acronym
-        self.__full_form = full_form
-        self.__typeset_as = typeset_as
+        self._acronym = acronym
+        self._full_form = full_form
+        self._typeset_as = typeset_as
 
-class ConceptEntry(IndexEntry):
+class ConceptEntry(Entry):
     # Note that the order is significant (also when the pairs are
     # reversed below).
-    __plural_singular = [
+    _plural_to_singular = [
         ('ies', 'y'),
         ('ses', 's'),
         ('s', ''),
         ]
 
-    __singular_plural = [(singular, plural)
-                         for plural, singular in __plural_singular]
+    _singular_to_plural = [(singular, plural)
+                           for plural, singular in _plural_to_singular]
 
-    __inflection_pair = {
-        IndexEntry.INFLECTION_PLURAL:   __plural_singular,
-        IndexEntry.INFLECTION_SINGULAR: __singular_plural,
+    _inflection_pair = {
+        Entry.INFLECTION_PLURAL:   _plural_to_singular,
+        Entry.INFLECTION_SINGULAR: _singular_to_plural,
+        }
+    
+    _placeholder_meaning = {
+        '-':   Entry.PLACEHOLDER_IN_TEXT_AND_INDEX,
+        '(-)': Entry.PLACEHOLDER_IN_TEXT_ONLY,
         }
 
-    __placeholder_meaning = {
-        '-':   IndexEntry.PLACEHOLDER_IN_TEXT_AND_INDEX,
-        '(-)': IndexEntry.PLACEHOLDER_IN_TEXT_ONLY,
-        }
-
-    __hint_re = re.compile('(?P<placeholder>%s)' \
-                           % '|'.join(map(re.escape, __placeholder_meaning)))
+    _hint_re = re.compile('(?P<placeholder>%s)' \
+                           % '|'.join(map(re.escape, _placeholder_meaning)))
         
     def __init__(self, index, parent, concept=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
                  **rest):
-        IndexEntry.__init__(self, index, parent)
+        Entry.__init__(self, index, parent)
 
         if concept:
-            self.__concept = self.unescape(concept.strip())
+            self._concept = self.unescape(concept.strip())
         else:
-            self.__concept = ''
+            self._concept = ''
 
         if meta:
-            self.__meta = self.parse_meta(meta.strip())
+            self._meta = self.parse_meta(meta.strip())
         else:
-            self.__meta = dict()
+            self._meta = dict()
             
-        self.__in_text = []
-        self.__typeset_in_text = []
-        self.__in_index = []
-        self.__typeset_in_index = []
+        self._in_text = []
+        self._typeset_in_text = []
+        self._in_index = []
+        self._typeset_in_index = []
         
-        self.__setup()
+        self._setup()
+
+        logging.info('concept: "%s".', self._concept)
         
         print self
         
@@ -206,8 +209,8 @@ class ConceptEntry(IndexEntry):
         return '\n'.join(description + ': {' \
                          + ', '.join(map(repr, variants)) + '}'
                          for description, variants \
-                         in [('in_text', self.__in_text),
-                             ('in_index', self.__in_index),])
+                         in [('in_text', self._in_text),
+                             ('in_index', self._in_index),])
 
     def change_inflection(self, word, inflection_pairs):
         for suffix, replacement in inflection_pairs:
@@ -217,51 +220,51 @@ class ConceptEntry(IndexEntry):
             
         return word
 
-    def __setup(self):
-        if self.__concept:
-            self.__in_text.append(self.__concept)
+    def _setup(self):
+        if self._concept:
+            self._in_text.append(self._concept)
             
-            if self.META_GIVEN_INFLECTION in self.__meta:
-                current_inflection = self.__meta[self.META_GIVEN_INFLECTION]
+            if self.META_GIVEN_INFLECTION in self._meta:
+                current_inflection = self._meta[self.META_GIVEN_INFLECTION]
             else:
                 current_inflection = self.index.default_inflection
 
-            inflection_pairs = self.__inflection_pair[current_inflection]
+            inflection_pairs = self._inflection_pair[current_inflection]
             
-            self.__in_text.append(\
-                    self.change_inflection(self.__in_text[0],
+            self._in_text.append(\
+                    self.change_inflection(self._in_text[0],
                                            inflection_pairs))
             
-        elif self.__meta[self.META_TEXT_VS_INDEX_HINT]:
-            template = self.__meta[self.META_TEXT_VS_INDEX_HINT]
-            for match in self.__hint_re.finditer(template):
+        elif self._meta[self.META_TEXT_VS_INDEX_HINT]:
+            template = self._meta[self.META_TEXT_VS_INDEX_HINT]
+            for match in self._hint_re.finditer(template):
                 placeholder = match.group('placeholder')
                 i, j = match.span('placeholder')
-                for variant in  self.parent.__in_text:
+                for variant in  self.parent._in_text:
                     # Construct the new phrase.
                     phrase = template[:i] + variant + template[j:]
                     
                     # Add the new phrase to the in-text variants.
-                    self.__in_text.append(phrase)
+                    self._in_text.append(phrase)
                     
-                    if self.__placeholder_meaning[placeholder] \
+                    if self._placeholder_meaning[placeholder] \
                            == self.PLACEHOLDER_IN_TEXT_AND_INDEX:
-                        self.__in_index.append(phrase)
+                        self._in_index.append(phrase)
                     else:
                         normalized = normalize(template[:i] + template[j:])
-                        self.__in_index.append(normalized)
+                        self._in_index.append(normalized)
                         
                 print template[i:j]
                 
-class PersonEntry(IndexEntry):
+class PersonEntry(Entry):
     def __init__(self, index, parent, initials=None,
                  last_name=None, first_name=None, index_as=None,
                  sort_as=None, meta=None, **rest):
-        IndexEntry.__init__(self, index, parent)
+        Entry.__init__(self, index, parent)
         
-        self.__initials = initials
-        self.__last_name = last_name
-        self.__first_name = first_name
+        self._initials = initials
+        self._last_name = last_name
+        self._first_name = first_name
 
 
 def main():
