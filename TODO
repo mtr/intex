@@ -1,0 +1,11 @@
+TODO List for InTeX			 -*- mode: org; -*-
+
+* TODO Define all possibly needed variants of each concept.
+** The different axis include:
+    1. "typeset as" (full-form/short-form)
+    2. "inflection" (singular/plural)
+    3. "sort as"
+
+** All entries should be typeset identically in the text and in the index.
+
+#+STARTUP: hidestars
