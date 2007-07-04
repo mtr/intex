@@ -12,7 +12,7 @@ import logging
 import re
 
 from config import FIELD_SEPARATORS, TOKEN_COMMENT, TOKEN_ENTRY_META_INFO
-from index_entry import AcronymEntry, ConceptEntry, PersonEntry
+from entry import AcronymEntry, ConceptEntry, PersonEntry
 from stack import Stack
 
 class Index(list):
