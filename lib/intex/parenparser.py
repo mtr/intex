@@ -152,7 +152,15 @@ class ParenParser(object):
             k = j
 
         return result
-    
+
+    def strip(self, string, valid_left_sides=''.join(__default_paren_pair)):
+        if (len(string) > 1) \
+           and (string[0] in valid_left_sides) \
+           and (string[-1] in self.__default_paren_pair[string[0]]):
+            return string[1:-1]
+        else:
+            return string
+        
 def main():
     """Module mainline (for standalone execution).
     """

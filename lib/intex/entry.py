@@ -13,7 +13,7 @@ import logging
 import re
 
 from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO, TOKEN_TYPESET_AS
-from parenparser import ParenParser, remove_inner_scopes
+from parenparser import ParenParser#, remove_inner_scopes
 
 def normalize(string, token=None):
     """Returns a new string where multiple consecutive occurences of
@@ -23,7 +23,7 @@ def normalize(string, token=None):
     return (token or ' ').join(string.split(token))
 
 class Entry(object):
-    parenparser = ParenParser()
+    paren_parser = ParenParser()
     
     # Define a number of class constants, each string will be defined
     # as an all-uppercase "constant".  That is 'this_value' is
@@ -95,6 +95,8 @@ class Entry(object):
         return info
 
     def unescape(self, string):
+        """Unescapes escaped field separators.
+        """
         return self._unescape_re.sub('\g<pre>\g<post>', string)
     
     # Accessors for the 'identity' property (_-prefixed to force
@@ -189,6 +191,8 @@ class ConceptEntry(Entry):
         Entry.__init__(self, index, parent)
 
         if concept:
+            # Unescape escaped field separators.  Other escaped tokens
+            # are kept in escaped form.
             concept = self.unescape(concept.strip())
         else:
             concept = ''
@@ -224,20 +228,39 @@ class ConceptEntry(Entry):
             
         return word
 
-    def generate_reference_and_typeset(self, string):
-        print string
-        scopes = sorted(self.parenparser.get_scope_spans(string))
+    def escape_aware_split(self, string, delimiter=None, maxsplit=None):
+        parts = self.paren_parser.split(string, delimiter, maxsplit)
 
-        outer_scopes = dict(remove_inner_scopes(scopes))
+        for i, part in reversed(list(enumerate(parts))):
+            if part[-1] == '\\':
+                parts[i] = '@'.join((parts[i], parts[i + 1]))
+                del parts[i + 1]
+                
+        return parts
+    
+    def generate_reference_and_typeset(self, string):
+        parts = [self.paren_parser.strip(part, '([')
+                 for part in self.paren_parser.split(string)]
+
+        reference = []
+        typeset = []
         
-        for n, token in enumerate(string):
-            if token == TOKEN_TYPESET_AS:
-                if (n + 1) in outer_scopes:
-                    j = outer_scopes[(n + 1)]
-                    print string[n+1:j]
-            
-        print outer_scopes
-        
+        for part in parts:
+            # FIXME: At the time this was written 2007-07-05,
+            # ParenParser.split did not honor its MAXSPLIT argument (1
+            # below).
+            alternatives = [self.paren_parser.strip(alternative, '([')
+                            for alternative
+                            in self.escape_aware_split(part,
+                                                       TOKEN_TYPESET_AS, 1)]
+            reference.append(alternatives[0])
+            if len(alternatives) > 1:
+                typeset.append(alternatives[1])
+            else:
+                typeset.append(alternatives[0])
+
+        return reference, typeset
+    
     def _setup(self, concept, meta):
         # Trying to figure out the most appropriate features to
         # represent a concept entry:
@@ -267,7 +290,7 @@ class ConceptEntry(Entry):
 
         # If not CONCEPT, then the current entry is a sub-entry.
         if concept:
-            self.generate_reference_and_typeset(concept)
+            print self.generate_reference_and_typeset(concept)
             #self._in_text.append(concept)
             
             # If a specific inflection was indicated through the meta
