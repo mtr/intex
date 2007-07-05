@@ -55,7 +55,17 @@ JFK	Kennedy, John Fitzgerald
 MLK	King, Martin Luther
 
 % *CONCEPTS*
+alphabet@(A\, {B}\, and C)
+
+% The '#-' tells the mkintex that the entry is written with a singular
+% inflection.
 antonym	:#-
+% An indented ':' tells that everything following it describes a
+% sub-concept of the nearest concept above with less indentation.  The
+% '-' tells mkintex how both to index the concept (compact) and how to
+% combine the parent concept (represented by the '-') with the
+% specialization specified in the sub-entry to generate the strings
+% used for recognizing the concept.
   :direct -
   :indirect -
     :perhaps
@@ -63,15 +73,18 @@ antonymy
   :direct -
   :indirect -
 
+% The '#+' means that the given concept is inflected as a plural noun.
 buses	:#+
 
 category
+  :positive -
+    :hyper-
 
 cows	:#+
 
 % For the following entries, the parenthesis surrounding each '-'
-% indicates that the part signified by - should not be included in the
-% index.
+% indicates that the part signified by - should be typeset in the
+% text, but not in the index.
 example
   :positive (-)
   :negative (-)
@@ -80,7 +93,12 @@ InTeX@{\InTeX}
   :- example@Xample
 
 LaTeX@{\LaTeX}
-  :- macros
+  :- macros:#+
+
+
+TeXnician@{\TeX}nician
+  :-'s tool
+  :smart -
 
 % Local Variables: 
 % mode: latex

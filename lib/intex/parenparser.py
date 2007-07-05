@@ -7,9 +7,10 @@ Copyright (C) 2007 by Martin Thorsen Ranang
 __revision__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
-
 import re
 
+#from stack import Stack
+    
 class UnexpectedClosingError(ValueError):
     """Error indicating that an ParenParser detected an unexpected
     closing.
@@ -81,40 +82,75 @@ class ParenParser(object):
             # Reset the escape-token counter.
             self.__consecutive_escapes = 0
 
-    def isplit(self, string, separator=None, maxsplit=None):
-        """Returns a generator that yields the words in STRING, using
-        SEPARATOR as the delimiter string and respecting scopes
-        defined by parenthesis.  If maxsplit is given, at most
-        maxsplit splits are done.
+    @staticmethod
+    def filter_outer_scopes(scopes):
+        """Removes scopes that appear inside other scopes.  Hence, only
+        the outermost scopes will be returned.
+        
+        Example:
+        >>> parenparser.remove_inner_scopes([(2, 5), (3, 4), (6, 12),
+        ...                                  (7, 11), (8, 10)])
+        [(2, 5), (6, 12)]
         """
-        # Make sure only outermost scopes are considered.
-        indices = sorted(self.get_scope_spans(string))
-        removable = []
-        current_scope = None
-        for k in xrange(len(indices)):
-            if (not current_scope) or (current_scope[1] < indices[k][0]):
-                current_scope = indices[k]
+        scopes = sorted(scopes)
+        keep = []
+        
+        for n, (i, j) in enumerate(scopes):
+            if n == 0:
+                pass                    # Must define an outer scope.
+            elif j < keep[-1][-1]:
                 continue
             
-            removable.append(k)
+            keep.append((i, j))
+            
+        return keep
+    
+    def split(self, string, separator=None, maxsplit=None):
+        """Return a list of the words in the string STRING, using
+        SEPARATOR as the delimiter string, but scopes defined by
+        parenthetical tokens are not split.  If MAXSPLIT is given, at
+        most MAXSPLIT splits are done.  If SEPARATOR is not specified
+        or is None, any whitespace string is a separator.
 
-        for k in reversed(removable):
-            del indices[k]
+        Please note: The MAXSPLIT argument is not honored yet.
+        """
+        # Make sure only outermost scopes are considered.
+        indices = self.filter_outer_scopes(self.get_scope_spans(string))
+
+        # If no parenthetical scopes were detected, there are no
+        # scopes to honor.
+        if not indices:
+            return string.split(separator)
+        
+        # The following is added to avoid any special-case handling
+        # after the for-loop below.
+        if indices[-1][1] < len(string):
+            indices.append((-1, None))
         
         k = None
+        result = []
         
         for i, j in indices:
-            yield string[k:i]
+            parts = string[k:i].split(separator) + [string[i:j]]
+            
+            first_part = parts[0]
+            if result and (k is not None) and (first_part[0] == string[k]):
+                result[-1] += first_part
+            else:
+                result.append(first_part)
+                
+            if len(parts) > 1:
+                result.extend(parts[1:-1])
+                
+                last_part = parts[-1]
+                if result[-1][-1] == string[i - 1]:
+                    result[-1] += last_part
+                else:
+                    result.append(last_part)
+                
             k = j
 
-        if k < len(string):
-            yield string[k:None]
-            
-    def split(self, string, separator=None, maxsplit=None):
-        """Returns a list containing the results from the generator
-        returned by isplit().
-        """
-        return list(self.isplit(string, separator, maxsplit))
+        return result
     
 def main():
     """Module mainline (for standalone execution).
@@ -122,10 +158,18 @@ def main():
     p = ParenParser()
     
     for string in [
-        'Hello, my (little one).  You are (should I say) a funny person.',
-        'Hello, my {(little one).  You} are (should I say) a funny person.',
+        '',
+        'a b c',
+        '()',
+        '(abc)',
+        '(abc) def',
+        'abc(def)ghi (jkl) mno(pqr) stu',
+        '(abc(def)ghi (jkl) mno(pqr) stu)',
+        '()abc(def)ghi (jkl) mno(pqr) stu',
+        'abc(def)ghi (jkl) mno(pqr) stu()',
+        'abc(def)ghi (jkl) mno(pqr) stu (vwx) ()',
         ]:
-        print p.split(string)
+        print '("%s",\n %s),' % (string, p.split(string))
         
 if __name__ == "__main__":
     main()

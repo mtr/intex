@@ -8,10 +8,12 @@ __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
 __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
+from functools import partial
 import logging
 import re
 
-from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO
+from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO, TOKEN_TYPESET_AS
+from parenparser import ParenParser, remove_inner_scopes
 
 def normalize(string, token=None):
     """Returns a new string where multiple consecutive occurences of
@@ -21,6 +23,8 @@ def normalize(string, token=None):
     return (token or ' ').join(string.split(token))
 
 class Entry(object):
+    parenparser = ParenParser()
+    
     # Define a number of class constants, each string will be defined
     # as an all-uppercase "constant".  That is 'this_value' is
     # assigned to __class__.THIS_VALUE.
@@ -185,25 +189,25 @@ class ConceptEntry(Entry):
         Entry.__init__(self, index, parent)
 
         if concept:
-            self._concept = self.unescape(concept.strip())
+            concept = self.unescape(concept.strip())
         else:
-            self._concept = ''
-
-        if meta:
-            self._meta = self.parse_meta(meta.strip())
-        else:
-            self._meta = dict()
+            concept = ''
             
-        self._in_text = []
-        self._typeset_in_text = []
-        self._in_index = []
-        self._typeset_in_index = []
-        
-        self._setup()
+        if meta:
+            meta = self.parse_meta(meta.strip())
+        else:
+            meta = dict()
+            
+        #self._in_text = []
+        #self._typeset_in_text = []
+        #self._in_index = []
+        #self._typeset_in_index = []
 
-        logging.info('concept: "%s".', self._concept)
+        self._setup(concept, meta)
         
-        print self
+        #logging.info('concept: "%s".', self._concept)
+        
+        #print self
         
     def __str__(self):
         return '\n'.join(description + ': {' \
@@ -220,41 +224,87 @@ class ConceptEntry(Entry):
             
         return word
 
-    def _setup(self):
-        if self._concept:
-            self._in_text.append(self._concept)
+    def generate_reference_and_typeset(self, string):
+        print string
+        scopes = sorted(self.parenparser.get_scope_spans(string))
+
+        outer_scopes = dict(remove_inner_scopes(scopes))
+        
+        for n, token in enumerate(string):
+            if token == TOKEN_TYPESET_AS:
+                if (n + 1) in outer_scopes:
+                    j = outer_scopes[(n + 1)]
+                    print string[n+1:j]
             
-            if self.META_GIVEN_INFLECTION in self._meta:
-                current_inflection = self._meta[self.META_GIVEN_INFLECTION]
+        print outer_scopes
+        
+    def _setup(self, concept, meta):
+        # Trying to figure out the most appropriate features to
+        # represent a concept entry:
+        
+        # The values of REFERENCE are how this entry will be referred
+        # to in the text (\co{<reference>}).
+        self.reference = dict.fromkeys([Entry.INFLECTION_SINGULAR,
+                                        Entry.INFLECTION_PLURAL])
+
+        # The values of TYPESET_IN_TEXT determines how the entry will
+        # be typeset in the text.  If it was referred to in its plural
+        # form, the entry typeset will also be typeset with plural
+        # inflection.
+        self.typeset_in_text = dict.fromkeys([Entry.INFLECTION_SINGULAR,
+                                              Entry.INFLECTION_PLURAL])
+
+        # The values of TYPESET_IN_INDEX defines how the entry will be
+        # typeset in the index.
+        self.typeset_in_index = dict.fromkeys([Entry.INFLECTION_SINGULAR,
+                                               Entry.INFLECTION_PLURAL])
+
+        # The ORDER_BY value defines how the entry should be sorted in
+        # the index.  The value is determined by the value of
+        # INDEX.DEFAULT_INFLECTION and the given inflection of the
+        # current entry.
+        self.order_by = None
+
+        # If not CONCEPT, then the current entry is a sub-entry.
+        if concept:
+            self.generate_reference_and_typeset(concept)
+            #self._in_text.append(concept)
+            
+            # If a specific inflection was indicated through the meta
+            # information, use that.  If not, use the
+            # DEFAULT_INFLECTION of the INDEX.
+            if Entry.META_GIVEN_INFLECTION in meta:
+                current_inflection = meta[Entry.META_GIVEN_INFLECTION]
             else:
                 current_inflection = self.index.default_inflection
-
+                
             inflection_pairs = self._inflection_pair[current_inflection]
             
-            self._in_text.append(\
-                    self.change_inflection(self._in_text[0],
-                                           inflection_pairs))
+            #self._in_text.append(self.change_inflection(concept,
+            #                                            inflection_pairs))
             
-        elif self._meta[self.META_TEXT_VS_INDEX_HINT]:
-            template = self._meta[self.META_TEXT_VS_INDEX_HINT]
-            for match in self._hint_re.finditer(template):
-                placeholder = match.group('placeholder')
-                i, j = match.span('placeholder')
-                for variant in  self.parent._in_text:
-                    # Construct the new phrase.
-                    phrase = template[:i] + variant + template[j:]
+            #self.reference[
+            
+#         elif self._meta[self.META_TEXT_VS_INDEX_HINT]:
+#             template = self._meta[self.META_TEXT_VS_INDEX_HINT]
+#             for match in self._hint_re.finditer(template):
+#                 placeholder = match.group('placeholder')
+#                 i, j = match.span('placeholder')
+#                 for variant in  self.parent._in_text:
+#                     # Construct the new phrase.
+#                     phrase = template[:i] + variant + template[j:]
                     
-                    # Add the new phrase to the in-text variants.
-                    self._in_text.append(phrase)
+#                     # Add the new phrase to the in-text variants.
+#                     self._in_text.append(phrase)
                     
-                    if self._placeholder_meaning[placeholder] \
-                           == self.PLACEHOLDER_IN_TEXT_AND_INDEX:
-                        self._in_index.append(phrase)
-                    else:
-                        normalized = normalize(template[:i] + template[j:])
-                        self._in_index.append(normalized)
+#                     if self._placeholder_meaning[placeholder] \
+#                            == self.PLACEHOLDER_IN_TEXT_AND_INDEX:
+#                         self._in_index.append(phrase)
+#                     else:
+#                         normalized = normalize(template[:i] + template[j:])
+#                         self._in_index.append(normalized)
                         
-                print template[i:j]
+#                 print template[i:j]
                 
 class PersonEntry(Entry):
     def __init__(self, index, parent, initials=None,

@@ -1,11 +1,73 @@
 TODO List for InTeX			 -*- mode: org; -*-
 
 * TODO Define all possibly needed variants of each concept.
-** The different axis include:
+  - The different axis include:
     1. "typeset as" (full-form/short-form)
     2. "inflection" (singular/plural)
     3. "sort as"
 
-** All entries should be typeset identically in the text and in the index.
+  - All entries should be typeset identically in the text and in the
+    index.
+  - Both of the following example entries in the *CONCEPTS* section
+    ('|' represents the left-most border)
+    
+      |LaTeX@{\LaTeX} cat
+      |LaTeX cat@{\LaTeX cat}
+    
+    should result in the following attributes being defined for an
+    IndexEntry instance:
+    
+      - reference_singular = 'LaTeX cat'
+      - reference_plural = 'LaTeX cats'    # Automatically inflected.
+      - references = {reference_singular, reference_plural}
+    
+      - use_singular = '\LaTeX cat'
+      - use_plural = '\LaTeX cats'
+  
+      - index_as_singular = (True | False) # Same form as given in the
+                                           # .itx file.
+					   
+    and if INDEX_AS_SINGULAR is True, then the index entry should be
+    typeset like USE_SINGULAR and sorted like REFERENCE_SINGULAR.
+    
+  - Trying to sum up the needed axis/features:
+
+			singular	plural
+      reference		LaTeX(1)
+      use		\LaTeX(2)
+      index_as		[2]
+      index_sort_as	[1]
+
+  - An example with sub-entries ('#-' signals singular form):
+
+      |TeXnician@{{\TeX}nician}
+      |  -'s tool
+      |  smart -
+      
+    The first entry will be interpreted as
+
+			singular		plural
+      reference		TeXnician(1s)        	TeXnichians(1p)
+      use		{\TeX}nician(2s)	{\TeX}nician(2p)
+      index_as		[2s]
+      index_sort_as	[1s]
+
+    and the second entry will become
+
+			singular		plural
+      reference		[1s]'s tool(2.1s)  	[1s]'s tools
+      use		[2s]'s tool(2.2s)	[2s]'s tools
+      index_as		[2s]
+      index_sort_as	[1s]
+
+    while the third entry will become
+
+			singular		plural
+      reference		smart [1s](3.1)		smart [1p]
+      use		smart [2s](3.2)		smart [2p]
+      index_as		[2s]
+      index_sort_as	[1s]
+
 
 #+STARTUP: hidestars
+#+STARTUP: content

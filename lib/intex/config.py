@@ -11,6 +11,7 @@ __version__ = "@VERSION@"
 TOKEN_COMMENT           = '%'
 TOKEN_SHORT_PLURAL_FORM = '#'
 TOKEN_ENTRY_META_INFO   = ':'
+TOKEN_TYPESET_AS        = '@'
 
 FIELD_SEPARATORS = '\t,'
 
