@@ -124,21 +124,22 @@ class ParenParser(object):
         
         # The following is added to avoid any special-case handling
         # after the for-loop below.
-        if indices[-1][1] < len(string):
+        if indices[-1][-1] < len(string):
             indices.append((-1, None))
         
         k = None
         result = []
         
         for i, j in indices:
-            parts = string[k:i].split(separator) + [string[i:j]]
+            parts = filter(''.__ne__, string[k:i].split(separator)) \
+                    + [string[i:j]]
             
             first_part = parts[0]
             if result and (k is not None) and (first_part[0] == string[k]):
                 result[-1] += first_part
             else:
                 result.append(first_part)
-                
+
             if len(parts) > 1:
                 result.extend(parts[1:-1])
                 

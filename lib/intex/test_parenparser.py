@@ -79,27 +79,50 @@ class LaTeXTestCase(SimpleParenParserTestCase):
             for k, (i, j) in enumerate(self.get_all_indices(string)):
                 self.assertEqual(scopes[k], string[i:j])
 
-class SplitTestCase(SimpleParenParserTestCase):
+class WhitespaceSplitTestCase(SimpleParenParserTestCase):
     def runTest(self):
         # Find all the scopes in each string, innermost scopes first.
-        for string, parts in [
-            ('', []),
-            ('abc def ghi', ['abc', 'def', 'ghi']),
-            ('()', ['()']),
-            ('(abc)', ['(abc)']),
-            ('(abc) def', ['(abc)', 'def']),
-            ('abc(def)ghi (jkl) mno(pqr) stu',
+        for separator, string, parts in [
+            # Default whitespace-based splitting.
+            (None, '', []),
+            (None, 'abc def ghi', ['abc', 'def', 'ghi']),
+            (None, '()', ['()']),
+            (None, '(abc)', ['(abc)']),
+            (None, '(abc) def', ['(abc)', 'def']),
+            (None, 'abc(def)ghi (jkl) mno(pqr) stu',
              ['abc(def)ghi', '(jkl)', 'mno(pqr)', 'stu']),
-            ('(abc(def)ghi (jkl) mno(pqr) stu)',
+            (None, '(abc(def)ghi (jkl) mno(pqr) stu)',
              ['(abc(def)ghi (jkl) mno(pqr) stu)']),
-            ('()abc(def)ghi (jkl) mno(pqr) stu',
+            (None, '()abc(def)ghi (jkl) mno(pqr) stu',
              ['()abc(def)ghi', '(jkl)', 'mno(pqr)', 'stu']),
-            ('abc(def)ghi (jkl) mno(pqr) stu()',
+            (None, 'abc(def)ghi (jkl) mno(pqr) stu()',
              ['abc(def)ghi', '(jkl)', 'mno(pqr)', 'stu()']),
-            ('abc(def)ghi (jkl) mno(pqr) stu (vwx) ()',
+            (None, 'abc(def)ghi (jkl) mno(pqr) stu (vwx) ()',
              ['abc(def)ghi', '(jkl)', 'mno(pqr)', 'stu', '(vwx)', '()']),
             ]:
-            self.assertEqual(self.parser.split(string), parts)
+            self.assertEqual(self.parser.split(string, separator), parts)
+
+class TokenSplitTestCase(SimpleParenParserTestCase):
+    def runTest(self):
+        for separator, string, parts in [
+            # '@'-based splitting.
+            ('@', '', ['']),
+            ('@', 'abc@def@ghi', ['abc', 'def', 'ghi']),
+            ('@', '()', ['()']),
+            ('@', '(abc)', ['(abc)']),
+            ('@', '(abc)@def', ['(abc)', 'def']),
+            ('@', 'abc(def)ghi@(jkl)@mno(pqr)@stu',
+             ['abc(def)ghi', '(jkl)', 'mno(pqr)', 'stu']),
+            ('@', '(abc(def)ghi@(jkl)@mno(pqr)@stu)',
+             ['(abc(def)ghi@(jkl)@mno(pqr)@stu)']),
+            ('@', '()abc(def)ghi@(jkl)@mno(pqr)@stu',
+             ['()abc(def)ghi', '(jkl)', 'mno(pqr)', 'stu']),
+            ('@', 'abc(def)ghi@(jkl)@mno(pqr)@stu()',
+             ['abc(def)ghi', '(jkl)', 'mno(pqr)', 'stu()']),
+            ('@', 'abc(def)ghi@(jkl)@mno(pqr)@stu@(vwx)@()',
+             ['abc(def)ghi', '(jkl)', 'mno(pqr)', 'stu', '(vwx)', '()']),
+            ]:
+            self.assertEqual(self.parser.split(string, separator), parts)
                 
 class ParenParserTestSuite(unittest.TestSuite):
     def __init__(self):
@@ -107,7 +130,8 @@ class ParenParserTestSuite(unittest.TestSuite):
             NonMatchingClosingTestCase(),
             NestedScopesTestCase(),
             LaTeXTestCase(),
-            SplitTestCase(),
+            WhitespaceSplitTestCase(),
+            TokenSplitTestCase(),
             ])
         
 def main():
