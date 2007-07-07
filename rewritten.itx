@@ -56,6 +56,8 @@ MLK	King, Martin Luther
 
 % *CONCEPTS*
 alphabet@(A\, {B}\, and C)
+homemade alphabet@(A\, {B}\, and C)
+homemade c\@rrot
 
 % The '#-' tells the mkintex that the entry is written with a singular
 % inflection.
@@ -66,9 +68,10 @@ antonym	:#-
 % combine the parent concept (represented by the '-') with the
 % specialization specified in the sub-entry to generate the strings
 % used for recognizing the concept.
-  :direct -
-  :indirect -
-    :perhaps
+  :not\-so\-direct -
+  :direct (-)
+  :indirect (-)
+    :perhaps:#!
 antonymy
   :direct -
   :indirect -
@@ -78,13 +81,13 @@ buses	:#+
 
 category
   :positive -
-    :hyper-
+%    :hyper-
 
 cows	:#+
 
 % For the following entries, the parenthesis surrounding each '-'
-% indicates that the part signified by - should be typeset in the
-% text, but not in the index.
+% indicates that the part signified by - should be typeset in the text
+% only; hence, not in the index.
 example
   :positive (-)
   :negative (-)
@@ -98,7 +101,7 @@ LaTeX@{\LaTeX}
 
 TeXnician@{\TeX}nician
   :-'s tool
-  :smart -
+  :smart\-ass -
 
 % Local Variables: 
 % mode: latex
