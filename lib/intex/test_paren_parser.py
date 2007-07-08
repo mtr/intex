@@ -7,7 +7,7 @@ Copyright (C) 2007 by Martin Thorsen Ranang
 __revision__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
-import parenparser
+import paren_parser
 import unittest
 
 
@@ -21,7 +21,7 @@ class SimpleParenParserTestCase(unittest.TestCase):
     closing = dict(matching_pairs)
     
     def setUp(self):
-        self.parser = parenparser.ParenParser()
+        self.parser = paren_parser.ParenParser()
 
     def get_all_indices(self, string):
         return list(self.parser.get_scope_spans(string))
@@ -36,11 +36,11 @@ class NonMatchingClosingTestCase(SimpleParenParserTestCase):
                     continue
                 
                 failing = '%(left)s%(token)s' % locals()
-                self.assertRaises(parenparser.UnexpectedClosingError,
+                self.assertRaises(paren_parser.UnexpectedClosingError,
                                   self.get_all_indices, failing)
 
                 failing += right
-                self.assertRaises(parenparser.UnexpectedClosingError,
+                self.assertRaises(paren_parser.UnexpectedClosingError,
                                   self.get_all_indices, failing)
 
 class NestedScopesTestCase(SimpleParenParserTestCase):
@@ -48,7 +48,7 @@ class NestedScopesTestCase(SimpleParenParserTestCase):
         lefts = [left for left, right in self.matching_pairs]
         levels = len(lefts)
         
-        for combo in parenparser.cartesian(lefts, lefts, lefts):
+        for combo in paren_parser.cartesian(lefts, lefts, lefts):
             indices = []
             for i, opening in enumerate(reversed(combo)):
                 combo.append(self.closing[opening])

@@ -241,6 +241,7 @@ class Index(list):
                 for match in matcher.finditer(line):
                     # Call the appropriate handler, given the current
                     # context.
+                    print match.groupdict()
                     self._match_handler[matcher](self, **match.groupdict())
                     break               # To avoid the else clause.
                 else:

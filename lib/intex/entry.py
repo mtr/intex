@@ -13,7 +13,7 @@ import logging
 import re
 
 from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO, TOKEN_TYPESET_AS
-from parenparser import ParenParser, cartesian
+from paren_parser import ParenParser, cartesian
 
 def normalize(string, token=None):
     """Returns a new string where multiple consecutive occurences of
@@ -331,8 +331,8 @@ class ConceptEntry(Entry):
 
         return bool(n & 1)       # Is the number of escape tokens odd?
     
-    def expand_sub_entry_part(self, template, is_last_token, inflection, current_inflection,
-            field):
+    def expand_sub_entry_part(self, template, is_last_token, inflection,
+                              current_inflection, field):
         """
 
         Note: CURRENT_INFLECTION refers to the inflection given in the
