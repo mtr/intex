@@ -432,8 +432,6 @@ class ConceptEntry(Entry):
         # current entry.
         self.order_by = current_inflection
 
-        print meta
-
         if concept:
             # If CONCEPT, then the current entry is a main entry.
             reference, typeset = self._format_reference_and_typeset(concept)
