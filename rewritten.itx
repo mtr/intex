@@ -17,6 +17,7 @@
 DAG	directed acyclic graph
 
 GNU	GNU is not Unix
+  :- operating system
 
 %                   	SHORT FORM		FULL FORM
 %   - referred to as	\co{H2O}
