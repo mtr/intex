@@ -9,7 +9,17 @@ __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 import re
 
-#from stack import Stack
+def cartesian(*sequences):
+    """Returns the cartesian product of the SEQUENCES.
+    """
+    if len(sequences) == 0:
+        yield []
+    else:
+        head, tail = sequences[:-1], sequences[-1]
+        tail = list(tail)
+        for x in cartesian(*head):
+            for y in tail:
+                yield x + [y]
     
 class UnexpectedClosingError(ValueError):
     """Error indicating that an ParenParser detected an unexpected

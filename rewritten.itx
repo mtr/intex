@@ -95,6 +95,9 @@ example
 InTeX@{\InTeX}
   :- example@Xample
 
+katter@k4tt3r	:#+:#katt@k4tt
+ku	:#kuer
+
 LaTeX@{\LaTeX}
   :- macros:#+
 

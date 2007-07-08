@@ -13,7 +13,7 @@ import logging
 import re
 
 from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO, TOKEN_TYPESET_AS
-from parenparser import ParenParser#, remove_inner_scopes
+from parenparser import ParenParser, cartesian
 
 def normalize(string, token=None):
     """Returns a new string where multiple consecutive occurences of
@@ -30,7 +30,7 @@ class Entry(dict):
     # assigned to __class__.THIS_VALUE.
     for constant in (
         # Different meta fields:
-        'meta_plural_form',
+        'meta_complement_inflection',
         'meta_given_inflection',
         'meta_text_vs_index_hint',
         # Some inflection values:
@@ -98,7 +98,7 @@ class Entry(dict):
                                          self._shorthand_inflection[part[1:]]
                 
             else:
-                info[self.META_PLURAL_FORM] = part[1:]
+                info[self.META_COMPLEMENT_INFLECTION] = part[1:]
                 
         return info
 
@@ -246,12 +246,11 @@ class ConceptEntry(Entry):
                           for attribute in ['reference',
                                             'typeset_in_text',
                                             'typeset_in_index',]])
-
+    
 
     def get_inflection(self, word, inflection):
         for suffix, replacement in self._inflection_pair[inflection]:
             if word.endswith(suffix):
-                print '"%s", "%s"' % (suffix, replacement)
                 offset = (- len(suffix)) or None
                 return word[:offset] + replacement
             
@@ -332,7 +331,7 @@ class ConceptEntry(Entry):
 
         return bool(n & 1)       # Is the number of escape tokens odd?
     
-    def xxx(self, template, is_last_token, inflection, current_inflection,
+    def expand_sub_entry_part(self, template, is_last_token, inflection, current_inflection,
             field):
         """
 
@@ -395,9 +394,11 @@ class ConceptEntry(Entry):
             (reference, 'reference'),
             (typeset, 'typeset_in_text'),
             (typeset, 'typeset_in_index')]:
-            template_list = [self.xxx(part, (pos == (len(parts) - 1)),
-                                      inflection, current_inflection, field)
-                             for pos, part in enumerate(parts)]
+            template_list = [
+                self.expand_sub_entry_part(part, (pos == (len(parts) - 1)),
+                                           inflection, current_inflection,
+                                           field)
+                for pos, part in enumerate(parts)]
             results[field] = ' '.join(template_list)
             
         return results
@@ -430,41 +431,48 @@ class ConceptEntry(Entry):
         # INDEX.DEFAULT_INFLECTION and the given inflection of the
         # current entry.
         self.order_by = current_inflection
-        
+
+        print meta
+
         if concept:
             # If CONCEPT, then the current entry is a main entry.
-            print meta
             reference, typeset = self._format_reference_and_typeset(concept)
-            
+
             self.reference[current_inflection]        = ' '.join(reference)
             self.typeset_in_text[current_inflection]  = ' '.join(typeset)
             self.typeset_in_index[current_inflection] = ' '.join(typeset)
-            
-            reference, typeset = \
-                self._get_complement_inflections(reference, typeset,
-                                                 current_inflection)
+
+            if meta.has_key(Entry.META_COMPLEMENT_INFLECTION):
+                reference, typeset \
+                    = self._format_reference_and_typeset(\
+                    meta[Entry.META_COMPLEMENT_INFLECTION])
+            else:
+                reference, typeset = \
+                    self._get_complement_inflections(reference, typeset,
+                                                     current_inflection)
             
             self.reference[complement_inflection]        = ' '.join(reference)
             self.typeset_in_text[complement_inflection]  = ' '.join(typeset)
             self.typeset_in_index[complement_inflection] = ' '.join(typeset)
-
+            
         else:
             # If not CONCEPT, then the current entry is a sub-entry.
-            pass
             if meta[self.META_TEXT_VS_INDEX_HINT]:
                 template = meta[self.META_TEXT_VS_INDEX_HINT]
-
+                
                 for inflection in (current_inflection, complement_inflection):
                     for field, value \
                         in self._expand_sub_entry(template, inflection,
                                                   current_inflection).items():
-                        if inflection == Entry.INFLECTION_NONE:
-                            for tmp in (Entry.INFLECTION_SINGULAR,
-                                        Entry.INFLECTION_PLURAL,):
-                                getattr(self, field)[tmp] = value
-                        else:
-                            getattr(self, field)[inflection] = value
-
+                        getattr(self, field)[inflection] = value
+                        
+        if current_inflection == Entry.INFLECTION_NONE:
+            for (inflection, attribute) in cartesian(
+                (Entry.INFLECTION_SINGULAR, Entry.INFLECTION_PLURAL, ),
+                ('reference', 'typeset_in_text', 'typeset_in_index', )):
+                getattr(self, attribute)[inflection] = \
+                    getattr(self, attribute)[Entry.INFLECTION_NONE]
+                
 class PersonEntry(Entry):
     def __init__(self, index, parent, initials=None,
                  last_name=None, first_name=None, index_as=None,

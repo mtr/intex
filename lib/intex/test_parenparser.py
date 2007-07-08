@@ -10,17 +10,6 @@ __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 import parenparser
 import unittest
 
-def cartesian(*sequences):
-    """Returns the cartesian product of the SEQUENCES.
-    """
-    if len(sequences) == 0:
-        yield []
-    else:
-        head, tail = sequences[:-1], sequences[-1]
-        tail = list(tail)
-        for x in cartesian(*head):
-            for y in tail:
-                yield x + [y]
 
 class SimpleParenParserTestCase(unittest.TestCase):
     matching_pairs = [
@@ -59,7 +48,7 @@ class NestedScopesTestCase(SimpleParenParserTestCase):
         lefts = [left for left, right in self.matching_pairs]
         levels = len(lefts)
         
-        for combo in cartesian(lefts, lefts, lefts):
+        for combo in parenparser.cartesian(lefts, lefts, lefts):
             indices = []
             for i, opening in enumerate(reversed(combo)):
                 combo.append(self.closing[opening])
