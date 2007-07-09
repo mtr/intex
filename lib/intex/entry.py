@@ -9,11 +9,17 @@ __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
 from functools import partial
+from itertools import chain
 import logging
 import re
 
 from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO, TOKEN_TYPESET_AS
 from paren_parser import ParenParser, cartesian
+
+def flatten(sequence):
+    """Returns a flattened list.
+    """
+    return list(chain(*sequence))
 
 def normalize(string, token=None):
     """Returns a new string where multiple consecutive occurences of
@@ -202,9 +208,11 @@ class Entry(object):
         return parts
 
     def format_reference_and_typeset(self, string, strip_parens=True):
-        parts = [strip_parens and self.paren_parser.strip(part, '([') or part
-                 for part in self.paren_parser.split(string)]
+        parts = self.paren_parser.split(string)
         
+        if strip_parens:
+            parts = [self.paren_parser.strip(part, '([') for part in parts]
+            
         reference = []
         typeset = []
         
@@ -212,18 +220,29 @@ class Entry(object):
             # FIXME: At the time this was written (2007-07-05)
             # ParenParser.split did not honor its MAXSPLIT argument (1
             # below).
-            alternatives = [(strip_parens \
-                             and self.paren_parser.strip(alternative, '([') \
-                             or alternative)
-                            for alternative
-                            in self.escape_aware_split(part,
-                                                       TOKEN_TYPESET_AS, 1)]
+            alternatives = self.escape_aware_split(part, TOKEN_TYPESET_AS, 1)
+            
+            if strip_parens:
+                alternatives = [self.paren_parser.strip(alternative, '([')
+                                for alternative in alternatives]
+
+            #for i, alternative in enumerate(alternatives):
+            #    print alternative.split()
+                
+                #alternatives[i] = list(chain(*[
+                #    self.escape_aware_split(part)
+                #    for part in alternative]))
+            
             reference.append(alternatives[0])
+            
             if len(alternatives) > 1:
                 typeset.append(alternatives[1])
             else:
                 typeset.append(alternatives[0])
-                
+
+        reference = flatten(self.escape_aware_split(part) for part in reference)
+        typeset = flatten(self.escape_aware_split(part) for part in typeset)
+        
         return reference, typeset
 
     def is_escaped(self, string, i):
@@ -294,8 +313,8 @@ class Entry(object):
 
     def expand_sub_entry(self, template, inflection, current_inflection,
                          field_variable_map, template_long=None):
-        reference, typeset = self.format_reference_and_typeset(template, False)
-
+        reference, typeset = self.format_reference_and_typeset(template, True)
+        
         if template_long:
             sort_as_long, typeset_long \
                 = self.format_reference_and_typeset(template_long, False)
@@ -522,7 +541,7 @@ class ConceptEntry(Entry):
         # Call the base constructor.
         Entry.__init__(self, index, parent, meta)
 
-        return                          # FIXME:
+        #return                          # FIXME:
         if concept:
             # Unescape escaped field separators.  Other escaped tokens
             # are kept in escaped form.
