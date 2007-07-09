@@ -13,7 +13,6 @@ import optparse
 import os
 
 from intex.index import Index
-from intex.parenparser import ParenParser
         
 def parse_command_line(command_line_options, usage):
     """Parse the command line according to the possible
@@ -73,7 +72,7 @@ def main():
     # Configure the logging module.
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         level=(options.verbose and logging.INFO or None))
-
+    
     # Instatiate one Index object per file specified on the command
     # line.
     indices = [Index.from_file(filename) for filename in args]

@@ -22,7 +22,7 @@ def normalize(string, token=None):
     """
     return (token or ' ').join(string.split(token))
 
-class Entry(dict):
+class Entry(object):
     paren_parser = ParenParser()
     
     # Define a number of class constants, each string will be defined
@@ -43,7 +43,7 @@ class Entry(dict):
         ):
         exec("%s='%s'" % (constant.upper(),
                           ''.join(constant.split('_', 1)[1:])))
-
+        
     _shorthand_inflection = {
         '+': INFLECTION_PLURAL,
         '-': INFLECTION_SINGULAR,
@@ -65,9 +65,50 @@ class Entry(dict):
     (?<![\\])              # If the previous token was not a "\", then
     %s                     # match a TOKEN_ENTRY_META_INFO.
     ''' % (TOKEN_ENTRY_META_INFO), re.VERBOSE)
+
+    # Note that the order is significant (also when the pairs are
+    # reversed below).
+    _plural_to_singular = [
+        ('ies', 'y'),
+        ('ses', 's'),
+        ('s', ''),
+        ]
+
+    _singular_to_plural = [(singular, plural)
+                           for plural, singular in _plural_to_singular]
+
+    _none_to_none = []
     
-    def __init__(self, index, parent):
+    _inflection_pair = {
+        INFLECTION_SINGULAR: _plural_to_singular,
+        INFLECTION_PLURAL: _singular_to_plural,
+        INFLECTION_NONE: _none_to_none,
+        }
+    
+    _placeholder_meaning = {
+        '-':   PLACEHOLDER_IN_TEXT_AND_INDEX,
+        '(-)': PLACEHOLDER_IN_TEXT_ONLY,
+        }
+    
+    _hint_re = re.compile('(?P<placeholder>%s)' \
+                          % '|'.join(map(re.escape, _placeholder_meaning)))
+
+    # Different constants used for output formatting.
+    _bold_on = '\033[1m'
+    _bold_off = '\033[0m'
+        
+    _label_width = len('typeset_in_index')
+    _column_width = 28
+    _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
+                   '%%-%(_column_width)ds ' \
+                   '%%-%(_column_width)ds' % locals()
+
+    def bold_it(self, string):
+        return self._bold_on + string + self._bold_off
+    
+    def __init__(self, index, parent, meta):
         index.append(self)
+
         self._identity = (len(index) - 1)
         self._index = index
         self._parent = parent
@@ -76,6 +117,11 @@ class Entry(dict):
         if self.parent:
             # Include ourselves among our parent's children.
             self.parent.add_child(self._identity)
+        
+        if meta:
+            self._meta = self.parse_meta(meta.strip())
+        else:
+            self._meta = dict()
 
     def parse_meta(self, meta):
         parts = self._meta_split_re.split(meta)
@@ -106,147 +152,19 @@ class Entry(dict):
         """Unescapes escaped field separators.
         """
         return self._unescape_re.sub('\g<pre>\g<post>', string)
-    
-    # Accessors for the 'identity' property (_-prefixed to force
-    # access through the property):
-    def _get_identity(self):
-        return self._identity
+
+    def get_complement_inflections(self, reference, typeset,
+                                   current_inflection):
+        result = []
         
-    def _set_identity(self, identity):
-        self._identity = identity
-        
-    identity = property(_get_identity, _set_identity, None,
-                        'The identity of this entry.')
-
-    # Accessors for the 'parent' property (_-prefixed to force
-    # access through the property):
-    def _get_parent(self):
-        if self._parent == None:
-            return None
-        return self._index[self._parent]
-        
-    def _set_parent(self, parent):
-        self._parent = parent
-        
-    parent = property(_get_parent, _set_parent, None,
-                      'The parent of this entry.')
-
-    def add_child(self, child_identity):
-        self._children.add(child_identity)
-        
-    # Accessors for the 'children' property (_-prefixed to force
-    # access through the property):
-    def _get_children(self):
-        return [self._index[child_id]
-                for child_id in sorted(self._children)]
-        
-    children = property(_get_children, None, None,
-                        'The children of this entry.')
-
-    # Accessors for the 'index' property (_-prefixed to force
-    # access through the property):
-    def _get_index(self):
-        return self._index
-
-    index = property(_get_index, None, None,
-                     'The index that this entry belongs to.')
-    
-    def to_latex(self):
-        raise NotImplementedError
-
-class AcronymEntry(Entry):
-
-    def __init__(self, index, parent, acronym=None,
-                 full_form=None, typeset_as=None, plural=None,
-                 index_as=None, sort_as=None, meta=None, **rest):
-        # Register this entry in the INDEX, set our PARENT and if we
-        # do have a parent, add ourselves to that PARENT's set of
-        # children.
-        Entry.__init__(self, index, parent)
-        
-        self._acronym = acronym
-        self._full_form = full_form
-        self._typeset_as = typeset_as
-
-class ConceptEntry(Entry):
-    # Note that the order is significant (also when the pairs are
-    # reversed below).
-    _plural_to_singular = [
-        ('ies', 'y'),
-        ('ses', 's'),
-        ('s', ''),
-        ]
-
-    _singular_to_plural = [(singular, plural)
-                           for plural, singular in _plural_to_singular]
-
-    _none_to_none = []
-    
-    _inflection_pair = {
-        Entry.INFLECTION_SINGULAR: _plural_to_singular,
-        Entry.INFLECTION_PLURAL: _singular_to_plural,
-        Entry.INFLECTION_NONE: _none_to_none,
-        }
-    
-    _placeholder_meaning = {
-        '-':   Entry.PLACEHOLDER_IN_TEXT_AND_INDEX,
-        '(-)': Entry.PLACEHOLDER_IN_TEXT_ONLY,
-        }
-    
-    _hint_re = re.compile('(?P<placeholder>%s)' \
-                          % '|'.join(map(re.escape, _placeholder_meaning)))
-        
-    def __init__(self, index, parent, concept=None,
-                 plural=None, index_as=None, sort_as=None, meta=None,
-                 **rest):
-        Entry.__init__(self, index, parent)
-
-        if concept:
-            # Unescape escaped field separators.  Other escaped tokens
-            # are kept in escaped form.
-            concept = self.unescape(concept.strip())
-        else:
-            concept = ''
+        for words in [reference, typeset]:
+            copy = words[:]        # Make a copy of the list of words.
             
-        if meta:
-            meta = self.parse_meta(meta.strip())
-        else:
-            meta = dict()
+            copy[-1] = self.change_inflection(copy[-1], current_inflection)
             
-        self._setup(concept, meta)
-
-        print self.get_plain_header()
-        print self
-        print
-
-    # Different constants used for output formatting.
-    _bold_on = '\033[1m'
-    _bold_off = '\033[0m'
-        
-    _label_width = len('typeset_in_index')
-    _column_width = 28
-    _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
-                   '%%-%(_column_width)ds ' \
-                   '%%-%(_column_width)ds' % locals()
-
-    def bold_it(self, string):
-        return self._bold_on + string + self._bold_off
-
-    def get_plain_header(self):
-        return self._line_format \
-               % ('',
-                  self.bold_it('singular'.center(self._column_width)),
-                  self.bold_it('plural'.center(self._column_width)))
-    
-    def __str__(self):
-        return '\n'.join([self._line_format \
-                          % (attribute,
-                             getattr(self, attribute)['singular'],
-                             getattr(self, attribute)['plural'],)
-                          for attribute in ['reference',
-                                            'typeset_in_text',
-                                            'typeset_in_index',]])
-    
+            result.append(copy)
+            
+        return result
 
     def get_inflection(self, word, inflection):
         for suffix, replacement in self._inflection_pair[inflection]:
@@ -259,7 +177,20 @@ class ConceptEntry(Entry):
     def change_inflection(self, word, current_inflection):
         return self.get_inflection(
             word, self._complement_inflection[current_inflection])
-    
+
+    def get_current_and_complement_inflection(self, meta):
+        if Entry.META_GIVEN_INFLECTION in meta:
+            # If a specific inflection was indicated through the
+            # meta information, use that.
+            current_inflection = meta[Entry.META_GIVEN_INFLECTION]
+        else:
+            # If not, use the DEFAULT_INFLECTION of the INDEX.
+            current_inflection = self.index.default_inflection
+
+        complement_inflection = self._complement_inflection[current_inflection]
+
+        return current_inflection, complement_inflection
+
     def escape_aware_split(self, string, delimiter=None, maxsplit=None):
         parts = self.paren_parser.split(string, delimiter, maxsplit)
 
@@ -269,8 +200,8 @@ class ConceptEntry(Entry):
                 del parts[i + 1]
                 
         return parts
-    
-    def _format_reference_and_typeset(self, string, strip_parens=True):
+
+    def format_reference_and_typeset(self, string, strip_parens=True):
         parts = [strip_parens and self.paren_parser.strip(part, '([') or part
                  for part in self.paren_parser.split(string)]
         
@@ -294,34 +225,10 @@ class ConceptEntry(Entry):
                 typeset.append(alternatives[0])
                 
         return reference, typeset
-    
-    def _get_complement_inflections(self, reference, typeset,
-                                    current_inflection):
-        result = []
-        
-        for words in [reference, typeset]:
-            copy = words[:]        # Make a copy of the list of words.
-            
-            copy[-1] = self.change_inflection(copy[-1], current_inflection)
-            
-            result.append(copy)
-            
-        return result
-
-    def get_current_and_complement_inflection(self, meta):
-        if Entry.META_GIVEN_INFLECTION in meta:
-            # If a specific inflection was indicated through the
-            # meta information, use that.
-            current_inflection = meta[Entry.META_GIVEN_INFLECTION]
-        else:
-            # If not, use the DEFAULT_INFLECTION of the INDEX.
-            current_inflection = self.index.default_inflection
-
-        complement_inflection = self._complement_inflection[current_inflection]
-
-        return current_inflection, complement_inflection
 
     def is_escaped(self, string, i):
+        """Returns True if the token in STRING at position I is escaped.
+        """
         if i > 0:
            for n, character in enumerate(string[(i - 1)::-1]):
                if character != '\\':
@@ -330,7 +237,7 @@ class ConceptEntry(Entry):
             n = 0                 # The token can't have been escaped.
 
         return bool(n & 1)       # Is the number of escape tokens odd?
-    
+
     def expand_sub_entry_part(self, template, is_last_token, inflection,
                               current_inflection, field):
         """
@@ -384,16 +291,23 @@ class ConceptEntry(Entry):
             formatted += template[k:]
 
         return formatted
-        
-    def _expand_sub_entry(self, template, inflection, current_inflection):
-        reference, typeset = self._format_reference_and_typeset(template, False)
-        
+
+    def expand_sub_entry(self, template, inflection, current_inflection,
+                         field_variable_map, template_long=None):
+        reference, typeset = self.format_reference_and_typeset(template, False)
+
+        if template_long:
+            sort_as_long, typeset_long \
+                = self.format_reference_and_typeset(template_long, False)
+            
         results = dict()
+        variables = locals()
         
-        for parts, field in [
-            (reference, 'reference'),
-            (typeset, 'typeset_in_text'),
-            (typeset, 'typeset_in_index')]:
+        for field, variable in field_variable_map:
+            if not variables.has_key(variable):
+                continue
+            
+            parts = variables[variable]
             template_list = [
                 self.expand_sub_entry_part(part, (pos == (len(parts) - 1)),
                                            inflection, current_inflection,
@@ -403,10 +317,197 @@ class ConceptEntry(Entry):
             
         return results
     
-    def _setup(self, concept, meta):
+    # Accessors for the 'identity' property (_-prefixed to force
+    # access through the property):
+    def _get_identity(self):
+        return self._identity
+        
+    def _set_identity(self, identity):
+        self._identity = identity
+        
+    identity = property(_get_identity, _set_identity, None,
+                        'The identity of this entry.')
+
+    # Accessors for the 'parent' property (_-prefixed to force
+    # access through the property):
+    def _get_parent(self):
+        if self._parent == None:
+            return None
+        return self._index[self._parent]
+        
+    def _set_parent(self, parent):
+        self._parent = parent
+        
+    parent = property(_get_parent, _set_parent, None,
+                      'The parent of this entry.')
+
+    def add_child(self, child_identity):
+        self._children.add(child_identity)
+        
+    # Accessors for the 'children' property (_-prefixed to force
+    # access through the property):
+    def _get_children(self):
+        return [self._index[child_id]
+                for child_id in sorted(self._children)]
+        
+    children = property(_get_children, None, None,
+                        'The children of this entry.')
+
+    # Accessors for the 'index' property (_-prefixed to force
+    # access through the property):
+    def _get_index(self):
+        return self._index
+
+    index = property(_get_index, None, None,
+                     'The index that this entry belongs to.')
+    
+    def to_latex(self):
+        raise NotImplementedError
+
+class AcronymEntry(Entry):
+    _generated_fields = [
+        # The values of REFERENCE are how this entry will be
+        # referred to in the text (\co{<reference>}).
+        'reference',
+        # The values of TYPESET_IN_TEXT determines how the entry
+        # will be typeset in the text.  If it was referred to in
+        # its plural form, the entry typeset will also be typeset
+        # with plural inflection.
+        'typeset_in_text_short',
+        'typeset_in_text_long',
+        # The values of TYPESET_IN_INDEX defines how the entry
+        # will be typeset in the index.
+        'typeset_in_index_short',
+        'typeset_in_index_long',
+        'sort_as_short',
+        'sort_as_long',
+        ]
+
+    # Different constants used for output formatting.
+    _bold_on = '\033[1m'
+    _bold_off = '\033[0m'
+
+    _label_width = len('typeset_in_index_short')
+    _column_width = 28
+    _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
+                   '%%-%(_column_width)ds ' \
+                   '%%-%(_column_width)ds' % locals()
+    
+    def __init__(self, index, parent, acronym=None, indent_level=None,
+                 full_form=None, sort_as=None, meta=None, **rest):
+        # Set a couple of defining attributes before calling our base
+        # constructor.
+        for attribute in self._generated_fields:
+            setattr(self, attribute, dict.fromkeys([Entry.INFLECTION_SINGULAR,
+                                                    Entry.INFLECTION_PLURAL]))
+        
+        # Register this entry in the INDEX, set our PARENT and if we
+        # do have a parent, add ourselves to that PARENT's set of
+        # children.
+        Entry.__init__(self, index, parent, meta)
+
+        #return                          # FIXME:
+        self._setup(acronym, full_form, self._meta, indent_level)
+        
+        print self
+
+    def get_plain_header(self):
+        return self._line_format \
+               % ('',
+                  self.bold_it('singular'.center(self._column_width)),
+                  self.bold_it('plural'.center(self._column_width)))
+
+    def __repr__(self):
+        #fields = ['reference',
+        #          'typeset_in_text',
+        #          'typeset_in_index',
+        #          'identity',
+        #          ]
+        return '%s(%s)' % (self.__class__.__name__,
+                           ', '.join('%s=%s' \
+                                     % (attribute, getattr(self, attribute))
+                                     for attribute in self._generated_fields))
+    
+    def __str__(self):
+        return '\n'.join([self._line_format \
+                          % (attribute,
+                             getattr(self, attribute)['singular'],
+                             getattr(self, attribute)['plural'],)
+                          for attribute in self._generated_fields])
+    
+    def _setup(self, concept, full_form, meta, indent_level):
         # Trying to figure out the most appropriate features to
         # represent a concept entry:
+        (current_inflection, complement_inflection) = \
+            self.get_current_and_complement_inflection(meta)
+        
+        # The ORDER_BY value defines how the entry should be sorted in
+        # the index.  The value is determined by the value of
+        # INDEX.DEFAULT_INFLECTION and the given inflection of the
+        # current entry.
+        self.order_by = current_inflection
 
+        field_variable_map = [
+            ('reference', 'reference'),
+            ('sort_as_short', 'reference'),
+            ('typeset_in_text_short', 'typeset'),
+            ('typeset_in_index_short', 'typeset'),
+            ('sort_as_long', 'sort_as_long'),
+            ('typeset_in_text_long', 'typeset_long'),
+            ('typeset_in_index_long', 'typeset_long'),
+            ]
+        
+        if indent_level == 0:
+            # If CONCEPT, then the current entry is a main entry.
+            reference, typeset = self.format_reference_and_typeset(concept)
+            
+            sort_as_long, typeset_long \
+                = self.format_reference_and_typeset(full_form) 
+            
+            for field, variable in field_variable_map:
+                value = ' '.join(locals()[variable])
+                getattr(self, field)[current_inflection] = value
+            
+            if meta.has_key(Entry.META_COMPLEMENT_INFLECTION):
+                reference, typeset \
+                    = self.format_reference_and_typeset(\
+                    meta[Entry.META_COMPLEMENT_INFLECTION])
+            else:
+                reference, typeset = \
+                    self.get_complement_inflections(reference, typeset,
+                                                    current_inflection)
+                sort_as_long, typeset_long = \
+                    self.get_complement_inflections(sort_as_long, typeset_long,
+                                                    current_inflection)
+            for field, variable in field_variable_map:
+                value = ' '.join(locals()[variable])
+                getattr(self, field)[complement_inflection] = value
+                
+        else:
+            if full_form is None:
+                full_form = concept
+                
+            for inflection in (current_inflection, complement_inflection):
+                for field, value \
+                    in self.expand_sub_entry(concept, inflection,
+                                             current_inflection,
+                                             field_variable_map,
+                                             full_form).items():
+                    getattr(self, field)[inflection] = value
+                    
+        if current_inflection == Entry.INFLECTION_NONE:
+            for (inflection, attribute) in cartesian(
+                (Entry.INFLECTION_SINGULAR, Entry.INFLECTION_PLURAL, ),
+                [field for field, variable in field_variable_map]):
+                getattr(self, attribute)[inflection] = \
+                    getattr(self, attribute)[Entry.INFLECTION_NONE]
+        
+class ConceptEntry(Entry):
+    def __init__(self, index, parent, concept=None, indent_level=None,
+                 plural=None, index_as=None, sort_as=None, meta=None,
+                 **rest):
+        # Set a couple of defining attributes before calling our base
+        # constructor.
         for attribute in [
             # The values of REFERENCE are how this entry will be
             # referred to in the text (\co{<reference>}).
@@ -423,6 +524,52 @@ class ConceptEntry(Entry):
             setattr(self, attribute, dict.fromkeys([Entry.INFLECTION_SINGULAR,
                                                     Entry.INFLECTION_PLURAL]))
 
+        # Call the base constructor.
+        Entry.__init__(self, index, parent, meta)
+
+        return                          # FIXME:
+        if concept:
+            # Unescape escaped field separators.  Other escaped tokens
+            # are kept in escaped form.
+            concept = self.unescape(concept.strip())
+        else:
+            concept = ''
+            
+        self._setup(concept, self._meta, indent_level)
+        
+        print self.get_plain_header()
+        print self
+        print
+
+    def get_plain_header(self):
+        return self._line_format \
+               % ('',
+                  self.bold_it('singular'.center(self._column_width)),
+                  self.bold_it('plural'.center(self._column_width)))
+
+    def __repr__(self):
+        fields = ['reference',
+                  'typeset_in_text',
+                  'typeset_in_index',
+                  'identity',
+                  ]
+        return '%s(%s)' % (self.__class__.__name__,
+                           ', '.join('%s=%s' \
+                                     % (attribute, getattr(self, attribute))
+                                     for attribute in fields))
+    
+    def __str__(self):
+        return '\n'.join([self._line_format \
+                          % (attribute,
+                             getattr(self, attribute)['singular'],
+                             getattr(self, attribute)['plural'],)
+                          for attribute in ['reference',
+                                            'typeset_in_text',
+                                            'typeset_in_index',]])
+    
+    def _setup(self, concept, meta, indent_level):
+        # Trying to figure out the most appropriate features to
+        # represent a concept entry:
         (current_inflection, complement_inflection) = \
             self.get_current_and_complement_inflection(meta)
             
@@ -432,42 +579,44 @@ class ConceptEntry(Entry):
         # current entry.
         self.order_by = current_inflection
 
-        if concept:
-            # If CONCEPT, then the current entry is a main entry.
-            reference, typeset = self._format_reference_and_typeset(concept)
+        field_variable_map = [
+            ('reference', 'reference'),
+            ('typeset_in_text', 'typeset'),
+            ('typeset_in_index', 'typeset')]
 
-            self.reference[current_inflection]        = ' '.join(reference)
-            self.typeset_in_text[current_inflection]  = ' '.join(typeset)
-            self.typeset_in_index[current_inflection] = ' '.join(typeset)
+        if indent_level == 0:
+            # If CONCEPT, then the current entry is a main entry.
+            reference, typeset = self.format_reference_and_typeset(concept)
+
+            for field, variable in field_variable_map:
+                value = ' '.join(locals()[variable])
+                getattr(self, field)[current_inflection] = value
 
             if meta.has_key(Entry.META_COMPLEMENT_INFLECTION):
                 reference, typeset \
-                    = self._format_reference_and_typeset(\
+                    = self.format_reference_and_typeset(\
                     meta[Entry.META_COMPLEMENT_INFLECTION])
             else:
                 reference, typeset = \
-                    self._get_complement_inflections(reference, typeset,
-                                                     current_inflection)
-            
-            self.reference[complement_inflection]        = ' '.join(reference)
-            self.typeset_in_text[complement_inflection]  = ' '.join(typeset)
-            self.typeset_in_index[complement_inflection] = ' '.join(typeset)
+                    self.get_complement_inflections(reference, typeset,
+                                                    current_inflection)
+
+            for field, variable in field_variable_map:
+                value = ' '.join(locals()[variable])
+                getattr(self, field)[complement_inflection] = value
             
         else:
-            # If not CONCEPT, then the current entry is a sub-entry.
-            if meta[self.META_TEXT_VS_INDEX_HINT]:
-                template = meta[self.META_TEXT_VS_INDEX_HINT]
-                
-                for inflection in (current_inflection, complement_inflection):
-                    for field, value \
-                        in self._expand_sub_entry(template, inflection,
-                                                  current_inflection).items():
-                        getattr(self, field)[inflection] = value
-                        
+            for inflection in (current_inflection, complement_inflection):
+                for field, value \
+                    in self.expand_sub_entry(concept, inflection,
+                                             current_inflection,
+                                             field_variable_map).items():
+                    getattr(self, field)[inflection] = value
+                    
         if current_inflection == Entry.INFLECTION_NONE:
             for (inflection, attribute) in cartesian(
                 (Entry.INFLECTION_SINGULAR, Entry.INFLECTION_PLURAL, ),
-                ('reference', 'typeset_in_text', 'typeset_in_index', )):
+                [field for field, variable in field_variable_map]):
                 getattr(self, attribute)[inflection] = \
                     getattr(self, attribute)[Entry.INFLECTION_NONE]
                 
@@ -475,7 +624,7 @@ class PersonEntry(Entry):
     def __init__(self, index, parent, initials=None,
                  last_name=None, first_name=None, index_as=None,
                  sort_as=None, meta=None, **rest):
-        Entry.__init__(self, index, parent)
+        Entry.__init__(self, index, parent, meta)
         
         self._initials = initials
         self._last_name = last_name

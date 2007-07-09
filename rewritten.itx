@@ -17,7 +17,7 @@
 DAG	directed acyclic graph
 
 GNU	GNU is not Unix
-  :- operating system
+  - OSs	- operating systems	:#+:#- OS	- operating system
 
 %                   	SHORT FORM		FULL FORM
 %   - referred to as	\co{H2O}
@@ -36,14 +36,15 @@ LL	(LaTeX Lover)@{\LaTeX Lover}
 %   - sorted as 	"WN20"			"WordNet 2.0"
 %   - typeset as 	"WN 2.0"		"WordNet 2.0"
 % Hence, the parentheses are used for keeping multiple words gathered.
-WN20@(WN 2.0)	WordNet 2.0
+WN	WordNet
+  WN20@(- 2.0)	- version 2.0
 
 %                   	SHORT FORM		FULL FORM
 %   - referred to as	\co{XML}
 XML	Extensible Markup Language
 %   - referred to as	\co{XML-format}		\cof{XML-format}
 %   - sorted as 	"XML, format"		"XML, format"
-  :-format
+  - format
 % The resulting index should have the following entries:
 %   
 % * Extensible Markup Language <pages>,
@@ -69,19 +70,19 @@ antonym	:#-
 % combine the parent concept (represented by the '-') with the
 % specialization specified in the sub-entry to generate the strings
 % used for recognizing the concept.
-  :not\-so\-direct -
-  :direct (-)
-  :indirect (-)
-    :perhaps:#!
+  not\-so\-direct -
+  direct (-)
+  indirect (-)
+    perhaps:#!
 antonymy
-  :direct -
-  :indirect -
+  direct -
+  indirect -
 
 % The '#+' means that the given concept is inflected as a plural noun.
 buses	:#+
 
 category
-  :positive -
+  positive -
 %    :hyper-
 
 cows	:#+
@@ -90,22 +91,22 @@ cows	:#+
 % indicates that the part signified by - should be typeset in the text
 % only; hence, not in the index.
 example
-  :positive (-)
-  :negative (-)
+  positive (-)
+  negative (-)
 
 InTeX@{\InTeX}
-  :- example@Xample
+  - example@Xample
 
 katter@k4tt3r	:#+:#katt@k4tt
 ku	:#kuer
 
 LaTeX@{\LaTeX}
-  :- macros:#+
+  - macros	:#+
 
 
 TeXnician@{\TeX}nician
-  :-'s tool
-  :smart\-ass -
+  -'s tool
+  smart\-ass -
 
 % Local Variables: 
 % mode: latex

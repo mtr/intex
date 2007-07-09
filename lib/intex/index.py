@@ -190,8 +190,11 @@ class Index(list):
         return self._indentation_level[indent]
     
     def _get_current_parent(self):
-        return self._elements and self._elements[-1].identity or None
-    
+        if self._elements:
+            return self._elements[-1].identity
+        else:
+            None
+            
     def handle_entry(self, indent=None, **rest):
         indent_level = self._get_indentation_level(indent)
         
@@ -205,6 +208,7 @@ class Index(list):
         # handle_meta_directive()).
         self._elements.push(self._entry_class(index=self,
                                               parent=self._get_current_parent(),
+                                              indent_level=indent_level,
                                               **rest))
         
     _match_handler = {
@@ -241,7 +245,6 @@ class Index(list):
                 for match in matcher.finditer(line):
                     # Call the appropriate handler, given the current
                     # context.
-                    print match.groupdict()
                     self._match_handler[matcher](self, **match.groupdict())
                     break               # To avoid the else clause.
                 else:
