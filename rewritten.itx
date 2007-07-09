@@ -17,7 +17,7 @@
 DAG	directed acyclic graph
 
 GNU	GNU is not Unix
-  - OSs	- operating systems	:#+:#- OS	- operating system
+  (-) OSs	(-) operating systems	:#+:#- OS	- operating system
 
 %                   	SHORT FORM		FULL FORM
 %   - referred to as	\co{H2O}
@@ -37,7 +37,7 @@ LL	(LaTeX Lover)@{\LaTeX Lover}
 %   - typeset as 	"WN 2.0"		"WordNet 2.0"
 % Hence, the parentheses are used for keeping multiple words gathered.
 WN	WordNet
-  WN20@(- 2.0)	- version 2.0
+  WN20@(- 2.0)	(-) version 2.0
 
 %                   	SHORT FORM		FULL FORM
 %   - referred to as	\co{XML}

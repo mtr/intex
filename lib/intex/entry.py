@@ -269,7 +269,7 @@ class Entry(object):
             # Construct the new phrase.
             if (self._placeholder_meaning[placeholder] \
                 == self.PLACEHOLDER_IN_TEXT_ONLY) \
-               and (field == 'typeset_in_index'):
+               and (field.startswith('typeset_in_index')):
                 formatted += template[k:i] + '--'
             else:    
                 formatted += template[k:i] + source
@@ -374,12 +374,12 @@ class AcronymEntry(Entry):
         # its plural form, the entry typeset will also be typeset
         # with plural inflection.
         'typeset_in_text_short',
-        'typeset_in_text_long',
-        # The values of TYPESET_IN_INDEX defines how the entry
-        # will be typeset in the index.
+        # The values of TYPESET_IN_INDEX defines how the entry will be
+        # typeset in the index.
         'typeset_in_index_short',
-        'typeset_in_index_long',
         'sort_as_short',
+        'typeset_in_text_long',
+        'typeset_in_index_long',
         'sort_as_long',
         ]
 
@@ -418,11 +418,6 @@ class AcronymEntry(Entry):
                   self.bold_it('plural'.center(self._column_width)))
 
     def __repr__(self):
-        #fields = ['reference',
-        #          'typeset_in_text',
-        #          'typeset_in_index',
-        #          'identity',
-        #          ]
         return '%s(%s)' % (self.__class__.__name__,
                            ', '.join('%s=%s' \
                                      % (attribute, getattr(self, attribute))
