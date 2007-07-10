@@ -517,24 +517,26 @@ class AcronymEntry(Entry):
                     getattr(self, attribute)[Entry.INFLECTION_NONE]
         
 class ConceptEntry(Entry):
+    _generated_fields = [
+        # The values of REFERENCE are how this entry will be referred
+        # to in the text (\co{<reference>}).
+        'reference',
+        # The values of TYPESET_IN_TEXT determines how the entry will
+        # be typeset in the text.  If it was referred to in its plural
+        # form, the entry typeset will also be typeset with plural
+        # inflection.
+        'typeset_in_text',
+        # The values of TYPESET_IN_INDEX defines how the entry will be
+        # typeset in the index.
+        'typeset_in_index',
+        ]
+    
     def __init__(self, index, parent, concept=None, indent_level=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
                  **rest):
         # Set a couple of defining attributes before calling our base
         # constructor.
-        for attribute in [
-            # The values of REFERENCE are how this entry will be
-            # referred to in the text (\co{<reference>}).
-            'reference',
-            # The values of TYPESET_IN_TEXT determines how the entry
-            # will be typeset in the text.  If it was referred to in
-            # its plural form, the entry typeset will also be typeset
-            # with plural inflection.
-            'typeset_in_text',
-            # The values of TYPESET_IN_INDEX defines how the entry
-            # will be typeset in the index.
-            'typeset_in_index',
-            ]:
+        for attribute in self._generated_fields:
             setattr(self, attribute, dict.fromkeys([Entry.INFLECTION_SINGULAR,
                                                     Entry.INFLECTION_PLURAL]))
 
@@ -562,15 +564,10 @@ class ConceptEntry(Entry):
                   self.bold_it('plural'.center(self._column_width)))
 
     def __repr__(self):
-        fields = ['reference',
-                  'typeset_in_text',
-                  'typeset_in_index',
-                  'identity',
-                  ]
         return '%s(%s)' % (self.__class__.__name__,
                            ', '.join('%s=%s' \
                                      % (attribute, getattr(self, attribute))
-                                     for attribute in fields))
+                                     for attribute in self._generated_fields))
     
     def __str__(self):
         return '\n'.join([self._line_format \
@@ -635,15 +632,80 @@ class ConceptEntry(Entry):
                     getattr(self, attribute)[Entry.INFLECTION_NONE]
                 
 class PersonEntry(Entry):
+    _generated_fields = [
+        # The values of REFERENCE are how this entry will be referred
+        # to in the text (\co{<reference>}).
+        'reference',
+        # The values of TYPESET_IN_TEXT determines how the entry will
+        # be typeset in the text.  If it was referred to in its plural
+        # form, the entry typeset will also be typeset with plural
+        # inflection.
+        'typeset_in_text_short',
+        'typeset_in_text_long',
+        # The values of TYPESET_IN_INDEX defines how the entry will be
+        # typeset in the index.
+        'typeset_in_index',
+        ]
+    
+    # Different constants used for output formatting.
+    _bold_on = '\033[1m'
+    _bold_off = '\033[0m'
+        
+    _label_width = len('typeset_in_text_short')
+    _column_width = 28
+    _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
+                   '%%-%(_column_width)ds' % locals()
+
     def __init__(self, index, parent, initials=None,
                  last_name=None, first_name=None, index_as=None,
                  sort_as=None, meta=None, **rest):
-        Entry.__init__(self, index, parent, meta)
-        
-        self._initials = initials
-        self._last_name = last_name
-        self._first_name = first_name
 
+        for attribute in self._generated_fields:
+            setattr(self, attribute, dict.fromkeys([Entry.INFLECTION_NONE,]))
+            
+        Entry.__init__(self, index, parent, meta)
+
+        # Remove any preceding commas (',') and surrounding
+        # whitespace.
+        first_name = first_name.lstrip(',').strip()
+
+        field_variable_map = [
+            ('reference', 'reference'),
+            ('typeset_in_text_short', 'typeset_short'),
+            ('typeset_in_text_long', 'typeset_long'),
+            ('typeset_in_index', 'typeset_formal'),]
+
+        # Prepare the different local variables.
+        reference = initials
+        typeset_short = last_name
+        typeset_long = ' '.join([first_name, last_name])
+        typeset_formal = '%s, %s' % (last_name, first_name)
+        
+        variables = locals()
+        
+        for field, variable in field_variable_map:
+            getattr(self, field)[Entry.INFLECTION_NONE] = variables[variable]
+            
+        print self
+
+    def get_plain_header(self):
+        return self._line_format \
+               % ('',
+                  self.bold_it('singular'.center(self._column_width)),
+                  self.bold_it('plural'.center(self._column_width)))
+
+    def __repr__(self):
+        return '%s(%s)' % (self.__class__.__name__,
+                           ', '.join('%s=%s' \
+                                     % (attribute, getattr(self, attribute))
+                                     for attribute in self._generated_fields))
+
+    def __str__(self):
+        return '\n'.join([self._line_format \
+                          % (attribute,
+                             getattr(self, attribute)['none'],
+                             )
+                          for attribute in self._generated_fields])
 
 def main():
     """Module mainline (for standalone execution).
