@@ -79,6 +79,8 @@ def main():
 
     for index in indices:
         print index
+        
+    index.generate_reference_index()
     
 if __name__ == "__main__":
     main()

@@ -275,6 +275,12 @@ class Index(list):
         stream.close()
         
         return string
+
+    def generate_reference_index(self):
+        self.references = dict((phrase, (sub_key, entry))
+                               for entry in self
+                               for sub_key, phrase
+                               in entry.reference.iteritems())
         
 def main():
     """Module mainline (for standalone execution).
