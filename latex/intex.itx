@@ -22,6 +22,11 @@ JFK	Kennedy, John Fitzgerald
 MLK	King, Martin Luther
 
 % *CONCEPTS*
+concept
+  acronym -
+  person -
+  plain -
+
 (InTeX logo)@{\InTeX\ logo}
 
 TeXnician@{\TeX}nician
