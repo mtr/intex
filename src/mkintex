@@ -76,6 +76,9 @@ def main():
     # Instatiate one Index object per file specified on the command
     # line.
     indices = [Index.from_file(filename) for filename in args]
+
+    for index in indices:
+        print index
     
 if __name__ == "__main__":
     main()

@@ -8,6 +8,7 @@ __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
 __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
+from cStringIO import StringIO
 import logging
 import re
 
@@ -259,10 +260,26 @@ class Index(list):
         
         return self
 
-def main():
-    """Module mainline (for standalone execution)."""
-    pass
+    def __str__(self):
+        stream = StringIO()
+        previous_type = None
+        for entry in self:
+            if type(entry) != previous_type:
+                print >> stream, entry.get_plain_header()
+                
+            print >> stream, entry
 
+            previous_type = type(entry)
+            
+        string = stream.getvalue()
+        stream.close()
+        
+        return string
+        
+def main():
+    """Module mainline (for standalone execution).
+    """
+    pass
 
 if __name__ == "__main__":
     main()

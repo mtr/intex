@@ -99,18 +99,17 @@ class Entry(object):
     _hint_re = re.compile('(?P<placeholder>%s)' \
                           % '|'.join(map(re.escape, _placeholder_meaning)))
 
-    # Different constants used for output formatting.
+    # Different constants and defaults used for output formatting.
     _bold_on = '\033[1m'
     _bold_off = '\033[0m'
-        
+
+    # These parameters may (and should) be overridden in derived
+    # classes.
     _label_width = len('typeset_in_index')
     _column_width = 28
     _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
                    '%%-%(_column_width)ds ' \
-                   '%%-%(_column_width)ds' % locals()
-
-    def bold_it(self, string):
-        return self._bold_on + string + self._bold_off
+                   '%%-%(_column_width)ds'
     
     def __init__(self, index, parent, meta):
         index.append(self)
@@ -128,6 +127,19 @@ class Entry(object):
             self._meta = self.parse_meta(meta.strip())
         else:
             self._meta = dict()
+
+        # Define appropriate output formatting.
+        mapping = dict((key, getattr(self, key)) for key in dir(self))
+        self._line_format = self._line_format % mapping
+        
+    def bold_it(self, string):
+        return self._bold_on + string + self._bold_off
+
+    def __repr__(self):
+        return '%s(%s)' % (self.__class__.__name__,
+                           ', '.join('%s=%s' \
+                                     % (attribute, getattr(self, attribute))
+                                     for attribute in self._generated_fields))
 
     def parse_meta(self, meta):
         parts = self._meta_split_re.split(meta)
@@ -226,13 +238,6 @@ class Entry(object):
                 alternatives = [self.paren_parser.strip(alternative, '([')
                                 for alternative in alternatives]
 
-            #for i, alternative in enumerate(alternatives):
-            #    print alternative.split()
-                
-                #alternatives[i] = list(chain(*[
-                #    self.escape_aware_split(part)
-                #    for part in alternative]))
-            
             reference.append(alternatives[0])
             
             if len(alternatives) > 1:
@@ -403,44 +408,28 @@ class AcronymEntry(Entry):
         ]
 
     # Different constants used for output formatting.
-    _bold_on = '\033[1m'
-    _bold_off = '\033[0m'
-
     _label_width = len('typeset_in_index_short')
-    _column_width = 28
-    _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
-                   '%%-%(_column_width)ds ' \
-                   '%%-%(_column_width)ds' % locals()
     
     def __init__(self, index, parent, acronym=None, indent_level=None,
-                 full_form=None, sort_as=None, meta=None, **rest):
+                 full_form=None, meta=None, **rest):
         # Set a couple of defining attributes before calling our base
         # constructor.
         for attribute in self._generated_fields:
             setattr(self, attribute, dict.fromkeys([Entry.INFLECTION_SINGULAR,
                                                     Entry.INFLECTION_PLURAL]))
-        
+            
         # Register this entry in the INDEX, set our PARENT and if we
         # do have a parent, add ourselves to that PARENT's set of
         # children.
         Entry.__init__(self, index, parent, meta)
-
-        #return                          # FIXME:
+        
         self._setup(acronym, full_form, self._meta, indent_level)
         
-        print self
-
     def get_plain_header(self):
         return self._line_format \
                % ('',
                   self.bold_it('singular'.center(self._column_width)),
                   self.bold_it('plural'.center(self._column_width)))
-
-    def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__,
-                           ', '.join('%s=%s' \
-                                     % (attribute, getattr(self, attribute))
-                                     for attribute in self._generated_fields))
     
     def __str__(self):
         return '\n'.join([self._line_format \
@@ -552,10 +541,6 @@ class ConceptEntry(Entry):
             concept = ''
             
         self._setup(concept, self._meta, indent_level)
-        
-        print self.get_plain_header()
-        print self
-        print
 
     def get_plain_header(self):
         return self._line_format \
@@ -563,12 +548,6 @@ class ConceptEntry(Entry):
                   self.bold_it('singular'.center(self._column_width)),
                   self.bold_it('plural'.center(self._column_width)))
 
-    def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__,
-                           ', '.join('%s=%s' \
-                                     % (attribute, getattr(self, attribute))
-                                     for attribute in self._generated_fields))
-    
     def __str__(self):
         return '\n'.join([self._line_format \
                           % (attribute,
@@ -648,14 +627,11 @@ class PersonEntry(Entry):
         ]
     
     # Different constants used for output formatting.
-    _bold_on = '\033[1m'
-    _bold_off = '\033[0m'
-        
     _label_width = len('typeset_in_text_short')
-    _column_width = 28
+    _column_width = 40
     _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
-                   '%%-%(_column_width)ds' % locals()
-
+                   '%%-%(_column_width)ds'
+    
     def __init__(self, index, parent, initials=None,
                  last_name=None, first_name=None, index_as=None,
                  sort_as=None, meta=None, **rest):
@@ -686,19 +662,9 @@ class PersonEntry(Entry):
         for field, variable in field_variable_map:
             getattr(self, field)[Entry.INFLECTION_NONE] = variables[variable]
             
-        print self
-
     def get_plain_header(self):
         return self._line_format \
-               % ('',
-                  self.bold_it('singular'.center(self._column_width)),
-                  self.bold_it('plural'.center(self._column_width)))
-
-    def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__,
-                           ', '.join('%s=%s' \
-                                     % (attribute, getattr(self, attribute))
-                                     for attribute in self._generated_fields))
+               % ('', self.bold_it('value'.center(self._column_width)))
 
     def __str__(self):
         return '\n'.join([self._line_format \
