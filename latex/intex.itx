@@ -1,0 +1,35 @@
+% $Id: rewritten.itx 994 2007-07-10 00:13:22Z mtr $
+%
+% name=main
+% default_inflection=singular
+%
+% Copyright (C) 2005--2007 by Martin Thorsen Ranang
+%
+
+% In general, to refer to the full-form of a concept, use the \cof
+% macro.
+%
+% *ACRONYMS*
+H2O@H$_{2}$O	dihydrogen monoxide
+  - reserve
+
+ID	identity
+
+synset
+
+% *PEOPLE*
+JFK	Kennedy, John Fitzgerald
+MLK	King, Martin Luther
+
+% *CONCEPTS*
+(InTeX logo)@{\InTeX\ logo}
+
+TeXnician@{\TeX}nician
+  -'s tool
+
+% Local Variables: 
+% mode: latex
+% TeX-master: t
+% ispell-local-dictionary: "american"
+% mode: flyspell
+% End: 
