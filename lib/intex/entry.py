@@ -9,17 +9,15 @@ __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
 from functools import partial
-from itertools import chain
 import logging
 import re
+import sys
 
 from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO, TOKEN_TYPESET_AS
 from paren_parser import ParenParser, cartesian
+from utils import flatten
 
-def flatten(sequence):
-    """Returns a flattened list.
-    """
-    return list(chain(*sequence))
+ESCAPE_TOKEN = '\\'
 
 def normalize(string, token=None):
     """Returns a new string where multiple consecutive occurences of
@@ -28,6 +26,15 @@ def normalize(string, token=None):
     """
     return (token or ' ').join(string.split(token))
 
+class EntryError(Exception):
+    """Base class for errors in the entry module.
+    """
+
+class MissingAcronymExpansionError(EntryError):
+    """This error occurrs when a main acronym entry is missing a
+    full-form expansion.
+    """
+    
 class Entry(object):
     paren_parser = ParenParser()
     
@@ -45,7 +52,7 @@ class Entry(object):
         'inflection_none',
         # Meaning of placeholders:
         'placeholder_in_text_and_index',
-        'placeholder_in_text_only',
+        'placeholder_in_index_only',
         ):
         exec("%s='%s'" % (constant.upper(),
                           ''.join(constant.split('_', 1)[1:])))
@@ -64,7 +71,7 @@ class Entry(object):
     
     _unescape_re = re.compile(r'(?P<pre>.*?)[\\](?P<post>[%s])' \
                                % FIELD_SEPARATORS)
-
+    
     # Regular expression for splitting inside meta-fields, but taking
     # care of not splitting on escaped "split-tokens".
     _meta_split_re = re.compile(r'''
@@ -93,7 +100,7 @@ class Entry(object):
     
     _placeholder_meaning = {
         '-':   PLACEHOLDER_IN_TEXT_AND_INDEX,
-        '(-)': PLACEHOLDER_IN_TEXT_ONLY,
+        '(-)': PLACEHOLDER_IN_INDEX_ONLY,
         }
     
     _hint_re = re.compile('(?P<placeholder>%s)' \
@@ -141,7 +148,21 @@ class Entry(object):
                                      % (attribute, getattr(self, attribute))
                                      for attribute in self._generated_fields))
 
+    def generate_index_entries(self, page):
+        raise NotImplementedError('This method must be implemented in '
+                                  'derived classes.')
+
+    def get_entry_type(self):
+        return self.__class__.__name__[:- len('Entry')].lower()
+
+    def generate_internal_macros(self, inflection):
+        raise NotImplementedError('This method must be implemented in '
+                                  'derived classes.')
+    
     def parse_meta(self, meta):
+        """Parse the metadata fields of an entry definition and return
+        their interpretations.
+        """
         parts = self._meta_split_re.split(meta)
         
         info = dict()
@@ -166,10 +187,26 @@ class Entry(object):
                 
         return info
 
-    def unescape(self, string):
+    def unescape(self, string, escaped_tokens=FIELD_SEPARATORS):
         """Unescapes escaped field separators.
         """
-        return self._unescape_re.sub('\g<pre>\g<post>', string)
+        # It must shrink or stay the same size.  It cannot shrink.
+        new = list(string) 
+        
+        previous_was_escape = False
+        previous_token = None
+        
+        for i, token in reversed(list(enumerate(string))):
+            if (token == ESCAPE_TOKEN) \
+                   and (previous_token in escaped_tokens) \
+                   and not (previous_token == ESCAPE_TOKEN):
+                # If CONTIGUOUS_ESCAPES is zero or even.
+                del new[i]
+                
+            previous_token = token
+            
+        return ''.join(new)
+        #return self._unescape_re.sub('\g<pre>\g<post>', string)
 
     def get_complement_inflections(self, reference, typeset,
                                    current_inflection):
@@ -213,7 +250,7 @@ class Entry(object):
         parts = self.paren_parser.split(string, delimiter, maxsplit)
 
         for i, part in reversed(list(enumerate(parts))):
-            if part[-1] == '\\':
+            if part[-1] == ESCAPE_TOKEN:
                 parts[i] = '@'.join((parts[i], parts[i + 1]))
                 del parts[i + 1]
                 
@@ -255,7 +292,7 @@ class Entry(object):
         """
         if i > 0:
            for n, character in enumerate(string[(i - 1)::-1]):
-               if character != '\\':
+               if character != ESCAPE_TOKEN:
                    break
         else:
             n = 0                 # The token can't have been escaped.
@@ -289,17 +326,27 @@ class Entry(object):
                 source = getattr(self.parent, field)['singular']
             else:
                 source = getattr(self.parent, field)[inflection]
-            
-            # Construct the new phrase.
-            if (self._placeholder_meaning[placeholder] \
-                == self.PLACEHOLDER_IN_TEXT_ONLY) \
-               and (field.startswith('typeset_in_index')):
-                formatted += template[k:i] + '--'
-            else:    
-                formatted += template[k:i] + source
-            
-            k = j
 
+            # Construct the new phrase.
+            #if (self._placeholder_meaning[placeholder] \
+            #    == self.PLACEHOLDER_IN_INDEX_ONLY) \
+            #   and (field.startswith('typeset_in_index')):
+            #    formatted += template[k:i] + '--'
+            #print self._placeholder_meaning
+            #print self._placeholder_meaning[placeholder]
+
+            if field.startswith('typeset_in_index'):
+                formatted += template[k:i] + '--'
+            elif ((field == 'reference_short') \
+                  or field.startswith('typeset_in_text')) \
+                 and (self._placeholder_meaning[placeholder] \
+                      == self.PLACEHOLDER_IN_INDEX_ONLY):
+                formatted += template[k:i]
+            else:
+                formatted += template[k:i] + source
+
+            k = j
+            
             break
         else:
             # If nothing really got replaced.
@@ -313,12 +360,12 @@ class Entry(object):
 
         if k < len(template):
             formatted += template[k:]
-
+            
         return formatted
 
     def expand_sub_entry(self, template, inflection, current_inflection,
                          field_variable_map, template_long=None):
-        reference, typeset = self.format_reference_and_typeset(template, True)
+        reference, typeset = self.format_reference_and_typeset(template, False)
         
         if template_long:
             sort_as_long, typeset_long \
@@ -326,6 +373,8 @@ class Entry(object):
             
         results = dict()
         variables = locals()
+
+        #print template
         
         for field, variable in field_variable_map:
             if not variables.has_key(variable):
@@ -337,6 +386,9 @@ class Entry(object):
                                            inflection, current_inflection,
                                            field)
                 for pos, part in enumerate(parts)]
+            # Remove empty/blank elements.
+            template_list = [part for part in template_list if part]
+            
             results[field] = ' '.join(template_list)
             
         return results
@@ -393,6 +445,7 @@ class AcronymEntry(Entry):
         # The values of REFERENCE are how this entry will be
         # referred to in the text (\co{<reference>}).
         'reference',
+        'reference_short',
         # The values of TYPESET_IN_TEXT determines how the entry
         # will be typeset in the text.  If it was referred to in
         # its plural form, the entry typeset will also be typeset
@@ -422,9 +475,73 @@ class AcronymEntry(Entry):
         # do have a parent, add ourselves to that PARENT's set of
         # children.
         Entry.__init__(self, index, parent, meta)
-        
+
         self._setup(acronym, full_form, self._meta, indent_level)
+
+    def get_index_entry(self, length, inflection):
+        sort_as = getattr(self, 'sort_as_' + length)[inflection]
+        typeset_in_index = getattr(self,
+                                   'typeset_in_index_' + length)[inflection]
         
+        return '%(sort_as)s@%(typeset_in_index)s' % locals()
+    
+    def generate_index_entries(self, page):
+        inflection = self.index_inflection
+        
+        sort_as_long = self.sort_as_long[inflection]
+        sort_as_short = self.sort_as_short[inflection]
+        
+        typeset_in_index_long = self.typeset_in_index_long[inflection]
+        typeset_in_index_short = self.typeset_in_index_short[inflection]
+
+        parent = self.parent
+
+        if parent:
+            parent_sort_as_long = parent.sort_as_long[inflection]
+            parent_typeset_in_index_long \
+                = parent.typeset_in_index_long[inflection]
+
+            parent_sort_as_short = parent.sort_as_short[inflection]
+            parent_typeset_in_index_short \
+                = parent.typeset_in_index_short[inflection]
+            
+            yield '\indexentry{' \
+                  '%(parent_sort_as_long)s@%(parent_typeset_in_index_long)s!' \
+                  '%(sort_as_long)s@%(typeset_in_index_long)s' \
+                  '}{%(page)d}' % locals()
+        
+            yield '\indexentry{' \
+                  '%(parent_sort_as_short)s@%(parent_typeset_in_index_short)s!' \
+                  '%(sort_as_short)s@%(typeset_in_index_short)s|' \
+                  'see{---, %(typeset_in_index_long)s}}' \
+                  '{%(page)d}' % locals()
+            
+        else:
+            yield '\indexentry{%(sort_as_long)s@%(typeset_in_index_long)s}' \
+                  '{%(page)d}' % locals()
+        
+            yield '\indexentry{%(sort_as_short)s@' \
+                  '%(typeset_in_index_short)s|see{%(typeset_in_index_long)s}}' \
+                  '{%(page)d}' % locals()
+        
+    def generate_internal_macros(self, inflection):
+        type_name = self.get_entry_type()
+        reference = self.reference[inflection]
+        typeset_in_text_short = self.typeset_in_text_short[inflection]
+        typeset_in_text_full = self.typeset_in_text_long[inflection]
+        
+        yield '\\new%(type_name)s{%(reference)s}{%(typeset_in_text_short)s}' \
+              '{%(typeset_in_text_full)s}' \
+              % locals()
+
+        if self.use_short_reference and self.reference_short[inflection]:
+            reference = self.reference_short[inflection]
+            
+            yield '\\new%(type_name)s{%(reference)s}' \
+                  '{%(typeset_in_text_short)s}' \
+                  '{%(typeset_in_text_full)s}' \
+                  % locals()
+
     def get_plain_header(self):
         return self._line_format \
                % ('',
@@ -444,14 +561,15 @@ class AcronymEntry(Entry):
         (current_inflection, complement_inflection) = \
             self.get_current_and_complement_inflection(meta)
         
-        # The ORDER_BY value defines how the entry should be sorted in
-        # the index.  The value is determined by the value of
-        # INDEX.DEFAULT_INFLECTION and the given inflection of the
+        # The INDEX_INFLECTION value defines how the entry should be
+        # sorted in the index.  The value is determined by the value
+        # of INDEX.DEFAULT_INFLECTION and the given inflection of the
         # current entry.
-        self.order_by = current_inflection
-
+        self.index_inflection = current_inflection
+        
         field_variable_map = [
             ('reference', 'reference'),
+            ('reference_short', 'reference_short'),
             ('sort_as_short', 'reference'),
             ('typeset_in_text_short', 'typeset'),
             ('typeset_in_index_short', 'typeset'),
@@ -461,8 +579,11 @@ class AcronymEntry(Entry):
             ]
         
         if indent_level == 0:
-            # If CONCEPT, then the current entry is a main entry.
+            if not full_form:
+                raise MissingAcronymExpansionError(concept)
+                    
             reference, typeset = self.format_reference_and_typeset(concept)
+            reference_short = [] # Only used for sub-entries.
             
             sort_as_long, typeset_long \
                 = self.format_reference_and_typeset(full_form) 
@@ -510,6 +631,7 @@ class ConceptEntry(Entry):
         # The values of REFERENCE are how this entry will be referred
         # to in the text (\co{<reference>}).
         'reference',
+        'reference_short',
         # The values of TYPESET_IN_TEXT determines how the entry will
         # be typeset in the text.  If it was referred to in its plural
         # form, the entry typeset will also be typeset with plural
@@ -542,6 +664,43 @@ class ConceptEntry(Entry):
             
         self._setup(concept, self._meta, indent_level)
 
+    def generate_index_entries(self, page):
+        inflection = self.index_inflection
+
+        sort_as = self.reference[inflection]
+        typeset_in_index = self.typeset_in_index[inflection]
+
+        parent = self.parent
+        
+        if parent:
+            parent_sort_as = parent.reference[inflection]
+            parent_typeset_in_index = parent.typeset_in_index[inflection]
+            
+            yield '\indexentry{' \
+                  '%(parent_sort_as)s@%(parent_typeset_in_index)s!' \
+                  '%(sort_as)s@%(typeset_in_index)s' \
+                  '}{%(page)d}' % locals()
+        else:
+            yield '\indexentry{%(sort_as)s@%(typeset_in_index)s}{%(page)d}' \
+                  % locals()
+
+    def generate_internal_macros(self, inflection):
+        type_name = self.get_entry_type()
+        reference = self.reference[inflection]
+        typeset_in_text = self.typeset_in_text[inflection]
+        
+        yield '\\new%(type_name)s{%(reference)s}{%(typeset_in_text)s}' \
+              '{XC.0}' \
+              % locals()
+        
+        if self.use_short_reference and self.reference_short[inflection]:
+            reference = self.reference_short[inflection]
+            
+            yield '\\new%(type_name)s{%(reference)s}{%(typeset_in_text)s}' \
+                  '{XC.1}' \
+                  % locals()
+        
+    
     def get_plain_header(self):
         return self._line_format \
                % ('',
@@ -553,9 +712,7 @@ class ConceptEntry(Entry):
                           % (attribute,
                              getattr(self, attribute)['singular'],
                              getattr(self, attribute)['plural'],)
-                          for attribute in ['reference',
-                                            'typeset_in_text',
-                                            'typeset_in_index',]])
+                          for attribute in self._generated_fields])
     
     def _setup(self, concept, meta, indent_level):
         # Trying to figure out the most appropriate features to
@@ -563,21 +720,23 @@ class ConceptEntry(Entry):
         (current_inflection, complement_inflection) = \
             self.get_current_and_complement_inflection(meta)
             
-        # The ORDER_BY value defines how the entry should be sorted in
-        # the index.  The value is determined by the value of
-        # INDEX.DEFAULT_INFLECTION and the given inflection of the
+        # The INDEX_INFLECTION value defines how the entry should be
+        # sorted in the index.  The value is determined by the value
+        # of INDEX.DEFAULT_INFLECTION and the given inflection of the
         # current entry.
-        self.order_by = current_inflection
+        self.index_inflection = current_inflection
 
         field_variable_map = [
             ('reference', 'reference'),
+            ('reference_short', 'reference'),
             ('typeset_in_text', 'typeset'),
             ('typeset_in_index', 'typeset')]
 
         if indent_level == 0:
             # If CONCEPT, then the current entry is a main entry.
             reference, typeset = self.format_reference_and_typeset(concept)
-
+            reference_short = []        # Only used for sub-entries.
+            
             for field, variable in field_variable_map:
                 value = ' '.join(locals()[variable])
                 getattr(self, field)[current_inflection] = value
@@ -596,6 +755,7 @@ class ConceptEntry(Entry):
                 getattr(self, field)[complement_inflection] = value
             
         else:
+            # This is a sub-entry.
             for inflection in (current_inflection, complement_inflection):
                 for field, value \
                     in self.expand_sub_entry(concept, inflection,
@@ -603,18 +763,23 @@ class ConceptEntry(Entry):
                                              field_variable_map).items():
                     getattr(self, field)[inflection] = value
                     
-        if current_inflection == Entry.INFLECTION_NONE:
-            for (inflection, attribute) in cartesian(
-                (Entry.INFLECTION_SINGULAR, Entry.INFLECTION_PLURAL, ),
-                [field for field, variable in field_variable_map]):
+        for (inflection, attribute) in cartesian(
+            (Entry.INFLECTION_SINGULAR, Entry.INFLECTION_PLURAL, ),
+            [field for field, variable in field_variable_map]):
+            concept = getattr(self, attribute)[inflection]
+            getattr(self, attribute)[inflection] \
+                = self.unescape(concept.strip(), FIELD_SEPARATORS + '-')
+            if current_inflection == Entry.INFLECTION_NONE:
                 getattr(self, attribute)[inflection] = \
                     getattr(self, attribute)[Entry.INFLECTION_NONE]
+                
                 
 class PersonEntry(Entry):
     _generated_fields = [
         # The values of REFERENCE are how this entry will be referred
         # to in the text (\co{<reference>}).
         'reference',
+        'reference_short',
         # The values of TYPESET_IN_TEXT determines how the entry will
         # be typeset in the text.  If it was referred to in its plural
         # form, the entry typeset will also be typeset with plural
