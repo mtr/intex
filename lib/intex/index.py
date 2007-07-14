@@ -8,15 +8,37 @@ __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
 __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
+from collections import defaultdict
 from cStringIO import StringIO
 import logging
 import re
+import sys
 
-from config import FIELD_SEPARATORS, TOKEN_COMMENT, TOKEN_ENTRY_META_INFO
+from config import (
+    FIELD_SEPARATORS,
+    INTEX_DEFAULT_INDEX,
+    TOKEN_COMMENT,
+    TOKEN_ENTRY_META_INFO,
+    )
 from entry import AcronymEntry, ConceptEntry, PersonEntry
 from stack import Stack
+from utils import flatten
 
+import entry
+
+class _IndexError(Exception):
+    """Base class for errors in the index module.
+    """
+
+class IndexSyntaxError(_IndexError, SyntaxError):
+    """Error caused by invalid syntax in the input .itx file.
+    """
+    
 class Index(list):
+    _intex_re = re.compile('\\\@writefile\{%s\}' \
+                           '\{\\\indexentry\{(?P<key>.*)\}\{(?P<page>\d+)\}\}' \
+                           % (INTEX_DEFAULT_INDEX))
+    
     _concept_types = ['ACRONYMS', 'PEOPLE', 'CONCEPTS']
     _index_attrbiutes = {
         'name': None,
@@ -156,6 +178,7 @@ class Index(list):
     def handle_meta_directive(self, attribute=None, value=None, context=None):
         if attribute:
             # Set an attribute describing this index (e.g., its name).
+            logging.info('Setting the index\'s %s=%s.', attribute, repr(value))
             setattr(self, attribute, value)
         elif context:
             self._context = context[1:-1] # Remove pre and post '*'s.
@@ -181,10 +204,10 @@ class Index(list):
                 # increasing.  The first time an indentation level is
                 # used, it is also defined and available for the rest
                 # of the session.
-                raise IndentationError, \
-                      'On line %d in file "%s:\n%s' \
-                      % ((self._line_num + 1), self._current_file,
-                         self._current_line)
+                raise IndentationError('On line %d in file "%s:\n%s' \
+                                       % ((self._line_num + 1),
+                                          self._current_file,
+                                          self._current_line))
             else:
                 self._indentation_level[indent] = len(self._indentation_level)
                 
@@ -219,12 +242,20 @@ class Index(list):
         _acronym_re: handle_entry,
         _person_re: handle_entry,
         }
-    
+
+    @staticmethod
+    def syntax_error(filename, line_number, message):
+        logging.error('Syntax error on line %d in file "%s": %s',
+                      line_number, filename, message)
+        sys.exit(1)
+                 
     @classmethod
     def from_file(cls, filename):
         self = cls()
-
+        
         self._current_file = filename
+
+        logging.info('Reading index definitions from "%s".', filename)
         
         stream = open(filename, 'r')
         
@@ -246,7 +277,16 @@ class Index(list):
                 for match in matcher.finditer(line):
                     # Call the appropriate handler, given the current
                     # context.
-                    self._match_handler[matcher](self, **match.groupdict())
+                    try:
+                        self._match_handler[matcher](self,
+                                                     **match.groupdict())
+                    except entry.MissingAcronymExpansionError, e:
+                        self.syntax_error(filename, (self._line_num + 1),
+                                          'Missing full-form expansion for ' \
+                                          'acronym definition of "%s".' \
+                                          % (e.message, ))
+                    except:
+                        raise
                     break               # To avoid the else clause.
                 else:
                     continue            # The matcher didn't apply, so
@@ -277,10 +317,99 @@ class Index(list):
         return string
 
     def generate_reference_index(self):
-        self.references = dict((phrase, (sub_key, entry))
-                               for entry in self
-                               for sub_key, phrase
-                               in entry.reference.iteritems())
+        references = defaultdict(set)
+        
+        for entry in self:
+            for inflection, phrase in entry.reference_short.iteritems():
+                if phrase:
+                    references[phrase].add(entry)
+
+        ambiguous_short_references = [
+            entries
+            for phrase, entries in sorted(references.iteritems())
+            if len(entries) > 1]
+        
+        for entries in ambiguous_short_references:
+            logging.warn('The short-form references for the entries\n'
+                         '%s\nare the same (%s) and hence ambiguous.  '
+                         'Hence, the entries must be referred to using '
+                         'the full form references.',
+                         '\nand\n'.join(str(entry) for entry in entries),
+                         list(entries)[0].reference_short['singular'])
+
+        ambiguous_short_references = set(flatten(ambiguous_short_references))
+
+        references = dict()
+        
+        for entry in self:
+            for inflection, phrase in entry.reference.iteritems():
+                if phrase in references:
+                    logging.error('Duplicate full-form reference "%s" ' \
+                                  'detected.  Please correct your .itx file.' \
+                                  % phrase)
+                    sys.exit(1)
+                    
+                references[phrase] = (entry, inflection)
+
+            if entry not in ambiguous_short_references:
+                for inflection, phrase in entry.reference_short.iteritems():
+                    references[phrase] = (entry, inflection)
+
+                use_short_reference = True
+            else:
+                use_short_reference = False
+
+            entry.use_short_reference = use_short_reference
+
+        self.references = references
+        
+    def get_auxiliary_entries(self, filename):
+        for line in open(filename, 'r'):
+            match = self._intex_re.match(line.rstrip())
+            if not match:
+                yield (False, line)
+                continue
+            key, page = match.groups()
+            yield (True, (key, int(page)))
+            
+    def interpret_auxiliary(self, auxiliary_filename, internal_file,
+                            index_file):
+        not_found = set()
+        already_output = set()
+        already_handled = set()
+        
+        for is_concept, data in self.get_auxiliary_entries(auxiliary_filename):
+            if not is_concept:
+                logging.debug('Ignoring non-concept: "%s"', data.rstrip())
+                continue
+            
+            key, page = data
+
+            logging.debug('Handling reference "%s" on page %s.', key, page)
+            
+            if key not in self.references:
+                not_found.add((key, page))
+                continue
+            
+            concept, inflection = self.references[key]
+            logging.debug('Reference expanded to %s (inflection=%s)',
+                          repr(concept), inflection)
+            
+            for line in concept.generate_index_entries(page):
+                if line not in already_output:
+                    print >> index_file, line
+                    already_output.add(line)
+                    
+            if key not in already_handled:
+                for line in concept.generate_internal_macros(inflection):
+                    if line not in already_output:
+                        print >> internal_file, line
+                        already_output.add(line)
+
+                already_handled.add(key)
+            
+        return not_found
+
         
 def main():
     """Module mainline (for standalone execution).

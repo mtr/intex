@@ -8,6 +8,10 @@ __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
 __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
+INTEX_DEFAULT_INDEX = 'raw'
+INTEX_INPUT_EXT = 'itx'
+INTEX_OUTPUT_EXT = 'ito'
+
 TOKEN_COMMENT           = '%'
 TOKEN_SHORT_PLURAL_FORM = '#'
 TOKEN_ENTRY_META_INFO   = ':'
