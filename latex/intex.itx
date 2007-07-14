@@ -10,6 +10,9 @@
 % macro.
 %
 % *ACRONYMS*
+AI	artificial intelligence
+  AIC	- complete
+
 H2O@H$_{2}$O	dihydrogen monoxide
   - reserve
 
@@ -23,11 +26,15 @@ MLK	King, Martin Luther
 
 % *CONCEPTS*
 concept
-  acronym -
-  person -
-  plain -
+  acronym (-)
+  person (-)
+  plain (-)
+  sub\--
+idea
 
 (InTeX logo)@{\InTeX\ logo}
+
+Python
 
 TeXnician@{\TeX}nician
   -'s tool

@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 % $Id$
-% Copyright (C) 2005 by Martin Thorsen Ranang <intex@ranang.org>
+% Copyright (C) 2005 by Martin Thorsen Ranang <mtr@ranang.org>
 % -------------------------------------------------------
 % 
 % This file may be distributed and/or modified under the
@@ -27,7 +27,7 @@
 %<*batchfile>
 \begingroup
 %%
-%% Copyright (C) 2005 by Martin Thorsen Ranang <intex@ranang.org>
+%% Copyright (C) 2005 by Martin Thorsen Ranang <mtr@ranang.org>
 %%
 %% This file may be distributed and/or modified under the conditions of
 %% the LaTeX Project Public License, either version 1.2 of this license
@@ -48,7 +48,7 @@
 
 This is a generated file.
 
-Copyright (C) 2005 by Martin Thorsen Ranang <intex@ranang.org>
+Copyright (C) 2005--2007 by Martin Thorsen Ranang <mtr@ranang.org>
 
 This file may be distributed and/or modified under the conditions of
 the LaTeX Project Public License, either version 1.2 of this license
@@ -105,7 +105,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %</driver>
 % \fi
 %
-% \CheckSum{0}
+% \CheckSum{548} ^^A Should be 0 during development.
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -237,7 +237,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %
 % \title{The \textsf{\InTeX} package\thanks{This document
 %   corresponds to \textsf{intex} revision~\SVNRev, dated \today.}}
-% \author{Martin Thorsen Ranang \\ \texttt{intex@ranang.org}}
+% \author{Martin Thorsen Ranang \\ \texttt{mtr@ranang.org}}
 %
 % \maketitle
 %
@@ -291,17 +291,19 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % How you can use \InTeX\ should be clearer after examining some
 % examples.  The central idea in \InTeX\ is that a phrase or a word
 % worth indexing constitutes some kind of a \co{concept}---in a broad
-% sense of the word.  A \co{concept} can be either an \co{acronym} (or
-% abbreviation), the name of an entity (like a \co{person} or an
+% sense of the word.  A \co{concept} can be of several kinds.  It can
+% be either an \co{acronym} (or
+% abbreviation), the name of an entity (a \co{person concept}, or an
 % organization), or of the ``plain'' kind (simply a phrase).  Hence,
 % we will refer to the three kinds of \co{concepts} as
-% \emph{\co{acronym}}, \emph{\co{person}}, and \emph{\co{plain}}.
+% \emph{\co{acronym concepts}}, \emph{\co{person concepts}}, and
+% \emph{\co{plain concepts}}.
 %
 % In the above paragraph, the word ``concepts'' was defined as a
 % \co{concept} of the \co{plain} kind, and it was defined to be
 % indexed as the word ``concept''.  Furthermore, the words
 % ``acronym'', ``person'', and ``plain'' where also defined as
-% \co{plain concepts}.  However, these concepts are defined as
+% \co{plain}.  However, these concepts are defined as
 % \co{sub-concepts} of ``concept'' and should be indexed accordingly.
 %
 % \subsection{Package Options}
@@ -324,7 +326,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %   \makeatother
 %   It is easy to refer to (and thus index)
 %   acronyms, like \co{H2O}.  And 
-%   sub-concepts, like \co{H2O-reserve}.
+%   sub-concepts, like \co{H2O reserve}.
 % \end{SideBySideExample}
 %
 % \begin{SideBySideExample}[xrightmargin=5cm]
@@ -336,7 +338,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % \end{SideBySideExample}
 %
 % In this section, let's assume that we would like to write
-% about the \co{\InTeX\ logo}.  This might be a good time to go drink
+% about the \co{InTeX logo}.  This might be a good time to go drink
 % some \co{H2O}.
 %
 % Example text: I believe that the problem of generating good
@@ -382,7 +384,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % \section{Macros}
 %
 % \DescribeMacro{\InTeX}
-% This is simply a macro for typesetting the \co{\InTeX\ logo}. 
+% This is simply a macro for typesetting the \co{InTeX logo}. 
 %
 % \StopEventually{}
 %
@@ -478,15 +480,35 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{acronym}
-% Anyhow, require the |acronym| and the |ifthen| packages to be loaded.
+% \begin{macro}{marginnote}
+%   Only require the marginnote package if it is really required.
+%   This is done in an attempt to avoid wasting counters.
 %    \begin{macrocode}
-\RequirePackage{acronym}
-\RequirePackage{marginnote}
+\if@itx@margin@plain%
+  \RequirePackage{marginnote}[2006/10/26]%
+\fi%
+\if@itx@margin@acronym
+  \RequirePackage{marginnote}[2006/10/26]%
+\fi%
+\if@itx@margin@person%
+  \RequirePackage{marginnote}[2006/10/26]%
+\fi%
+%    \end{macrocode}
+% Please note that the |marginnote| package will only be loaded once,
+% even if it gets required multiple times.
+% \end{macro}
+%
+% \begin{macro}{acronym}
+% \begin{macro}{ifthen}
+%   Anyhow, require the |acronym| and the |ifthen| packages to be
+%   loaded.
+%    \begin{macrocode}
+\RequirePackage{acronym}[2006/06/26]%
 \RequirePackage{ifthen}
 %    \end{macrocode}
 % \end{macro}
-%
+% \end{macro}
+% 
 % \subsection{The \InTeX\ Logo}
 % \begin{macro}{\InTeX}
 % Define a \TeX-ish logo for this package.
@@ -1003,7 +1025,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %
 % \begin{macro}{\@newentry}
 % The macros |\new|\meta{type}, where
-% \meta{type} $\in \{|acro|, |concept|, |person|\}$ (as described
+% \meta{type} $\in \{|acronym|, |concept|, |person|\}$ (as described
 % below), all call |\@newentry| with an additional first argument,
 % namely the numeric \meta{type} identifier of the new entry.
 %    \begin{macrocode}
@@ -1046,10 +1068,10 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 %
 % \begin{macro}{\@newentryequiv}
-% Note that the macros |\new|\meta{type}|equiv|, where
-% \meta{type} $\in \{|acro|, |concept|, |person|\}$ (as described
-% below) all call |\@newentryequiv| with an additional first argument,
-% namely the numeric \meta{type} identifier of the new entry.
+%   Note that the macros |\new|\meta{type}|equiv|, where \meta{type}
+%   $\in \{|acronym|, |concept|, |person|\}$ (as described below) all
+%   call |\@newentryequiv| with an additional first argument, namely
+%   the numeric \meta{type} identifier of the new entry.
 %    \begin{macrocode}
 \newcommand*\@newentryequiv[5]{%
   \newif\iffound%
@@ -1115,7 +1137,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %   After the first run of {Make\InTeX}, the file |\jobname.ito| will
 %   contain the different concept definitions.
 %    \begin{macrocode}
-\@input{\jobname.ito}
+\AtBeginDocument{\@input{\jobname.ito}}
 %    \end{macrocode}
 % \end{macro}
 %

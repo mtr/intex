@@ -46,8 +46,19 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \else%
   \def\@nearverbatim{\expandafter\strip@prefix\meaning}%
 \fi
+% Only load/require the marginnote package if it is really required.
+% (This is done in an attempt to save counters.)
+\if@itx@margin@plain%
+  \RequirePackage{marginnote}[2006/10/26]%
+\fi%
+\if@itx@margin@acronym
+  \RequirePackage{marginnote}[2006/10/26]%
+\fi%
+\if@itx@margin@person%
+  \RequirePackage{marginnote}[2006/10/26]%
+\fi%
 \RequirePackage{acronym}
-\RequirePackage{marginnote}
+%\RequirePackage{marginnote}[2006/10/26]
 \RequirePackage{ifthen}
 \newcommand*{\InTeX}{\textsl{In}\kern-.07em\TeX}%
 \newcommand\itxplaindeffont[1]{\emph{#1}}
