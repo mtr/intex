@@ -91,6 +91,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 \usepackage[norsk,english]{babel}
 \usepackage{fancyvrb}
 \usepackage{url}
+\usepackage{hyperref}
 \usepackage{svn}
 \SVN $Rev$
 \SVN $Date$
@@ -105,7 +106,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %</driver>
 % \fi
 %
-% \CheckSum{548} ^^A Should be 0 during development.
+% \CheckSum{0} ^^A Should be 0 during development.
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -246,7 +247,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % and indexing of phrases, acronyms and names in a consistent manner.
 %
 % \co{AI} is an old discipline.  No one bother with \co{AI} any more.
-% I'm really tired of \co{AI}.
+% I am really tired of \co{AI}.
 %
 % \DescribeMacro{intex} \DescribeMacro{\co}
 % The really short usage description is that in order to use the
@@ -256,30 +257,30 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % and/or typeset in some special way.
 %
 % \section{Background}
-% I've been using \LaTeX\ since the spring of 1997.  Since then I've
-% written several technical documents.  I try to present my work in an
-% accessible way.  Additionaly, I believe that \LaTeX\ can help with
-% the technicalities of presenting technical writing in a clear and
-% precise way.  For example, I've tried to always explain every
-% acronym used (the first time it occurrs in a document), include a
-% meaningful index, and also to leave some typeset clues to the
-% reader, so that it will be easier to find the key phrases in the
-% document.
+% I have been using \LaTeX\ since the spring of 1997.  Since then I
+% have written several technical documents.  Like many others, I try
+% to present my work in an accessible way to the reader, and I believe
+% that \LaTeX\ can help with the technicalities of presenting
+% technical writing in a clear and precise way.  For example, I have
+% always tried to explain every non-trivial acronym used in my
+% documents; include a meaningful index; and to also leave some clues
+% to the reader through the typesetting, so that it will be easier to
+% find the key phrases in the document.
 %
-% Already there exists packages that provide functionality that eases
-% the \DescribeMacro{acronym}acronym\footnote{The |acronym| package,
-% written by Tobias Oetiker, available from
-% \url{CTAN:/macros/latex/contrib/acronym}.} and
+% Already, packages exist that provide functionality that eases the
+% \DescribeMacro{acronym}acronym\footnote{The |acronym| package,
+%   written by Tobias Oetiker, available from
+%   \url{CTAN:/macros/latex/contrib/acronym}.} and
 % \DescribeMacro{index}indexing\footnote{The |index| package, written
-% by David M.\,Jones, available from
-% \url{CTAN:/macros/latex/contrib/index}.} operations mentioned above.
-% However, problems quickly arise when writing about an acronym in
-% both singular and plural.  For example, let's say you want to use
-% the concept \emph{informed search} (abbreviated IS).  Then, if you
-% want to write about that concept in plural, the logical acronym
-% would be ISes (informed searches).  At the same time, you probably
-% want those two occurences---perhaps typeset several chapters
-% apart---to be indexed as being the same concept.
+%   by David M.\,Jones, available from
+%   \url{CTAN:/macros/latex/contrib/index}.} operations mentioned
+% above.  However, problems quickly arise when writing about an
+% acronym in both singular and plural.  For example, let's say you
+% want to use the concept \emph{informed search} (abbreviated IS).
+% Then, if you want to write about that concept in plural, the logical
+% acronym would be ISes (informed searches).  At the same time, you
+% probably want those two occurences---perhaps typeset several
+% chapters apart---to be indexed as being the same concept.
 %
 % The \InTeX\ package was written to reduce the work needed to handle
 % such a task.  This has been done by combining the functionality of
@@ -589,14 +590,27 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %
 % \subsection{The (Low-Level) Clockwork of the Package}
 %
-% \begin{macro}{\co@serial}
-% First, define a counter that is used to enumerate new concept
-% definitions.
+% \begin{macro}{co@serial}
+%   First, define a counter that is used to enumerate new concept
+%   definitions.
 %    \begin{macrocode}
 \newcounter{co@serial}%
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{co@equiv@serial}
+%   First, define a counter that is used to enumerate new concept
+%   definitions.
+%    \begin{macrocode}
 \newcounter{co@equiv@serial}%
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{co@type}
+%   First, define a counter that is used to enumerate new concept
+%   definitions.
+%    \begin{macrocode}
 \newcounter{co@type}%
 %    \end{macrocode}
+% The |co@type| counter is used only inside the |\@itx| command.
 % \end{macro}
 %
 % \begin{macro}{\itxundefcomment}
@@ -610,8 +624,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % Define a couple of convenience macros.
 %    \begin{macrocode}
 \long\def\@firstofthree#1#2#3{#1}%
-\long\def\@secondofthree#1#2#3{%
-  #2}%
+\long\def\@secondofthree#1#2#3{#2}%
 %\newcommand*\@secondofthree[3]{#2}%
 %    \end{macrocode}
 %
@@ -843,19 +856,32 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %  \end{macro}
 %
 % \begin{macro}{\@itxplain}
+%   The syntax is |\@itxplain{|\meta{type}|}{|\meta{identity}|}|.
+%   This command is responsible for keeping track of where the
+%   $\left(\meta{type}, \meta{identity}\right)$ tuple was last used
+%   and for typesetting it accordingly.
 %    \begin{macrocode}
 \newcommand*{\@itxplain}[2]{%
 %    \end{macrocode}
+%
 % First, update the ``last used'' status of the current concept so
 % that it refers to the current area.
 %    \begin{macrocode}
   \@itxrecordarea{#1}{#2}%
 %    \end{macrocode}
-  % Then, typeset the concept.
+% Then, typeset the concept.
 %    \begin{macrocode}
   \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
+%    \end{macrocode}
+% The concept was last used in this area.  Hence, it is typeset in its
+% short form.
+%    \begin{macrocode}
     \itxs{#1}{#2}%
   \else%
+%    \end{macrocode}
+% The concept has not yet been used, or it was last used in another
+% area.  Hence, it is typeset in its full form.
+%    \begin{macrocode}
     \itxf{#1}{#2}%
   \fi%
 }
@@ -863,13 +889,14 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 %
 % \begin{macro}{\@itxalias}
-% Define the id of the equivalent entry.
-% Get the id of the main index entry for which this is an alias.
-% Keep the original definition as |\@orig|.
-% Redefine the main entry (as in
-% |\expandafter\gdef\csname fn@#1\endcsname{{#2}{#2}}|.)
-% Now, typeset the alias by using the main index entry ID.
-% Finally, reset the definition of the main entry.
+%   Define the identity of the equivalent entry.  Get the identity of the main
+%   index entry for which this is an alias.  Keep the original
+%   definition as |\@orig|.  Redefine the main entry (as in
+%   |\expandafter\gdef\csname fn@#1\endcsname{{#2}{#2}}|.)  Now,
+%   typeset the alias by using the main index entry identity.  Finally,
+%   reset the definition of the main entry.  \textbf{|FIXME:|} This
+%   command is (probably) not used at the moment (2007-07-14) and is
+%   not doing what this paragraph states.
 %    \begin{macrocode}
 \newcommand*{\@itxalias}[2]{%
   \edef\@mainserial{\expandafter\@firstoftwo#2}%
@@ -884,14 +911,20 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 %
 % \begin{macro}{\@itx@fakeindex}
+%   If no index is to be generated, we still need some output for
+%   |makeintex| to work with.  Hence, this command substitutes the
+%   |\index| command in the |index| package, and makes sure that an
+%   index entry with \emph{page} equal to |\thepage| is written to the
+%   auxiliary file instead.  However, the \emph{page} value will then
+%   be used only for providing more detailed warnings about references
+%   to undefined concepts.
 %    \begin{macrocode}
 \newcommand{\@itx@fakeindex}[1]{%
   \begingroup%
     \edef\@tempa{%
       \write\@auxout{%
         \string\@writefile{raw}{%
-          \string\indexentry{#1}%
-          {0}%
+          \string\indexentry{#1}{\thepage}%
         }%
       }%
     }%
@@ -899,14 +932,15 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 }
 %    \end{macrocode}
 % \end{macro}
+%
 % \begin{macro}{\co}
 %
-% The |\co| command is the only command the user should need to use.
-% The usage is |\co{|\meta{identity}|}|, where \meta{identity} refers
-% to a concept.  The idea is that the |\co{}| command should be
-% wrapped around every concept the user want to either typeset or
-% index in a special and consistent way (or both).  Note that |\co| is
-% a wrapper for the |\@itx| command.
+%   The |\co| command is the only command the user should need to use.
+%   The syntax is |\co{|\meta{identity}|}|, where \meta{identity}
+%   refers to a concept.  The idea is that the |\co{}| command should
+%   be wrapped around every concept the user want to either typeset or
+%   index in a special and consistent way (or both).  Note that |\co|
+%   is a wrapper for the |\@itx| command.
 %
 %    \begin{macrocode}
 % \newcommand{\co}{\@itx}
@@ -914,23 +948,20 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\@itx}
-% The |\@itx| command works just as described for |\co| above.
+%   The |\@itx| command works just as described for |\co| above.
+%   Hence, |#1| is the \meta{identity}.
 %    \begin{macrocode}
 \newcommand*{\@itx}[1]{%
   \def\@tempa{#1}%
 %    \end{macrocode}
-  % Handles, e.g., backslashes.
+% Handle, e.g., backslashes.
 %    \begin{macrocode}
   \edef\@tempb{\@nearverbatim\@tempa}%
 %    \end{macrocode}
 %
 % If \InTeX\ should generate an index, simply use the |index| package
 % to write the identifying index entry.  The intricacies of how this
-% concept should be indexed is handled externally by |makeintex|.  If
-% no index should be generated, we still need some output for
-% |makeintex| to work with, but we don't care where in the document
-% each entry was typeset.  Hence, in that case an index entry with
-% \emph{page} equal to 0 will be written instead.
+% concept should be indexed is handled externally by |makeintex|.
 %
 %    \begin{macrocode}
   \if@itx@index%
@@ -940,57 +971,76 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \fi%
 %    \end{macrocode}
 %
-% Define a new conditional, |\iffound|, to signal whether the
-% \meta{identity} is found.  Also define a new counter $n$.  Then, let
-% $n$ loop through the values $\{0, 1, 2\}$.
+% Define a new conditional, |found|, to signal whether the
+% \meta{identity} is found.
+%    \begin{macrocode}
+  \newif\iffound%
+%    \end{macrocode}
 %
+% Now, let the |co@type| counter loop through the values $\left[0, 1,
+%   2\right]$.
 %    \begin{macrocode}
   \setcounter{co@type}{0}%
-  \newif\iffound%
   \loop\ifnum\theco@type<3%
 %    \end{macrocode}
-  % Check to see if the \meta{identity} is an (acronym or person)
-  % \emph{alias} or a \emph{main} entry.  If it is an \emph{alias},
-  % there exists a variable named |fn|$n$|e@|\meta{identity}.
-  % However, if \meta{identity} refers to a \emph{main} entry, a
-  % variable named |fn|$n$|@|\meta{identity} exists.  That is, without
-  % the |e| before the |@|.  Also, it should be noted that no
-  % \emph{alias} can exists without a main entry with the same
-  % \meta{identity}.
-  %
-  % If an expansion of \meta{identity} is found, typeset it
-  % accordingly and flag the finding by setting |\iffound|.
+% Check to see if the \meta{identity} is an (acronym or person)
+% \emph{alias} or a \emph{main} entry.  If it is an \emph{alias},
+% there exists a variable named |fn|$n$|e@|\meta{identity} (note the
+% extra `|e|').  However, if \meta{identity} refers to a \emph{main}
+% entry, a variable named |fn|$n$|@|\meta{identity} exists; that is,
+% without the `|e|' before the `|@|'.  Also, it should be noted that
+% \emph{no alias can exists without a main entry with the same
+%   \meta{identity}}.
+% 
+% If an expansion of \meta{identity} is found, typeset it accordingly
+% and flag the finding by setting |\iffound|.
 %    \begin{macrocode}
     \expandafter\ifx\csname fn\number\theco@type e@\@tempb\endcsname\relax%
-      \expandafter\ifx\csname fn\number\theco@type @\@tempb\endcsname\relax\else%
+      \expandafter\ifx\csname fn\number\theco@type @\@tempb\endcsname\relax%
 %    \end{macrocode}
-    % Found plain.
+% The \meta{identity} may refer to both a main entry \emph{and} an
+% alias entry (because of the requirement mentioned above).  Do
+% nothing.  The reason the code is written in this way is to implement
+% a preference to main entries over alias entries (see the order
+% below).
 %    \begin{macrocode}
+        % The reference refers to both main _and_ alias entries.  Do
+        % nothing, this will be resolved through the |else|-cases
+        % immediately below.
+      \else%
+%    \end{macrocode}
+% The \meta{identity} refers to a main-entry.
+%    \begin{macrocode}
+        %\PackageWarning{InTeX}{Reference `#1' to main entry occurred}%
+        \edef\co@id{\csname fn\number\theco@type @\@tempb\endcsname}%
+        \@itxplain{\number\theco@type}{\co@id}%
         \foundtrue%
-	\edef\co@id{\csname fn\number\theco@type @\@tempb\endcsname}%
-	\@itxplain{\number\theco@type}{\co@id}%
       \fi%
     \else%
 %    \end{macrocode}
-      % Found alias.
+% The \meta{identity} refers to an alias-entry.
 %    \begin{macrocode}
+      %\PackageWarning{InTeX}{Reference `#1' to alias entry occurred}%
       \edef\co@id{\csname fn\number\theco@type e@\@tempb\endcsname}%
       \@itxalias{\number\theco@type}{\co@id}%
       \foundtrue%
     \fi%
 %    \end{macrocode}
-    % Increase $n$ by 1 and perform a new iteration of the loop.
+% Increase |co@type| by $1$ and perform a new iteration of the loop.
+% In other words, check if the reference (\meta{identity}) is referring to
+% another kind of entry.
 %    \begin{macrocode}
     \stepcounter{co@type}%
   \repeat%
 %    \end{macrocode}
-    % If no expansion of \meta{identity} could be found, warn the
-    % user.  Furthermore, an in-document warning will be typeset if
-    % |\if@itx@warn@undef| is \emph{true}.
+% If no expansion of \meta{identity} could be found, warn the user.
+% Furthermore, an in-document warning will be typeset if
+% |@itx@warn@undef| is \emph{true}.
 %    \begin{macrocode}
   \iffound%
+    % Do nothing.
   \else%
-    \PackageWarning{InTeX}{Concept `#1' is not defined}%
+    \PackageWarning{InTeX}{Reference `#1' to undefined concept}%
     \if@itx@warn@undef%
       \textbf{\itxundefcomment{#1}}%
     \else%
@@ -1027,7 +1077,16 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % The macros |\new|\meta{type}, where
 % \meta{type} $\in \{|acronym|, |concept|, |person|\}$ (as described
 % below), all call |\@newentry| with an additional first argument,
-% namely the numeric \meta{type} identifier of the new entry.
+% namely the numeric \meta{type} identifier of the new entry.  The
+% syntax is
+% \begin{displaymath}
+%   |\@newentry{|\meta{type}|}{|\meta{reference}|}{|\meta{typeset 1}|}{|\meta{typeset 2}|}|,
+% \end{displaymath}
+% where \meta{reference} is the string later refered to as
+% |\co{|\meta{string}|}|, and \meta{typeset 1} and \meta{typeset 2}
+% define how the concept will be typeset where it was refered to in
+% the text.  The exact meaning of \meta{typeset 1} and \meta{typeset
+%   2} depends on what \meta{type} this entry has.
 %    \begin{macrocode}
 \newcommand\@newentry[4]{%
   \def\@tempa{#2}%
@@ -1068,10 +1127,21 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 %
 % \begin{macro}{\@newentryequiv}
+%   The syntax for this command is
+%   \begin{displaymath}
+%     |\@newentryequiv{|\meta{type}|}{|\meta{parent}|}{|\meta{typeset}|}{|\meta{reference}|}{|\meta{full-form typeset}|}|,
+%   \end{displaymath}
+%   where \meta{type} $\in \{|acronym|, |concept|, |person|\}$,
+%   \meta{parent} is the (reference) identity of the concept for which
+%   this is an equivalent, \meta{typeset} defines how this equivalent
+%   should be typset in text (short-form if it is an acronym),
+%   \meta{reference} is the identity of this entry (referred to as
+%   |\co{|\meta{reference}|}|), and \meta{full-form typeset} defines
+%   how this concept should be typeset in the text in its full-form.
+%
 %   Note that the macros |\new|\meta{type}|equiv|, where \meta{type}
-%   $\in \{|acronym|, |concept|, |person|\}$ (as described below) all
-%   call |\@newentryequiv| with an additional first argument, namely
-%   the numeric \meta{type} identifier of the new entry.
+%   $\in \{|acronym|, |concept|, |person|\}$, all are wrappers for
+%   this command.
 %    \begin{macrocode}
 \newcommand*\@newentryequiv[5]{%
   \newif\iffound%
@@ -1079,22 +1149,22 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \edef\@tempb{\@nearverbatim\@tempa}%
   \expandafter\ifx\csname fn\number#1 @\@tempb\endcsname\relax%
 %    \end{macrocode}
-    % Nothing is done if |\csname fn\number#1 @\@tempb\endcsname| is not
-    % defined here, but notice that the default value of |\iffound| is
-    % \emph{false}.
+% Nothing is done if |\csname fn\number#1 @\@tempb\endcsname| is not
+% defined here, but notice that the default value of |found| is
+% \emph{false}.
 %    \begin{macrocode}
   \else%
     \foundtrue%
     \edef\co@id{\csname fn\number#1@\@tempb\endcsname}%
     %\PackageWarning{init}{Found `\@tempb' (type=\number#1, serial=\co@id)}%
 %    \end{macrocode}
-    % Store the \emph{short} and the \emph{long}
-    % versions of the alias, in that order.
+% Store the \emph{short} and the \emph{long}
+% versions of the alias, in that order.
 %    \begin{macrocode}
     \stepcounter{co@serial}%
     \@itxdefineforms{\theco@serial}{#3}{#5}%
 %    \end{macrocode}
-    % Store the numeric id of the concept alias.
+% Store the numeric identity of the concept alias.
 %    \begin{macrocode}
     \def\@tempa{#4}%
     \edef\@tempb{\@nearverbatim\@tempa}%
@@ -1111,12 +1181,9 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \begin{macro}{\newconceptequiv}
 % \begin{macro}{\newacronymequiv}
 % \begin{macro}{\newpersonequiv}
-% Explanation of the arguments for the macros |\new|\meta{type}|equiv|, where
-% \meta{type} $\in \{|acro|, |concept|, |person|\}$:
-%   |#1| identifies the ``parent'' acronym/person,
-%   |#2| defines how this equivalent should be typeset in text,
-%   |#3| identifies the equivalent form (as in |\co{#3}|), and
-%   |#4| represents the spelled-out form of the equivalent.
+%   Wrappers for the |\@newentryequiv| command, where each wrapper
+%   specifies the entry's \meta{type} through the first argument to
+%   |\@newentryequiv|.
 %    \begin{macrocode}
 \newcommand*\newconceptequiv[4]{%
   \@newentryequiv{0}{#1}{#2}{#3}{#4}%
@@ -1135,7 +1202,8 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \subsection{The Internal \InTeX\ File}
 % \begin{macro}{\InTeX}
 %   After the first run of {Make\InTeX}, the file |\jobname.ito| will
-%   contain the different concept definitions.
+%   contain the different concept definitions.  The |.ito| file is
+%   loaded at the beginning of the document.
 %    \begin{macrocode}
 \AtBeginDocument{\@input{\jobname.ito}}
 %    \end{macrocode}
