@@ -148,7 +148,7 @@ class Entry(object):
                                      % (attribute, getattr(self, attribute))
                                      for attribute in self._generated_fields))
 
-    def generate_index_entries(self, page):
+    def generate_index_entries(self, page, typeset_page_number=None):
         raise NotImplementedError('This method must be implemented in '
                                   'derived classes.')
 
@@ -251,7 +251,7 @@ class Entry(object):
 
         for i, part in reversed(list(enumerate(parts))):
             if part[-1] == ESCAPE_TOKEN:
-                parts[i] = '@'.join((parts[i], parts[i + 1]))
+                parts[i] = delimiter.join((parts[i], parts[i + 1]))
                 del parts[i + 1]
                 
         return parts
@@ -485,7 +485,7 @@ class AcronymEntry(Entry):
         
         return '%(sort_as)s@%(typeset_in_index)s' % locals()
     
-    def generate_index_entries(self, page):
+    def generate_index_entries(self, page, typeset_page_number=''):
         inflection = self.index_inflection
         
         sort_as_long = self.sort_as_long[inflection]
@@ -508,8 +508,8 @@ class AcronymEntry(Entry):
             yield '\indexentry{' \
                   '%(parent_sort_as_long)s@%(parent_typeset_in_index_long)s!' \
                   '%(sort_as_long)s@%(typeset_in_index_long)s' \
-                  '}{%(page)d}' % locals()
-        
+                  '%(typeset_page_number)s}{%(page)d}' % locals()
+            
             yield '\indexentry{' \
                   '%(parent_sort_as_short)s@%(parent_typeset_in_index_short)s!' \
                   '%(sort_as_short)s@%(typeset_in_index_short)s|' \
@@ -517,13 +517,15 @@ class AcronymEntry(Entry):
                   '{%(page)d}' % locals()
             
         else:
-            yield '\indexentry{%(sort_as_long)s@%(typeset_in_index_long)s}' \
+            yield '\indexentry{' \
+                  '%(sort_as_long)s@%(typeset_in_index_long)s' \
+                  '%(typeset_page_number)s}' \
                   '{%(page)d}' % locals()
-        
+            
             yield '\indexentry{%(sort_as_short)s@' \
                   '%(typeset_in_index_short)s|see{%(typeset_in_index_long)s}}' \
                   '{%(page)d}' % locals()
-        
+            
     def generate_internal_macros(self, inflection):
         type_name = self.get_entry_type()
         reference = self.reference[inflection]
@@ -664,7 +666,7 @@ class ConceptEntry(Entry):
             
         self._setup(concept, self._meta, indent_level)
 
-    def generate_index_entries(self, page):
+    def generate_index_entries(self, page, typeset_page_number=''):
         inflection = self.index_inflection
 
         sort_as = self.reference[inflection]
@@ -679,9 +681,10 @@ class ConceptEntry(Entry):
             yield '\indexentry{' \
                   '%(parent_sort_as)s@%(parent_typeset_in_index)s!' \
                   '%(sort_as)s@%(typeset_in_index)s' \
-                  '}{%(page)d}' % locals()
+                  '%(typeset_page_number)s}{%(page)d}' % locals()
         else:
-            yield '\indexentry{%(sort_as)s@%(typeset_in_index)s}{%(page)d}' \
+            yield '\indexentry{%(sort_as)s@%(typeset_in_index)s' \
+                  '%(typeset_page_number)s}{%(page)d}' \
                   % locals()
 
     def generate_internal_macros(self, inflection):

@@ -22,7 +22,7 @@ from config import (
     )
 from entry import AcronymEntry, ConceptEntry, PersonEntry
 from stack import Stack
-from utils import flatten
+from utils import flatten, escape_aware_rsplit
 
 import entry
 
@@ -362,7 +362,7 @@ class Index(list):
             entry.use_short_reference = use_short_reference
 
         self.references = references
-        
+
     def get_auxiliary_entries(self, filename):
         for line in open(filename, 'r'):
             match = self._intex_re.match(line.rstrip())
@@ -370,7 +370,17 @@ class Index(list):
                 yield (False, line)
                 continue
             key, page = match.groups()
-            yield (True, (key, int(page)))
+
+            # Keep track of any page-number typesetting hints.
+            parts = escape_aware_rsplit(key, '|', 1)
+
+            if len(parts) > 1:
+                key, typeset_page_number = parts
+                typeset_page_number = '|' + typeset_page_number
+            else:
+                typeset_page_number = ''
+                
+            yield (True, (key, int(page), typeset_page_number))
             
     def interpret_auxiliary(self, auxiliary_filename, internal_file,
                             index_file):
@@ -383,7 +393,7 @@ class Index(list):
                 logging.debug('Ignoring non-concept: "%s"', data.rstrip())
                 continue
             
-            key, page = data
+            key, page, typeset_page_number = data
 
             logging.debug('Handling reference "%s" on page %s.', key, page)
             
@@ -395,7 +405,8 @@ class Index(list):
             logging.debug('Reference expanded to %s (inflection=%s)',
                           repr(concept), inflection)
             
-            for line in concept.generate_index_entries(page):
+            for line in concept.generate_index_entries(page,
+                                                       typeset_page_number):
                 if line not in already_output:
                     print >> index_file, line
                     already_output.add(line)
