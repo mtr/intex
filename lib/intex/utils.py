@@ -18,27 +18,36 @@ def flatten(sequence):
     """
     return list(chain(*sequence))
 
-def escape_aware_split(string, delimiter=whitespace, maxsplit=None):
-    parts = list()
+def _setup_escape_aware_split(delimiter):
+    if delimiter is None:
+        delimiter = whitespace
+        lookahead = 1
+    else:
+        lookahead = len(delimiter)
 
-    i, j = None, None
+    return delimiter, lookahead, list(), (None, None)
+
+def escape_aware_split(string, delimiter=None, maxsplit=None):
+    delimiter, lookahead, parts, (i, j) = _setup_escape_aware_split(delimiter)
     
-    for k, token in enumerate(string):
-        if token in delimiter:
+    for k in xrange(len(string)):
+        token = string[k:(k + lookahead)]
+        
+        if (token == delimiter) or (token in delimiter):
             # Found a delimiter.  Check the number of contiguous
             # escape tokens in front of it (right to left).
             for l in xrange((k - 1), -1, -1):
                 if string[l] != ESCAPE_TOKEN:
                     break
-                
+            
             escapes = (k - l - 1)
             
             if not (escapes & 1):   # Odd number of escapes?
                 # Split here.
                 parts.append(string[i:k])
                 
-                i = (k + 1)         # Skip the delimiter token.
-
+                i = (k + lookahead) # Skip the delimiter token.
+                
         if len(parts) == maxsplit:
             break
                 
@@ -46,13 +55,13 @@ def escape_aware_split(string, delimiter=whitespace, maxsplit=None):
     
     return parts
 
-def escape_aware_rsplit(string, delimiter=whitespace, maxsplit=None):
-    parts = list()
+def escape_aware_rsplit(string, delimiter=None, maxsplit=None):
+    delimiter, lookahead, parts, (i, j) = _setup_escape_aware_split(delimiter)
     
-    i, j = None, None
-    
-    for k, token in reversed(list(enumerate(string))):
-        if token in delimiter:
+    for k in xrange((len(string) - 1), -1, -1):
+        token = string[k:(k + lookahead)]
+        
+        if (token == delimiter) or (token in delimiter):
             # Found a delimiter.  Check the number of contiguous
             # escape tokens in front of it (right to left).
             for l in xrange((k - 1), -1, -1):
@@ -63,13 +72,13 @@ def escape_aware_rsplit(string, delimiter=whitespace, maxsplit=None):
             
             if not (escapes & 1):   # Odd number of escapes?
                 # Split here.
-                parts.append(string[k+ 1:j])
+                parts.append(string[k + lookahead:j])
                 
-                j = k         # Skip the delimiter token.
-
+                j = k                   # Skip the delimiter token.
+                
         if len(parts) == maxsplit:
             break
-                
+        
     parts.append(string[i:j])           # Add the rest, if applicable.
     parts.reverse()                     # Reverse the list in-place.
     
