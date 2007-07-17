@@ -18,7 +18,7 @@ def flatten(sequence):
     """
     return list(chain(*sequence))
 
-def _setup_escape_aware_split(delimiter):
+def _init_escape_aware_split(delimiter):
     if delimiter is None:
         delimiter = whitespace
         lookahead = 1
@@ -28,7 +28,7 @@ def _setup_escape_aware_split(delimiter):
     return delimiter, lookahead, list(), (None, None)
 
 def escape_aware_split(string, delimiter=None, maxsplit=None):
-    delimiter, lookahead, parts, (i, j) = _setup_escape_aware_split(delimiter)
+    delimiter, lookahead, parts, (i, j) = _init_escape_aware_split(delimiter)
     
     for k in xrange(len(string)):
         token = string[k:(k + lookahead)]
@@ -56,7 +56,7 @@ def escape_aware_split(string, delimiter=None, maxsplit=None):
     return parts
 
 def escape_aware_rsplit(string, delimiter=None, maxsplit=None):
-    delimiter, lookahead, parts, (i, j) = _setup_escape_aware_split(delimiter)
+    delimiter, lookahead, parts, (i, j) = _init_escape_aware_split(delimiter)
     
     for k in xrange((len(string) - 1), -1, -1):
         token = string[k:(k + lookahead)]
