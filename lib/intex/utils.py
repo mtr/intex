@@ -61,8 +61,6 @@ def escape_aware_rsplit(string, delimiter=None, maxsplit=None):
     for k in xrange((len(string) - lookahead), -1, -1):
         token = string[k:(k + lookahead)]
 
-        print token
-        
         if (token == delimiter) or (token in delimiter):
             # Found a delimiter.  Check the number of contiguous
             # escape tokens in front of it (right to left).
