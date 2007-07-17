@@ -10,8 +10,8 @@
 % macro.
 %
 % *ACRONYMS*
-AI	artificial intelligence
-  AIC	- complete
+AI	Artificial Intelligence
+  AIC	- Complete
 
 H2O@H$_{2}$O	dihydrogen monoxide
   - reserve
@@ -25,12 +25,26 @@ JFK	Kennedy, John Fitzgerald
 MLK	King, Martin Luther
 
 % *CONCEPTS*
+carnivore
+  feline
+    domestic cat
+    tiger
+  canine
+    Gray Wolf
+    domestic dog
 concept
   acronym (-)
   person (-)
   plain (-)
   sub\--
 idea
+
+(meat eater)@{m$^{e}$a$_{t}$ eater} --> carnivore
+
+synonymy
+synonym	-> synonymy
+  direct -
+  indirect -
 
 (InTeX logo)@{\InTeX\ logo}
 

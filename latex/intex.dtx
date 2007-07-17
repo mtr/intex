@@ -183,7 +183,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % \advance\@tempdimb -5mm
 % \vspace{2mm}
 % \begin{minipage}[c]{\@tempdimb}
-%   \fvset{xrightmargin=0pt}
+%   \fvset{xrightmargin=0pt}%
 %   \catcode`\Z=9\relax%
 %   #1
 % \end{minipage}%
@@ -245,9 +245,6 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % \section{Introduction}
 % This package adds functionality to \LaTeX\ that eases typesetting
 % and indexing of phrases, acronyms and names in a consistent manner.
-%
-% \co{AI} is an old discipline.  No one bother with \co{AI} any more.
-% I am really tired of \co{AI}.
 %
 % \DescribeMacro{intex} \DescribeMacro{\co}
 % The really short usage description is that in order to use the
@@ -338,12 +335,23 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %   or a single \co{ID}. 
 % \end{SideBySideExample}
 %
+%
+% \begin{SideBySideExample}[xrightmargin=5cm]
+%   \makeatletter
+%   \@itx@margin@plainfalse%
+%   \makeatother
+%   %
+%   The word \co{carnivore} means
+%   \co{meat eater}.  There are both
+%   \co{feline} and \co{canine}
+%   \co{meat eaters} in the animal
+%   kingdom.
+% \end{SideBySideExample}
+%
 % In this section, let's assume that we would like to write
 % about the \co{InTeX logo}.  This might be a good time to go drink
 % some \co{H2O}.
 %
-% Example text: I believe that the problem of generating good
-% indices is \co{AIC}.  
 %
 % \subsubsection{Index Definitions}
 % The concept index definition file used for the above paragraph looks
@@ -646,11 +654,11 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \newcommand*\@itxmarginlabel[2]{%
   \hspace{0pt}%
 %    \end{macrocode}
-  %
-  % The second argument is the \emph{identity} of the entity we're
-  % typesetting, while the first argument signals whether we're
-  % typesetting a\ldots
-  %
+% 
+% The second argument is the \meta{identity} of the entity we're
+% typesetting, while the first argument signals its \meta{type}; that
+% is, whether we're typesetting a\ldots
+% 
 %    \begin{macrocode}
   \ifcase#1%
 %    \end{macrocode}
@@ -738,17 +746,17 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \newcommand*{\@itxs}[2]{%
   \ifcase\number#1%
 %    \end{macrocode}
-    % Plain.
+% Plain.
 %    \begin{macrocode}
     \itxplainfollowfont{\ITX@itxs{#1}{#2}}%
   \or%
 %    \end{macrocode}
-    % Acronym.
+% Acronym.
 %    \begin{macrocode}
     \itxacronymshortfont{\ITX@itxs{#1}{#2}}%
   \or%
 %    \end{macrocode}
-    % Person.
+% Person.
 %    \begin{macrocode}
     \itxpersonlastfont{\ITX@itxl{#1}{#2}}%
   \fi%
@@ -763,49 +771,48 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \newcommand*{\@itxf}[2]{%
   \ifcase\number#1%
 %    \end{macrocode}
-    % \begin{enumerate}
-    % \item Plain concept.
-    % Typeset margin-notes if applicable, \ldots
+% \begin{enumerate}
+% \item Plain concept.
+%   Typeset margin-notes if applicable, \ldots
 %    \begin{macrocode}
     \@itxmarginlabel{#1}{#2}%
 %    \end{macrocode}
-    % \ldots typeset the concept, \ldots
+% \ldots typeset the concept, \ldots
 %    \begin{macrocode}
     \itxplaindeffont{\ITX@itxs{#1}{#2}}\nolinebreak %
   \or%
 %    \end{macrocode}
-    % \item Acronym.  Typeset the concept (note in-between margin
-    % label), \ldots
+% \item Acronym.  Typeset the concept (note in-between margin
+%   label), \ldots
 %    \begin{macrocode}
     \itxacronymdeffont{%
       \ITX@itxl{#1}{#2} %
       %\nolinebreak[3] %
 %    \end{macrocode}
-      % \ldots typeset margin-notes if applicable, \ldots
+% \ldots typeset margin-notes if applicable, \ldots
 %    \begin{macrocode}
       \@itxmarginlabel{#1}{#2}%
 %    \end{macrocode}
-      % \ldots continue typesetting the concept.
+% \ldots continue typesetting the concept.
 %    \begin{macrocode}
       \itxacronymdefshortfont{%
         \itxacronymshortfont{(\ITX@itxs{#1}{#2})}}%
     }%
   \or%
 %    \end{macrocode}
-    % \item Person. 
-    % Typeset the concept (note the in-between margin label),
-    % \ldots
+% \item Person.  Typeset the concept (note the in-between margin
+%   label), \ldots
 %    \begin{macrocode}
     \itxpersondeffont{%
       \itxpersonfirstfont{%
         \ITX@itxs{#1}{#2}} %
       %\nolinebreak[3] %
 %    \end{macrocode}
-      % \ldots typeset margin-notes if applicable, \ldots
+% \ldots typeset margin-notes if applicable, \ldots
 %    \begin{macrocode}
       \@itxmarginlabel{#1}{#2}%
 %    \end{macrocode}
-      % \ldots continue typesetting the concept.
+% \ldots continue typesetting the concept.
 %    \begin{macrocode}
       \itxpersonlastfont{%
         \ITX@itxl{#1}{#2}%
@@ -902,7 +909,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \edef\@mainserial{\expandafter\@firstoftwo#2}%
   \edef\@equivserial{\expandafter\@secondoftwo#2}%
 %    \end{macrocode}
-    % Record usage of the main concept entry.
+% Record usage of the main concept entry.
 %    \begin{macrocode}
   %\@itxrecordarea{#1}{\@mainserial}%
   \@itxplain{#1}{\@equivserial}%
@@ -943,7 +950,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %   is a wrapper for the |\@itx| command.
 %
 %    \begin{macrocode}
-% \newcommand{\co}{\@itx}
+%\newcommand{\co}{\@itx}
 \newcommand{\co}{\protect\@itx}
 %    \end{macrocode}
 % \end{macro}
