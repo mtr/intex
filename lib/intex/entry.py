@@ -15,9 +15,10 @@ import sys
 
 from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO, TOKEN_TYPESET_AS
 from paren_parser import ParenParser, cartesian
-from utils import flatten
+from utils import flatten, escape_aware_split, escape_aware_rsplit
 
 ESCAPE_TOKEN = '\\'
+ALIAS_INDICATOR = '-->'
 
 def normalize(string, token=None):
     """Returns a new string where multiple consecutive occurences of
@@ -34,7 +35,11 @@ class MissingAcronymExpansionError(EntryError):
     """This error occurrs when a main acronym entry is missing a
     full-form expansion.
     """
-    
+class MultipleAliasIndicatorsError(EntryError):
+    """Multiple alias indicators ('%(ALIAS_INDICATOR)s') were
+    detected.
+    """
+
 class Entry(object):
     paren_parser = ParenParser()
     
@@ -187,6 +192,16 @@ class Entry(object):
                 
         return info
 
+    def get_alias_if_defined(self, string):
+        parts = escape_aware_split(string, ALIAS_INDICATOR)
+
+        if len(parts) < 2:
+            return string, None
+        elif len(parts) == 2:
+            return parts
+        else:
+            raise MultipleAliasIndicatorsError(string) 
+            
     def unescape(self, string, escaped_tokens=FIELD_SEPARATORS):
         """Unescapes escaped field separators.
         """
@@ -475,7 +490,7 @@ class AcronymEntry(Entry):
         # do have a parent, add ourselves to that PARENT's set of
         # children.
         Entry.__init__(self, index, parent, meta)
-
+        
         self._setup(acronym, full_form, self._meta, indent_level)
 
     def get_index_entry(self, length, inflection):
@@ -656,6 +671,10 @@ class ConceptEntry(Entry):
         # Call the base constructor.
         Entry.__init__(self, index, parent, meta)
 
+        print 'concept="%s"' % (concept)
+        concept, meta = self.get_alias_if_defined(concept)
+        
+        print 'concept="%s", meta="%s"' % (concept, meta)
         #return                          # FIXME:
         if concept:
             # Unescape escaped field separators.  Other escaped tokens

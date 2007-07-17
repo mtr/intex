@@ -30,9 +30,9 @@ def _init_escape_aware_split(delimiter):
 def escape_aware_split(string, delimiter=None, maxsplit=None):
     delimiter, lookahead, parts, (i, j) = _init_escape_aware_split(delimiter)
     
-    for k in xrange(len(string)):
+    for k in xrange((len(string) - (lookahead - 1))):
         token = string[k:(k + lookahead)]
-        
+
         if (token == delimiter) or (token in delimiter):
             # Found a delimiter.  Check the number of contiguous
             # escape tokens in front of it (right to left).
@@ -58,8 +58,10 @@ def escape_aware_split(string, delimiter=None, maxsplit=None):
 def escape_aware_rsplit(string, delimiter=None, maxsplit=None):
     delimiter, lookahead, parts, (i, j) = _init_escape_aware_split(delimiter)
     
-    for k in xrange((len(string) - 1), -1, -1):
+    for k in xrange((len(string) - lookahead), -1, -1):
         token = string[k:(k + lookahead)]
+
+        print token
         
         if (token == delimiter) or (token in delimiter):
             # Found a delimiter.  Check the number of contiguous
