@@ -5,7 +5,7 @@ from __future__ import with_statement
 """
 Copyright (C) 2007 by Martin Thorsen Ranang
 """
-__version__ = "$Rev$"
+__version__ = "@VERSION@"
 __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 from contextlib import nested

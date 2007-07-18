@@ -3,14 +3,14 @@ dnl
 dnl $Id$
 dnl
 AC_INIT(intex, 1.0)
-AC_CONFIG_SRCDIR(src/mkintex)
+AC_CONFIG_SRCDIR(src/mkintex.in)
 AM_INIT_AUTOMAKE
 
 dnl AM_GNU_GETTEXT([external])
 
 AM_PATH_PYTHON(2.5,, :)
 
-AC_OUTPUT([Makefile po/Makefile.in
+AC_OUTPUT([Makefile
            setup.py
 	   bin/config.sh
 	   lib/intex/config.py

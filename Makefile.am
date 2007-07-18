@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-SUBDIRS = po src #po lib
+SUBDIRS = src
 
 ACLOCAL_AMFLAGS = -I m4
 
