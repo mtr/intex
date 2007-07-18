@@ -1,0 +1,9 @@
+[install]
+prefix = /usr
+
+[bdist_rpm]
+packager = Martin Thorsen Ranang <mtr@ranang.org>
+vendor = Martin Thorsen Ranang <mtr@ranang.org>
+doc_files = ChangeLog
+            README
+group = Productivity/Publishing
