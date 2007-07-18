@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# $Id: post-install.sh.in 271 2007-06-06 12:34:42Z mtr $
+# $Id$
 #
 # Copyright (C) 2007 by Martin Thorsen Ranang
 #

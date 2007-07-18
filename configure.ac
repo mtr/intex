@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl 
-dnl $Id: configure.ac 314 2007-06-22 14:46:42Z mtr $
+dnl $Id$
 dnl
 AC_INIT(intex, 1.0)
 AC_CONFIG_SRCDIR(src/mkintex)
