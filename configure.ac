@@ -6,11 +6,11 @@ AC_INIT(intex, 1.0)
 AC_CONFIG_SRCDIR(src/mkintex)
 AM_INIT_AUTOMAKE
 
-AM_GNU_GETTEXT([external])
+dnl AM_GNU_GETTEXT([external])
 
 AM_PATH_PYTHON(2.5,, :)
 
-AC_OUTPUT([Makefile
+AC_OUTPUT([Makefile po/Makefile.in
            setup.py
 	   bin/config.sh
 	   lib/intex/config.py
