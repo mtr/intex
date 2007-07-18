@@ -1,0 +1,9 @@
+include AUTHORS
+include ChangeLog
+include COPYING
+include INSTALL
+include NEWS
+include README
+include latex/intex.sty
+include latex/intex.pdf
+include src/mkintex

@@ -1,0 +1,43 @@
+#! /bin/sh
+#
+# $Id: post-install.sh.in 271 2007-06-06 12:34:42Z mtr $
+#
+# Copyright (C) 2007 by Martin Thorsen Ranang
+#
+
+log_dir='/var/log/@PACKAGE_NAME@'
+run_dir='/var/run'
+lock_dir='/var/lock/subsys'
+init_dir='/etc/init.d'
+main_init_script=$init_dir/@PACKAGE_NAME@
+
+if [ ! -d $log_dir ]; then
+    mkdir -p $log_dir
+fi
+
+if [ ! -d $run_dir ]; then
+    mkdir -p $run_dir
+fi
+
+if [ ! -d $lock_dir ]; then
+    mkdir -p $lock_dir
+fi
+
+# Make sure the init scripts are executable.
+for script in @PACKAGE_NAME@ common-@PACKAGE_NAME@ \
+    model_builder model_server query_handler; do
+    chmod +x $init_dir/$script
+done
+
+if [ -x /usr/lib/lsb/install_initd ]; then
+    /usr/lib/lsb/install_initd $main_init_script
+elif [ -x /sbin/chkconfig ]; then
+    /sbin/chkconfig --add @PACKAGE_NAME@
+else
+    for i in 2 3 4 5; do
+	ln -sf $main_init_script /etc/rc.d/rc${i}.d/S90@PACKAGE_NAME@
+    done
+    for i in 1 6; do
+        ln -sf $main_init_script /etc/rc.d/rc${i}.d/K10@PACKAGE_NAME@
+    done
+fi

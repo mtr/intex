@@ -1,0 +1,101 @@
+#! /usr/bin/python
+# -*- coding: latin-1 -*-
+# $Id: setup.py.in 297 2007-06-13 09:51:25Z mtr $
+"""
+Copyright (C) 2007 by Linpro AS
+"""
+__author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
+__revision__ = "$Rev: 297 $"
+__version__ = "@PACKAGE_VERSION@"
+
+from distutils.core import setup
+import os
+
+LONG_DESCRIPTION = """\
+A flight-schedule query server.
+
+The server will answer queries, stated as HTTP-requests, about the
+current flight schedule at OSL.no.
+"""
+
+
+def isPackage(filename):
+    return (os.path.isdir(filename) and
+            os.path.isfile(os.path.join(filename, '__init__.py')))
+
+def packagesFor(filename, basePackage=""):
+    """Find all packages in filename.
+    """
+    set_of_packages = {}
+    
+    for item in os.listdir(filename):
+        directory = os.path.join(filename, item)
+        if isPackage(directory):
+            if basePackage:
+                moduleName = '%s.%s' % (basePackage, item)
+            else:
+                moduleName = item
+                
+            set_of_packages[moduleName] = directory
+            set_of_packages.update(packagesFor(directory, moduleName))
+            
+    return set_of_packages
+
+def main():
+    """Module mainline (for standalone execution).
+    """
+    packages = packagesFor('lib')
+
+    author_name = __author__.split(' <')[0]
+    author_email = __author__.rsplit(' ')[-1]
+
+    if True:
+        setup(
+            name='@PACKAGE_NAME@',
+            version='@PACKAGE_VERSION@',
+            description='Flight-Schedule Query Server',
+            long_description=LONG_DESCRIPTION,
+            author=author_name,
+            author_email=author_email,
+            url='http://www.linpro.no/projects/osl_flight_schedule_search',
+            package_dir=packages,
+            packages=packages.keys(),
+            scripts=[
+            'src/model_builder',
+            'src/model_server',
+            'src/query_handler',
+            'test/generate_stress_test_data.py',
+            ],
+            data_files=[
+            # Locales:
+            ('share/locale/en_US/LC_MESSAGES',
+             ['locale/en_US/LC_MESSAGES/@PACKAGE_NAME@.mo']),
+            ('share/locale/no_NO/LC_MESSAGES',
+             ['locale/no_NO/LC_MESSAGES/@PACKAGE_NAME@.mo']),
+            # XSLT stylesheet:
+            ('share/@PACKAGE_NAME@', ['data/orig_page_to_template.xsl']),
+            # HTML templates:
+            ('share/@PACKAGE_NAME@', ['data/page-static.html']),
+            ('share/@PACKAGE_NAME@/page_fragments',
+             ['data/page_fragments/search_table_head.html']),
+            # The server root (with contents):
+            ('share/@PACKAGE_NAME@/server_root',
+             ['data/server_root/striped_table.css',
+              'data/server_root/striped_table.js',
+              ]),
+            # Init scripts:
+            ('/etc/init.d', ['etc/init.d/@PACKAGE_NAME@',
+                             'etc/init.d/common-@PACKAGE_NAME@',
+                             'etc/init.d/model_builder',
+                             'etc/init.d/model_server',
+                             'etc/init.d/query_handler',
+                             ]),
+            # Init-scipt configuration files:
+            ('/etc/default', ['etc/default/@PACKAGE_NAME@']),
+            # Log rotation scripts:
+            ('/etc/logrotate.d', ['etc/logrotate.d/@PACKAGE_NAME@']),
+            ],
+            )
+        
+if __name__ == "__main__":
+    main()
