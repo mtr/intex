@@ -10,23 +10,23 @@
 % macro.
 %
 % *ACRONYMS*
-% AI	Artificial Intelligence
-%   AIC	- Complete
+AI	Artificial Intelligence
+  AIC	- Complete
 
-% H2O@H$_{2}$O	dihydrogen monoxide
-%   - reserve
+H2O@H$_{2}$O	dihydrogen monoxide
+  - reserve
 
-% ID	identity
+ID	identity
 
-% synset	synonym set
+synset	synonym set
 
 % *PEOPLE*
 EAP	Presley, Elvis Aaron
 EAPK	King, the --> EAP
-% JFK	Kennedy, John Fitzgerald
-% MLK	King, Martin Luther
-% Madonna	Madonna
-% VWvG	van Gogh, Vincent Willem
+JFK	Kennedy, John Fitzgerald
+MLK	King, Martin Luther
+Madonna	Madonna
+VWvG	van Gogh, Vincent Willem
 
 % *CONCEPTS*
 carnivore
@@ -47,15 +47,15 @@ idea
 
 synonymy
 synonym --> synonymy
-%   direct -
-%   indirect -
+  direct -
+  indirect -
 
-% (InTeX logo)@{\InTeX\ logo}
+(InTeX logo)@{\InTeX\ logo}
 
-% Python
+Python
 
-% TeXnician@{\TeX}nician
-%   -'s tool
+TeXnician@{\TeX}nician
+  -'s tool
 
 % Local Variables: 
 % mode: latex
