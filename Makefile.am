@@ -2,11 +2,11 @@
 #
 # $Id$
 #
-SUBDIRS = src #po lib
+SUBDIRS = po src #po lib
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = m4/ChangeLog src/*.py #lib/
+EXTRA_DIST = config.rpath m4/ChangeLog  m4/ChangeLog src/*.py #lib/
 
 pysetyp = setup.py
 
