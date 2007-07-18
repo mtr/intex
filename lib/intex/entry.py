@@ -198,9 +198,9 @@ class Entry(object):
         if len(parts) < 2:
             return string, None
         elif len(parts) == 2:
-            return parts
+            return parts[0].rstrip(), parts[1].lstrip()
         else:
-            raise MultipleAliasIndicatorsError(string) 
+            raise MultipleAliasIndicatorsError('string="%s"' % string) 
             
     def unescape(self, string, escaped_tokens=FIELD_SEPARATORS):
         """Unescapes escaped field separators.
@@ -479,7 +479,7 @@ class AcronymEntry(Entry):
     _label_width = len('typeset_in_index_short')
     
     def __init__(self, index, parent, acronym=None, indent_level=None,
-                 full_form=None, meta=None, **rest):
+                 full_form=None, meta=None, alias=None, **rest):
         # Set a couple of defining attributes before calling our base
         # constructor.
         for attribute in self._generated_fields:
@@ -490,7 +490,11 @@ class AcronymEntry(Entry):
         # do have a parent, add ourselves to that PARENT's set of
         # children.
         Entry.__init__(self, index, parent, meta)
-        
+
+        # If this entry is an alias for another entry, indicate that
+        # here.
+        self.alias = alias
+
         self._setup(acronym, full_form, self._meta, indent_level)
 
     def get_index_entry(self, length, inflection):
@@ -566,12 +570,18 @@ class AcronymEntry(Entry):
                   self.bold_it('plural'.center(self._column_width)))
     
     def __str__(self):
+        if self.alias:
+            alias_line = '\n' + self._line_format % ('alias', self.alias, '', )
+        else:
+            alias_line = ''
+
         return '\n'.join([self._line_format \
                           % (attribute,
                              getattr(self, attribute)['singular'],
                              getattr(self, attribute)['plural'],)
-                          for attribute in self._generated_fields])
-    
+                          for attribute in self._generated_fields]) \
+                + alias_line
+        
     def _setup(self, concept, full_form, meta, indent_level):
         # Trying to figure out the most appropriate features to
         # represent a concept entry:
@@ -661,7 +671,7 @@ class ConceptEntry(Entry):
     
     def __init__(self, index, parent, concept=None, indent_level=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
-                 **rest):
+                 alias=None, **rest):
         # Set a couple of defining attributes before calling our base
         # constructor.
         for attribute in self._generated_fields:
@@ -671,10 +681,10 @@ class ConceptEntry(Entry):
         # Call the base constructor.
         Entry.__init__(self, index, parent, meta)
 
-        print 'concept="%s"' % (concept)
-        concept, meta = self.get_alias_if_defined(concept)
+        # If this entry is an alias for another entry, indicate that
+        # here.
+        self.alias = alias
         
-        print 'concept="%s", meta="%s"' % (concept, meta)
         #return                          # FIXME:
         if concept:
             # Unescape escaped field separators.  Other escaped tokens
@@ -691,6 +701,21 @@ class ConceptEntry(Entry):
         sort_as = self.reference[inflection]
         typeset_in_index = self.typeset_in_index[inflection]
 
+        # If this is an alias entry, the index entries are affected.
+        # Generate the index entries accordingly.
+        if self.alias:
+            concept, _inflection = self.index.references[self.alias]
+            for entry in concept.generate_index_entries(page,
+                                                        typeset_page_number):
+                yield entry
+
+            orig_typeset_in_index = concept.typeset_in_index[inflection]
+            yield '\indexentry{%(sort_as)s@' \
+                  '%(typeset_in_index)s|see{%(orig_typeset_in_index)s}}' \
+                  '{%(page)d}' % locals()
+                
+            return                   # Skip the regular index entries.
+        
         parent = self.parent
         
         if parent:
@@ -730,11 +755,17 @@ class ConceptEntry(Entry):
                   self.bold_it('plural'.center(self._column_width)))
 
     def __str__(self):
+        if self.alias:
+            alias_line = '\n' + self._line_format % ('alias', self.alias, '', )
+        else:
+            alias_line = ''
+
         return '\n'.join([self._line_format \
                           % (attribute,
                              getattr(self, attribute)['singular'],
                              getattr(self, attribute)['plural'],)
-                          for attribute in self._generated_fields])
+                          for attribute in self._generated_fields]) \
+                + alias_line
     
     def _setup(self, concept, meta, indent_level):
         # Trying to figure out the most appropriate features to
@@ -806,59 +837,132 @@ class PersonEntry(Entry):
         # be typeset in the text.  If it was referred to in its plural
         # form, the entry typeset will also be typeset with plural
         # inflection.
-        'typeset_in_text_short',
-        'typeset_in_text_long',
+        'typeset_in_text_first',
+        'typeset_in_text_last',
         # The values of TYPESET_IN_INDEX defines how the entry will be
         # typeset in the index.
         'typeset_in_index',
         ]
     
     # Different constants used for output formatting.
-    _label_width = len('typeset_in_text_short')
+    _label_width = len('typeset_in_text_first')
     _column_width = 40
     _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
                    '%%-%(_column_width)ds'
     
     def __init__(self, index, parent, initials=None,
                  last_name=None, first_name=None, index_as=None,
-                 sort_as=None, meta=None, **rest):
+                 sort_as=None, meta=None, alias=None, **rest):
 
         for attribute in self._generated_fields:
             setattr(self, attribute, dict.fromkeys([Entry.INFLECTION_NONE,]))
             
         Entry.__init__(self, index, parent, meta)
 
+        # If this entry is an alias for another entry, indicate that
+        # here.
+        self.alias = alias
+        
+        if first_name is None:
+            first_name = ''
+
         # Remove any preceding commas (',') and surrounding
         # whitespace.
         first_name = first_name.lstrip(',').strip()
-
+        
         field_variable_map = [
             ('reference', 'reference'),
-            ('typeset_in_text_short', 'typeset_short'),
-            ('typeset_in_text_long', 'typeset_long'),
+            ('typeset_in_text_first', 'first_name'),
+            ('typeset_in_text_last', 'last_name'),
             ('typeset_in_index', 'typeset_formal'),]
 
         # Prepare the different local variables.
         reference = initials
-        typeset_short = last_name
-        typeset_long = ' '.join([first_name, last_name])
-        typeset_formal = '%s, %s' % (last_name, first_name)
-        
+
+        if first_name:
+            typeset_formal = '%s, %s' % (last_name, first_name)
+        else:
+            typeset_formal = last_name
+
+        for particle in ['the', 'von', 'van', 'van der']:
+            if first_name.endswith(particle):
+                #print 'pre:'
+                #print 'last_name = "%s"' % last_name
+                #print 'first_name = "%s"' % first_name
+                last_name = ' '.join([first_name[-len(particle):], last_name])
+                first_name = first_name[:-len(particle)]
+                #print 'post:'
+                #print 'last_name = "%s"' % last_name
+                #print 'first_name = "%s"' % first_name
+                break          # Will avoid the following else-clause.
+            
         variables = locals()
         
         for field, variable in field_variable_map:
             getattr(self, field)[Entry.INFLECTION_NONE] = variables[variable]
-            
+
+        self.index_inflection = Entry.INFLECTION_NONE
+        
     def get_plain_header(self):
         return self._line_format \
                % ('', self.bold_it('value'.center(self._column_width)))
 
     def __str__(self):
+        if self.alias:
+            alias_line = '\n' + self._line_format % ('alias', self.alias, )
+        else:
+            alias_line = ''
+            
         return '\n'.join([self._line_format \
                           % (attribute,
                              getattr(self, attribute)['none'],
                              )
-                          for attribute in self._generated_fields])
+                          for attribute in self._generated_fields]) \
+                + alias_line
+
+    def generate_index_entries(self, page, typeset_page_number=''):
+        inflection = self.index_inflection
+
+        #sort_as = self.reference[inflection]
+        typeset_in_index = self.typeset_in_index[inflection]
+        sort_as = typeset_in_index
+        
+        # If this is an alias entry, the index entries are affected.
+        # Generate the index entries accordingly.
+        if self.alias:
+            concept, _inflection = self.index.references[self.alias]
+            for entry in concept.generate_index_entries(page,
+                                                        typeset_page_number):
+                yield entry
+
+            #orig_typeset_in_index = concept.typeset_in_index[inflection]
+            #yield '\indexentry{%(sort_as)s@' \
+            #      '%(typeset_in_index)s|see{%(orig_typeset_in_index)s}}' \
+            #      '{%(page)d}' % locals()
+                
+            return                   # Skip the regular index entries.
+        
+        yield '\indexentry{%(sort_as)s@%(typeset_in_index)s' \
+              '%(typeset_page_number)s}{%(page)d}' \
+              % locals()
+
+    def generate_internal_macros(self, inflection):
+        type_name = self.get_entry_type()
+        reference = self.reference[inflection]
+        typeset_in_text_first = self.typeset_in_text_first[inflection]
+        typeset_in_text_last = self.typeset_in_text_last[inflection]
+        
+        yield '\\new%(type_name)s{%(reference)s}' \
+              '{%(typeset_in_text_first)s}' \
+              '{%(typeset_in_text_last)s}' \
+              % locals()
+        
+        if self.use_short_reference and self.reference_short[inflection]:
+            reference = self.reference_short[inflection]
+            
+            yield '\\new%(type_name)s{%(reference)s}{%(typeset_in_text)s}' \
+                  '{XC.1}' \
+                  % locals()
 
 def main():
     """Module mainline (for standalone execution).

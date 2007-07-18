@@ -58,11 +58,21 @@ class Index(list):
         'FIELD_SEPARATORS': FIELD_SEPARATORS,
         'COMMENT_TOKEN': TOKEN_COMMENT,
         'META_TOKEN': TOKEN_ENTRY_META_INFO,
+        'ALIAS_POINTER': '-->',
         }
     # Instantiate/format the FIELD macro value by supplying the other
     # (i.e., FIELD_SEPARATORS, COMMENT_TOKEN, and META_TOKEN) mappings
     # in _RE_MACROS.
     _re_macros['FIELD'] = _re_macros['FIELD'] % _re_macros
+
+    # A regulare expression to match aliasing index entries.
+    _alias_re = re.compile('''
+    ^                                   # Starts with
+    (?P<entry>.+)                       # the entry (including whitespace),
+    \s+?%(ALIAS_POINTER)s\s+?           # the alias indicator,
+    (?P<alias>.+)                       # the entry being aliased,
+    $                                   # at the end.
+    ''' % _re_macros, re.VERBOSE)
     
     # Regular expressions, one pattern matcher for each context:
     _concept_re = re.compile('''
@@ -175,7 +185,8 @@ class Index(list):
         
     name = property(_get_name, _set_name, None, 'The name of the index.')
 
-    def handle_meta_directive(self, attribute=None, value=None, context=None):
+    def handle_meta_directive(self, attribute=None, value=None, context=None,
+                              alias=None):
         if attribute:
             # Set an attribute describing this index (e.g., its name).
             logging.info('Setting the index\'s %s=%s.', attribute, repr(value))
@@ -186,7 +197,7 @@ class Index(list):
             self._matchers[-1] = self._context_matcher[self._context]
             self._entry_class = self._context_class[self._context]
             
-    def handle_comment(self):
+    def handle_comment(self, alias=None):
         """Do nothing.  (Yes, seriously.)
         """
         pass
@@ -270,7 +281,15 @@ class Index(list):
             
             # Remove trailing white-space.
             line = line.rstrip()        
-            
+
+            # Find out whether the entry is an alias for another
+            # entry.
+            for match in self._alias_re.finditer(line):
+                line, alias = map(match.group, ['entry', 'alias'])
+                break
+            else:
+                alias = None
+                
             # Parse the line trying different matchers.  Quit trying
             # after the first applicable matcher is used.
             for matcher in self._matchers:
@@ -278,7 +297,7 @@ class Index(list):
                     # Call the appropriate handler, given the current
                     # context.
                     try:
-                        self._match_handler[matcher](self,
+                        self._match_handler[matcher](self, alias=alias,
                                                      **match.groupdict())
                     except entry.MissingAcronymExpansionError, e:
                         self.syntax_error(filename, (self._line_num + 1),

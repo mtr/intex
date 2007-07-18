@@ -43,7 +43,7 @@ concept
   sub\--
 idea
 
-(meat eater)@{m$^{e}$a$_{t}$ eater} --> carnivore
+(meat eater)@{m$^{\textrm{e}}$a$_{\textrm{t}}$ eater} --> carnivore
 
 synonymy
 synonym --> synonymy
