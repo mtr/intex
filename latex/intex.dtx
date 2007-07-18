@@ -352,6 +352,10 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % about the \co{InTeX logo}.  This might be a good time to go drink
 % some \co{H2O}.
 %
+% The \InTeX\ package handles the notion of multiple names for the
+% same concept too.  For example, a lot of people believes that
+% \co{EAPK} is referring to one person only, and that is the late
+% \co{EAP}.
 %
 % \subsubsection{Index Definitions}
 % The concept index definition file used for the above paragraph looks
@@ -724,7 +728,15 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \fi%
 }
 %    \end{macrocode}
-% The default (empty) area definitions.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\itx@last@pos0}
+% \begin{macro}{\itx@last@pos1}
+% \begin{macro}{\itx@last@pos2}
+%   The default (empty) area definitions.
 %    \begin{macrocode}
 \def\itx@last@pos0{}%
 \def\itx@last@pos1{}%
@@ -733,47 +745,84 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 % \end{macro}
 % \end{macro}
-% \end{macro}
+%
+% \begin{macro}{\ITX@itxs}
 %    \begin{macrocode}
 \newcommand*\ITX@itxs[2]{%
   \csname fnss@\number#2\endcsname%
 }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\ITX@itxl}
+%    \begin{macrocode}
 \newcommand*\ITX@itxl[2]{%
   \csname fnsl@\number#2\endcsname%
 }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\itxs}
+%    \begin{macrocode}
 \newcommand*{\itxs}[2]{%
   \texorpdfstring{\protect\@itxs{#1}{#2}}{#1}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@itxs}
+%    \begin{macrocode}
 \newcommand*{\@itxs}[2]{%
   \ifcase\number#1%
 %    \end{macrocode}
-% Plain.
+% \begin{description}
+% \item[Plain Concept]
 %    \begin{macrocode}
     \itxplainfollowfont{\ITX@itxs{#1}{#2}}%
   \or%
 %    \end{macrocode}
-% Acronym.
+% \item[Acronym]
 %    \begin{macrocode}
     \itxacronymshortfont{\ITX@itxs{#1}{#2}}%
   \or%
 %    \end{macrocode}
-% Person.
+% \item[Person]
 %    \begin{macrocode}
     \itxpersonlastfont{\ITX@itxl{#1}{#2}}%
   \fi%
 }
+%    \end{macrocode}
+% \end{description}
+% \end{macro}
+%
+% \begin{macro}{\itxl}
+%    \begin{macrocode}
 \newcommand*{\itxl}{\protect\@itxl}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@itxl}
+%    \begin{macrocode}
 \newcommand*{\@itxl}[2]{%
-   \ITX@itxl{#1}{#2}%
- }
+  \ITX@itxl{#1}{#2}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\itxf}
+%    \begin{macrocode}
 \newcommand*{\itxf}[2]{%
   \texorpdfstring{\protect\@itxf{#1}{#2}}{\ITX@itxl{#1}{#2} (#1)}%
- }
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\@itxf}
+%    \begin{macrocode}
 \newcommand*{\@itxf}[2]{%
   \ifcase\number#1%
 %    \end{macrocode}
-% \begin{enumerate}
-% \item Plain concept.
-%   Typeset margin-notes if applicable, \ldots
+% \begin{description}
+% \item[Plain Concept] Typeset margin-notes if applicable, \ldots
 %    \begin{macrocode}
     \@itxmarginlabel{#1}{#2}%
 %    \end{macrocode}
@@ -782,7 +831,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     \itxplaindeffont{\ITX@itxs{#1}{#2}}\nolinebreak %
   \or%
 %    \end{macrocode}
-% \item Acronym.  Typeset the concept (note in-between margin
+% \item[Acronym] Typeset the concept (note in-between margin
 %   label), \ldots
 %    \begin{macrocode}
     \itxacronymdeffont{%
@@ -800,7 +849,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     }%
   \or%
 %    \end{macrocode}
-% \item Person.  Typeset the concept (note the in-between margin
+% \item[Person] Typeset the concept (note the in-between margin
 %   label), \ldots
 %    \begin{macrocode}
     \itxpersondeffont{%
@@ -820,8 +869,8 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
     }%
   \fi%
 %    \end{macrocode}
-  % \end{enumerate}
-  % Now, do the used/unused accounting.
+% \end{description}
+% Now, do the used/unused accounting.
 %    \begin{macrocode}
   \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
     %\relax%
@@ -832,6 +881,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   %\ITX@logged{#2} MTR
 }%
 %    \end{macrocode}
+% \end{macro}
 %
 % \begin{macro}{\@itxrecordarea}
 % A macro used to update the current used/non-used status of each
@@ -1126,6 +1176,10 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 %
 % \begin{macro}{\newperson}
+%   The syntax is
+% \begin{displaymath}
+%   |\newperson{|\meta{reference}|}{|\meta{short-form typeset}|}{|\meta{full-form typeset}|}|.
+% \end{displaymath}
 %    \begin{macrocode}
 \newcommand*\newperson[3]{%
   \@newentry{2}{#1}{#2}{#3}%
