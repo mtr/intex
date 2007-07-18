@@ -1,0 +1,12 @@
+#! /bin/bash
+#
+# $Id$
+#
+# These configuration values may be used by the other build scripts in
+# this directory.
+#
+# Copyright (C) 2007 by Martin Thorsen Ranang
+#
+
+PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_VERSION=@PACKAGE_VERSION@

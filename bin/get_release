@@ -1,0 +1,18 @@
+#! /bin/bash
+#
+# $Id: get_release 276 2007-06-12 10:52:57Z mtr $
+#
+# Copyright (C) 2007 by Martin Thorsen Ranang
+#
+
+if [ -z "$RELEASE_FILE" ]; then
+    RELEASE_FILE=RELEASE
+fi
+
+if [ ! -f $RELEASE_FILE ]; then
+    PATH=$PATH:$(dirname $0)
+    increase_release
+fi
+
+release=$(cat $RELEASE_FILE)
+echo -n $release

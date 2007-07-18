@@ -1,0 +1,30 @@
+#! /bin/bash
+#
+# $Id: tag_release 280 2007-06-12 10:59:01Z mtr $
+#
+# Copyright (C) 2007 by Martin Thorsen Ranang
+#
+
+if [ -z "$RELEASE_FILE" ]; then
+    RELEASE_FILE=RELEASE
+fi
+
+main=$(svnpath)
+tags=$(svnpath tags)
+
+workdir=$(dirname $0)
+
+. $workdir/config.sh
+
+version=$PACKAGE_VERSION
+release=$($workdir/get_release)
+
+tag=release-${version}_${release}
+
+echo "Committing changes..."
+svn commit
+echo "done"
+
+echo "Tagging release '$tag'..."
+svn copy $main $tags/$tag --message "New release."
+echo "done"

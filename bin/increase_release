@@ -1,0 +1,21 @@
+#! /bin/bash
+#
+# $Id: increase_release 264 2007-06-06 11:05:23Z mtr $
+#
+# Copyright (C) 2007 by Martin Thorsen Ranang
+#
+
+if [ -z "$RELEASE_FILE" ]; then
+    RELEASE_FILE=RELEASE
+fi
+
+if [ -r $RELEASE_FILE ]; then
+    RELEASE=$(cat $RELEASE_FILE)
+    next_release=$(($RELEASE + 1))
+    echo "Increasing release number from $RELEASE to $next_release".
+else
+    next_release=1
+    echo "No previous release number found.  Starting with release number $next_release"
+fi
+
+echo "$next_release" > $RELEASE_FILE
