@@ -56,6 +56,7 @@ def main():
             version='@PACKAGE_VERSION@',
             description='The InTeX Package',
             long_description=LONG_DESCRIPTION,
+            license='LPPL',
             author=author_name,
             author_email=author_email,
             url='http://www.ranang.org/projects/intex/',
@@ -66,7 +67,7 @@ def main():
             ],
             data_files=[
             # TeX-package files:
-            ('share/texmf/tex/@PACKAGE_NAME@',
+            ('share/texmf/tex/latex/@PACKAGE_NAME@',
              ['latex/intex.sty', 'latex/intex.pdf']),
             # Man pages, section 1:
             ('share/man/man1', ['doc/mkintex.1.gz']),

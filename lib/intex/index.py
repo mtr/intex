@@ -33,7 +33,7 @@ class _IndexError(Exception):
 class IndexSyntaxError(_IndexError, SyntaxError):
     """Error caused by invalid syntax in the input .itx file.
     """
-    
+
 class Index(list):
     _intex_re = re.compile('\\\@writefile\{%s\}' \
                            '\{\\\indexentry\{(?P<key>.*)\}\{(?P<page>\d+)\}\}' \
@@ -293,6 +293,13 @@ class Index(list):
             # Parse the line trying different matchers.  Quit trying
             # after the first applicable matcher is used.
             for matcher in self._matchers:
+                if matcher is None:
+                    self.syntax_error(filename, (self._line_num + 1),
+                                      "Encountered an entry, but no " \
+                                      "current entry type " \
+                                      "('*ACRONYMS*', '*CONCEPTS*', or " \
+                                      "'*PERSONS*') has been defined.")
+                    
                 for match in matcher.finditer(line):
                     # Call the appropriate handler, given the current
                     # context.
