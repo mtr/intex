@@ -1,0 +1,28 @@
+InTeX for LaTeX                                -*- outline -*-
+----------------
+
+* About
+
+This is the README file for the InTeX package.
+
+InTeX is a package that adds functionality to LaTeX that eases
+typesetting and indexing of phrases, acronyms, and proper names in a
+consistent manner throughout documents of arbitrary length.
+
+
+* Installation
+
+For information about how to install this package, please consult the
+file INSTALL, located in the top directory of the package.
+
+* Usage
+
+For usage information, please consult the mkintex(1) man page.
+
+* Licensing
+
+For information about this package's license, please see the file
+COPYING in the top directory of the package.
+
+ -- Martin Thorsen Ranang <mtr@linpro.no>, Wed, 18 Jul 2007 23:41:13 +0200
+
