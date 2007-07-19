@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<refentry id='mkintex1'>
+  <refmeta>
+    <refentrytitle>mkintex</refentrytitle>
+    <manvolnum>1</manvolnum>
+    <refmiscinfo>@PACKAGE@ @VERSION@</refmiscinfo>
+  </refmeta>
+  <refnamediv id='name'>
+    <refname>mkintex</refname>
+    <refpurpose>an index preprocessor for LaTeX</refpurpose>
+  </refnamediv>
+  <!-- body begins here -->
+  <refsynopsisdiv id='synopsis'>
+    <cmdsynopsis>
+      <command>mkintex</command>
+      <arg choice='opt'><replaceable>options</replaceable></arg>
+      <arg choice='plain'><replaceable>&lt;index&gt;</replaceable></arg>
+      <arg choice='opt' rep='repeat'><replaceable>index</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  
+  <refsect1 id='description'><title>DESCRIPTION</title>
+  <para>The <citerefentry><refentrytitle>InTeX</refentrytitle>
+  <manvolnum>5</manvolnum></citerefentry> package adds functionality
+  to LaTeX that eases typesetting and indexing of phrases, acronyms,
+  and proper names in a consistent manner throughout documents of
+  arbitrary length.</para>
+  
+  <para><citerefentry><refentrytitle>mkintex</refentrytitle>
+  <manvolnum>1</manvolnum></citerefentry> is a preprocessor that
+  interprets index entries specified in .itx files and generates
+  appropriate entries for LaTeX and
+  <citerefentry><refentrytitle>makeindex</refentrytitle>
+  <manvolnum>1</manvolnum></citerefentry>.</para>
+  </refsect1>
+  
+  <refsect1 id='options'><title>OPTIONS</title>
+  <variablelist remap='TP'>
+    <varlistentry>
+      <term><option>--version</option></term>
+      <listitem>
+	<para>show program's version number and exit</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term><option>-h, --help</option></term>
+      <listitem>
+	<para>show this help message and exit</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term><option>-D, --debug</option></term>
+      <listitem>
+	<para>whether or not to output debug information</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term><option>-V, --verbose</option></term>
+      <listitem>
+	<para>whether or not to output verbose information</para>
+      </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><option>-I, --only-build-index</option></term>
+    <listitem>
+      <para>only build the internal model of the index</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><option>-O &lt;</option><emphasis remap='I'>file</emphasis><emphasis remap='P->B'>&gt;, --ito-file=&lt;</emphasis><emphasis remap='I'>file</emphasis><emphasis remap='P->B'>&gt;</emphasis></term>
+    <listitem>
+      <para>output the new internal InTeX information to &lt;<emphasis remap='I'>file</emphasis>&gt; (default: none)</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><option>-o &lt;</option><emphasis remap='I'>file</emphasis><emphasis remap='P->B'>&gt;, --index-file=&lt;</emphasis><emphasis remap='I'>file</emphasis><emphasis remap='P->B'>&gt;</emphasis></term>
+    <listitem>
+      <para>output the new indexing information to &lt;<emphasis remap='I'>file</emphasis>&gt; (default: none)</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><option>-a &lt;</option><emphasis remap='I'>file</emphasis><emphasis remap='P->B'>&gt;, --acrodef-output=&lt;</emphasis><emphasis remap='I'>file</emphasis><emphasis remap='P->B'>&gt;</emphasis></term>
+    <listitem>
+      <para>output acronym definitions to &lt;<emphasis remap='I'>file</emphasis>&gt; (default: none)</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><option>-p &lt;</option><emphasis remap='I'>file</emphasis><emphasis remap='P->B'>&gt;, --persondef-output=&lt;</emphasis><emphasis remap='I'>file</emphasis><emphasis remap='P->B'>&gt;</emphasis></term>
+    <listitem>
+      <para>output (person) name definitions to &lt;<emphasis remap='I'>file</emphasis>&gt; (default: none)</para>
+      
+    </listitem>
+  </varlistentry>
+  </variablelist>
+  </refsect1>
+  
+  <refsect1 id='examples'><title>EXAMPLES</title>
+  <para>Let us assume that you have already written a
+  <citerefentry><refentrytitle>latex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+  document, named &lt;<emphasis
+  remap='I'>document_name</emphasis>&gt;.tex, that uses the
+  <citerefentry><refentrytitle>InTeX</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+  package.  Further we assume that you have defined a set of concepts,
+  acronyms, and propernouns for indexing in a file named &lt;<emphasis
+  remap='I'>document_name</emphasis>&gt;.itx.  Then, to run this
+  program the standard way, type</para>
+  
+  <para>latex &lt;<emphasis remap='I'>document_name</emphasis>&gt;</para>
+  
+  <para>to run through the document once and generate both a DVI file
+  (.dvi) and an auxiliary file (.aux).  Next, run the
+  <citerefentry><refentrytitle>mkintex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+  program</para>
+  
+  <para>mkintex &lt;<emphasis remap='I'>document_name</emphasis>&gt; --index-file=&lt;<emphasis remap='I'>document_name</emphasis>&gt;.mtr</para>
+  
+  <para>that will use as input both &lt;<emphasis
+  remap='I'>document_name</emphasis>&gt;.aux and &lt;<emphasis
+  remap='I'>document_name</emphasis>&gt;.itx to produce two new output
+  files.  The first file is &lt;<emphasis
+  remap='I'>document_name</emphasis>&gt;.ito, which will be used by
+  <citerefentry><refentrytitle>latex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+  in the next compilation of &lt;<emphasis
+  remap='I'>document_name</emphasis>&gt;.tex, and &lt;<emphasis
+  remap='I'>document_name</emphasis>&gt;.mtr, which will be used by
+  <citerefentry><refentrytitle>makeindex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+  to produce a proper index for LaTeX to typeset:</para>
+  
+  <para>makeindex -o intex.rid intex.mtr</para>
+  
+  <para>After that, we have to run
+  <citerefentry><refentrytitle>latex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+  again to generate a version of the document with the defined
+  concepts, acronyms, and proper names properly typeset and
+  indexed:</para>
+  
+  <para>latex &lt;<emphasis
+  remap='I'>document_name</emphasis>&gt;</para>
+  
+  <para>Please note that in the examples above, &lt;<emphasis
+  remap='I'>document_name</emphasis>&gt; is the name of the main LaTeX
+  document, without the .tex ending.</para>
+  
+  </refsect1>
+  
+  <refsect1 id='authors'><title>AUTHORS</title>
+  <para>
+    <author>
+      <firstname>Martin</firstname>
+      <othername role="mi">Thorsen</othername>
+      <surname>Ranang</surname>
+      <contrib>Original author</contrib>
+      <email>mtr@ranang.org</email>
+    </author>
+  </para>
+  </refsect1>
+  
+  <refsect1 id='see_also'><title>SEE ALSO</title>
+  <para>
+    <citerefentry><refentrytitle>intex</refentrytitle>
+    <manvolnum>5</manvolnum></citerefentry>
+    <citerefentry><refentrytitle>makeindex</refentrytitle>
+    <manvolnum>1</manvolnum></citerefentry>
+    <citerefentry><refentrytitle>latex</refentrytitle>
+    <manvolnum>1</manvolnum></citerefentry>
+  </para>
+  </refsect1>
+</refentry>

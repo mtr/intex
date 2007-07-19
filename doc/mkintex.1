@@ -1,85 +1,86 @@
-.TH "MKINTEX" "1" "@PACKAGE@ @VERSION@" "mkintex(1)" "LaTeX Indexing Utilities"
-.SH "NAME"
-.LP 
+.TH mkintex 1  "@PACKAGE@ @VERSION@" 
+.SH NAME
 mkintex \- an index preprocessor for LaTeX
-.SH "SYNOPSIS"
-.LP 
-mkintex [\fIoptions\fP] <\fIindex\fP> [\fIindex ...\fP]
-.SH "DESCRIPTION"
-.LP 
-InTeX(5) is a package that adds functionality to LaTeX that eases
-typesetting and indexing of phrases, acronyms, and proper names in a
-consistent manner throughout documents of arbitrary length.
-
-mkintex is a preprocessor that interprets index entries specified
-in .itx files and generates appropriate LaTeX(1) and makeindex(1)
-entries.
-.SH "OPTIONS"
-.LP 
+.SH SYNOPSIS
+\fBmkintex\fR [\fBoptions\fR] \fB<index>\fR [\fBindex\fR]\&...
+.SH DESCRIPTION
+The \fBInTeX\fR(5) package adds functionality
+to LaTeX that eases typesetting and indexing of phrases, acronyms,
+and proper names in a consistent manner throughout documents of
+arbitrary length.
+.PP
+\fBmkintex\fR(1)
+is a preprocessor that interprets index entries specified in .itx
+files and generates appropriate entries for LaTeX and
+\fBmakeindex\fR(1).
+.SH OPTIONS
 .TP 
-\fB\-\-version\fR             
+\fB\-\-version\fR
 show program's version number and exit
 .TP 
-\fB\-h, \-\-help\fR            
+\fB\-h, \-\-help\fR
 show this help message and exit
 .TP 
-\fB\-D, \-\-debug\fR           
+\fB\-D, \-\-debug\fR
 whether or not to output debug information
 .TP 
-\fB\-V, \-\-verbose\fR         
+\fB\-V, \-\-verbose\fR
 whether or not to output verbose information
 .TP 
 \fB\-I, \-\-only\-build\-index\fR
 only build the internal model of the index
 .TP 
-\fB\-O <\fIfile\fP>, \-\-ito\-file=<\fIfile\fP>\fR
-output the new internal InTeX information to <\fIfile\fP> (default: none)
+\fB\-O <\fR\fIfile\fR\fI>, \-\-ito\-file=<\fR\fIfile\fR\fI>\fR
+output the new internal InTeX information to <\fIfile\fR> (default: none)
 .TP 
-\fB\-o <\fIfile\fP>, \-\-index\-file=<\fIfile\fP>\fR
-output the new indexing information to <\fIfile\fP> (default: none)
+\fB\-o <\fR\fIfile\fR\fI>, \-\-index\-file=<\fR\fIfile\fR\fI>\fR
+output the new indexing information to <\fIfile\fR> (default: none)
 .TP 
-\fB\-a <\fIfile\fP>, \-\-acrodef\-output=<\fIfile\fP>\fR
-output acronym definitions to <\fIfile\fP> (default: none)
+\fB\-a <\fR\fIfile\fR\fI>, \-\-acrodef\-output=<\fR\fIfile\fR\fI>\fR
+output acronym definitions to <\fIfile\fR> (default: none)
 .TP 
-\fB\-p <\fIfile\fP>, \-\-persondef\-output=<\fIfile\fP>\fR
-output (person) name definitions to <\fIfile\fP> (default: none)
-
-.SH "EXAMPLES"
-.LP 
-Let us assume that you have already written a LaTeX(1) document, named
-<\fIdocument_name\fP>.tex, that uses the InTeX(5) package.  Further we
-assume that you have defined a set of concepts, acronyms, and
-propernouns for indexing in a file named <\fIdocument_name\fP>.itx.
-Then, to run this program the standard way, type
-.LP 
-latex <\fIdocument_name\fP>
-.LP
-to run through the document once and generate both a DVI file (.dvi)
-and an auxiliary file (.aux).  Next, run the mkintex(1) program
-.LP
-mkintex <\fIdocument_name\fP> --index-file=<\fIdocument_name\fP>.mtr
-.LP
-that will use as input both <\fIdocument_name\fP>.aux and
-<\fIdocument_name\fP>.itx to produce two new output files.  The first
-file is <\fIdocument_name\fP>.ito, which will be used by LaTeX(1) in
-the next compilation of <\fIdocument_name\fP>.tex, and
-<\fIdocument_name\fP>.mtr, which will be used by makeindex(1) to
-produce a proper index for LaTeX to typeset:
-.LP
-makeindex -o intex.rid intex.mtr
-.LP 
-After that, we have to run LaTeX(1) again to generate a version of the
-document with the defined concepts, acronyms, and proper names
-properly typeset and indexed:
-.LP
-latex <\fIdocument_name\fP>
-.LP
-Please note that in the examples above, <\fIdocument_name\fP> is the
-name of the main LaTeX document, without the .tex ending.
-
-.SH "AUTHORS"
-.LP 
-Martin Thorsen Ranang <mtr@ranang.org>
+\fB\-p <\fR\fIfile\fR\fI>, \-\-persondef\-output=<\fR\fIfile\fR\fI>\fR
+output (person) name definitions to <\fIfile\fR> (default: none)
+.SH EXAMPLES
+Let us assume that you have already written a
+\fBlatex\fR(1)
+document, named <\fIdocument_name\fR>.tex, that uses the
+\fBInTeX\fR(5)
+package. Further we assume that you have defined a set of concepts,
+acronyms, and propernouns for indexing in a file named <\fIdocument_name\fR>.itx. Then, to run this
+program the standard way, type
+.PP
+latex <\fIdocument_name\fR>
+.PP
+to run through the document once and generate both a DVI file
+(.dvi) and an auxiliary file (.aux). Next, run the
+\fBmkintex\fR(1)
+program
+.PP
+mkintex <\fIdocument_name\fR> \-\-index\-file=<\fIdocument_name\fR>.mtr
+.PP
+that will use as input both <\fIdocument_name\fR>.aux and <\fIdocument_name\fR>.itx to produce two new output
+files. The first file is <\fIdocument_name\fR>.ito, which will be used by
+\fBlatex\fR(1)
+in the next compilation of <\fIdocument_name\fR>.tex, and <\fIdocument_name\fR>.mtr, which will be used by
+\fBmakeindex\fR(1)
+to produce a proper index for LaTeX to typeset:
+.PP
+makeindex \-o intex.rid intex.mtr
+.PP
+After that, we have to run
+\fBlatex\fR(1)
+again to generate a version of the document with the defined
+concepts, acronyms, and proper names properly typeset and
+indexed:
+.PP
+latex <\fIdocument_name\fR>
+.PP
+Please note that in the examples above, <\fIdocument_name\fR> is the name of the main LaTeX
+document, without the .tex ending.
+.SH AUTHORS
+Martin Thorsen Ranang
 .SH "SEE ALSO"
-.LP 
-intex(5) makeindex(1) latex(1)
+\fBintex\fR(5)
+\fBmakeindex\fR(1)
+\fBlatex\fR(1)
