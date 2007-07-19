@@ -11,7 +11,7 @@ if [ -f $lsb_release ]; then
     . $lsb_release
 fi
 
-if [ $DISTRIB_ID == "Ubuntu" ];
+if [ $DISTRIB_ID == "Ubuntu" ]; then
     dh_installtex
 else
     if which mktexlsr >/dev/null; then
