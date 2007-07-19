@@ -69,7 +69,7 @@ class Index(list):
     _alias_re = re.compile('''
     ^                                   # Starts with
     (?P<entry>.+)                       # the entry (including whitespace),
-    \s+?%(ALIAS_POINTER)s\s+?           # the alias indicator,
+    \s*?%(ALIAS_POINTER)s\s*            # the alias indicator,
     (?P<alias>.+)                       # the entry being aliased,
     $                                   # at the end.
     ''' % _re_macros, re.VERBOSE)

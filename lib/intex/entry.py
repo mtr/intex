@@ -529,11 +529,16 @@ class AcronymEntry(Entry):
                   '%(sort_as_long)s@%(typeset_in_index_long)s' \
                   '%(typeset_page_number)s}{%(page)d}' % locals()
             
+#             yield '\indexentry{' \
+#                   '%(parent_sort_as_short)s@%(parent_typeset_in_index_short)s!' \
+#                   '%(sort_as_short)s@%(typeset_in_index_short)s' \
+#                   '|see{---, %(typeset_in_index_long)s}}' \
+#                   '{%(page)d}' % locals()
             yield '\indexentry{' \
                   '%(parent_sort_as_short)s@%(parent_typeset_in_index_short)s!' \
-                  '%(sort_as_short)s@%(typeset_in_index_short)s|' \
-                  'see{---, %(typeset_in_index_long)s}}' \
-                  '{%(page)d}' % locals()
+                  '%(sort_as_short)s@%(typeset_in_index_short)s' \
+                  '|see{---, %(typeset_in_index_long)s}}' \
+                  '{0}' % locals()
             
         else:
             yield '\indexentry{' \
@@ -541,9 +546,12 @@ class AcronymEntry(Entry):
                   '%(typeset_page_number)s}' \
                   '{%(page)d}' % locals()
             
+#             yield '\indexentry{%(sort_as_short)s@' \
+#                   '%(typeset_in_index_short)s|see{%(typeset_in_index_long)s}}' \
+#                   '{%(page)d}' % locals()
             yield '\indexentry{%(sort_as_short)s@' \
                   '%(typeset_in_index_short)s|see{%(typeset_in_index_long)s}}' \
-                  '{%(page)d}' % locals()
+                  '{0}' % locals()
             
     def generate_internal_macros(self, inflection):
         type_name = self.get_entry_type()
@@ -710,9 +718,12 @@ class ConceptEntry(Entry):
                 yield entry
 
             orig_typeset_in_index = concept.typeset_in_index[inflection]
+#             yield '\indexentry{%(sort_as)s@' \
+#                   '%(typeset_in_index)s|see{%(orig_typeset_in_index)s}}' \
+#                   '{%(page)d}' % locals()
             yield '\indexentry{%(sort_as)s@' \
                   '%(typeset_in_index)s|see{%(orig_typeset_in_index)s}}' \
-                  '{%(page)d}' % locals()
+                  '{0}' % locals()
                 
             return                   # Skip the regular index entries.
         
