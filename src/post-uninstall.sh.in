@@ -5,16 +5,20 @@
 # Copyright (C) 2007 by Martin Thorsen Ranang
 #
 
-lsb_release=/etc/lsb-release
+# lsb_release=/etc/lsb-release
 
-if [ -f $lsb_release ]; then
-    . $lsb_release
-fi
+# if [ -f $lsb_release ]; then
+#     . $lsb_release
+# fi
 
-if [ $DISTRIB_ID == "Ubuntu" ]; then
-    dh_installtex
-else
-    if which mktexlsr >/dev/null; then
-	mktexlsr @prefix@/share/texmf
-    fi
+# if [ $DISTRIB_ID = "Ubuntu" ]; then
+#     dh_installtex
+# else
+#     if which mktexlsr >/dev/null; then
+# 	mktexlsr @prefix@/share/texmf
+#     fi
+# fi
+
+if which mktexlsr > /dev/null; then
+    mktexlsr @prefix@/share/texmf
 fi
