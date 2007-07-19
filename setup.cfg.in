@@ -1,5 +1,5 @@
 [install]
-prefix = /usr
+prefix = @prefix@
 
 [bdist_rpm]
 packager = Martin Thorsen Ranang <mtr@ranang.org>

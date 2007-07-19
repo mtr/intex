@@ -2,9 +2,9 @@
 # -*- coding: latin-1 -*-
 # $Id$
 """
-Copyright (C) 2007 by Linpro AS
+Copyright (C) 2007 by Martin Thorsen Ranang
 """
-__author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
+__author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 __revision__ = "$Rev$"
 __version__ = "@PACKAGE_VERSION@"
 
@@ -12,10 +12,11 @@ from distutils.core import setup
 import os
 
 LONG_DESCRIPTION = """\
-A flight-schedule query server.
+A concept indexing and typesetting package for LaTeX.
 
-The server will answer queries, stated as HTTP-requests, about the
-current flight schedule at OSL.no.
+This package adds functionality to LaTeX that eases typesetting and
+indexing of phrases, acronyms, and names in a consistent manner
+throughout documents of arbitrary length.
 """
 
 
@@ -53,47 +54,23 @@ def main():
         setup(
             name='@PACKAGE_NAME@',
             version='@PACKAGE_VERSION@',
-            description='Flight-Schedule Query Server',
+            description='The InTeX Package',
             long_description=LONG_DESCRIPTION,
             author=author_name,
             author_email=author_email,
-            url='http://www.linpro.no/projects/osl_flight_schedule_search',
+            url='http://www.ranang.org/projects/intex/',
             package_dir=packages,
             packages=packages.keys(),
             scripts=[
-            'src/model_builder',
-            'src/model_server',
-            'src/query_handler',
-            'test/generate_stress_test_data.py',
+            'src/mkintex',
             ],
             data_files=[
-            # Locales:
-            ('share/locale/en_US/LC_MESSAGES',
-             ['locale/en_US/LC_MESSAGES/@PACKAGE_NAME@.mo']),
-            ('share/locale/no_NO/LC_MESSAGES',
-             ['locale/no_NO/LC_MESSAGES/@PACKAGE_NAME@.mo']),
-            # XSLT stylesheet:
-            ('share/@PACKAGE_NAME@', ['data/orig_page_to_template.xsl']),
-            # HTML templates:
-            ('share/@PACKAGE_NAME@', ['data/page-static.html']),
-            ('share/@PACKAGE_NAME@/page_fragments',
-             ['data/page_fragments/search_table_head.html']),
-            # The server root (with contents):
-            ('share/@PACKAGE_NAME@/server_root',
-             ['data/server_root/striped_table.css',
-              'data/server_root/striped_table.js',
-              ]),
-            # Init scripts:
-            ('/etc/init.d', ['etc/init.d/@PACKAGE_NAME@',
-                             'etc/init.d/common-@PACKAGE_NAME@',
-                             'etc/init.d/model_builder',
-                             'etc/init.d/model_server',
-                             'etc/init.d/query_handler',
-                             ]),
-            # Init-scipt configuration files:
-            ('/etc/default', ['etc/default/@PACKAGE_NAME@']),
-            # Log rotation scripts:
-            ('/etc/logrotate.d', ['etc/logrotate.d/@PACKAGE_NAME@']),
+            # TeX-package files:
+            ('share/texmf/tex/@PACKAGE_NAME@',
+             ['latex/intex.sty', 'latex/intex.pdf']),
+            # Man pages, section 1:
+            ('share/man/man1', ['doc/mkintex.1.gz']),
+
             ],
             )
         
