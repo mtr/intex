@@ -10,15 +10,15 @@
 % macro.
 %
 % *ACRONYMS*
-AI	Artificial Intelligence
-  AIC	- Complete
+% AI	Artificial Intelligence
+%   AIC	- Complete
 
-H2O@H$_{2}$O	dihydrogen monoxide
-  - reserve
+% H2O@H$_{2}$O	dihydrogen monoxide
+%   - reserve
 
-ID	identity
+% ID	identity
 
-synset	synonym set
+% synset	synonym set
 
 % *PEOPLE*
 EAP	Presley, Elvis Aaron
@@ -29,33 +29,33 @@ Madonna	Madonna
 VWvG	van Gogh, Vincent Willem
 
 % *CONCEPTS*
-carnivore
-  feline
-    domestic cat
-    tiger
-  canine
-    Gray Wolf
-    domestic dog
-concept
-  acronym (-)
-  person (-)
-  plain (-)
-  sub\--
-idea
+% carnivore
+%   feline
+%     domestic cat
+%     tiger
+%   canine
+%     Gray Wolf
+%     domestic dog
+% concept
+%   acronym (-)
+%   person (-)
+%   plain (-)
+%   sub\--
+% idea
 
-(meat eater)@{m$^{\textrm{e}}$a$_{\textrm{t}}$ eater} --> carnivore
+% (meat eater)@{m$^{\textrm{e}}$a$_{\textrm{t}}$ eater} --> carnivore
 
-synonymy
-synonym --> synonymy
-  direct -
-  indirect -
+% synonymy
+% synonym --> synonymy
+%   direct -
+%   indirect -
 
-(InTeX logo)@{\InTeX\ logo}
+% (InTeX logo)@{\InTeX\ logo}
 
-Python
+% Python
 
-TeXnician@{\TeX}nician
-  -'s tool
+% TeXnician@{\TeX}nician
+%   -'s tool
 
 % Local Variables: 
 % mode: latex
