@@ -205,7 +205,7 @@ class Entry(object):
     def unescape(self, string, escaped_tokens=FIELD_SEPARATORS):
         """Unescapes escaped field separators.
         """
-        # It must shrink or stay the same size.  It cannot shrink.
+        # It must shrink or stay the same size.  It cannot grow.
         new = list(string) 
         
         previous_was_escape = False
