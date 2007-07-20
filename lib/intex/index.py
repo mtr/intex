@@ -104,10 +104,8 @@ class Index(list):
     (?P<indent>\s+)?                       # (possible) indentation,
     (?P<initials>%(FIELD)s)?               # an entry,
     [%(FIELD_SEPARATORS)s]*                # a separator,
-    (?P<last_name>%(FIELD)s)?              # the last name,
-    [%(FIELD_SEPARATORS)s,]*               # another separator or ",",
-    (?P<first_name>%(FIELD)s)?             # the first name,
-    [%(FIELD_SEPARATORS)s]*                # another separator,
+    (?P<name>%(FIELD)s)?                   # the name,
+    [%(FIELD_SEPARATORS)s]*                # another separator
     (?P<meta>%(META_TOKEN)s.+)?            # meta information
     $                                      # at the end.
     ''' % _re_macros, re.VERBOSE)
@@ -299,7 +297,7 @@ class Index(list):
                                       "current entry type " \
                                       "('*ACRONYMS*', '*CONCEPTS*', or " \
                                       "'*PERSONS*') has been defined.")
-                    
+
                 for match in matcher.finditer(line):
                     # Call the appropriate handler, given the current
                     # context.

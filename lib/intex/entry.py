@@ -861,10 +861,10 @@ class PersonEntry(Entry):
     _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
                    '%%-%(_column_width)ds'
     
-    def __init__(self, index, parent, initials=None,
-                 last_name=None, first_name=None, index_as=None,
-                 sort_as=None, meta=None, alias=None, **rest):
-
+    def __init__(self, index, parent, initials=None, name=None,
+                 index_as=None, sort_as=None, meta=None, alias=None,
+                 **rest):
+        
         for attribute in self._generated_fields:
             setattr(self, attribute, dict.fromkeys([Entry.INFLECTION_NONE,]))
             
@@ -873,9 +873,13 @@ class PersonEntry(Entry):
         # If this entry is an alias for another entry, indicate that
         # here.
         self.alias = alias
+
+        names = escape_aware_split(name, ',')
         
-        if first_name is None:
-            first_name = ''
+        if len(names) > 1:
+            last_name, first_name = names
+        else:
+            last_name, first_name = names[0], ''
 
         # Remove any preceding commas (',') and surrounding
         # whitespace.
