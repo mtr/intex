@@ -180,7 +180,7 @@ def main():
                                               index_file)
 
     for reference, page in not_found:
-        logging.warn('On page %d, reference to "%s" was not found '
+        logging.warn('On page %s, reference to "%s" was not found '
                      'in the index.', page, reference)
     
 if __name__ == "__main__":

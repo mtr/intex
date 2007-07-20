@@ -527,7 +527,7 @@ class AcronymEntry(Entry):
             yield '\indexentry{' \
                   '%(parent_sort_as_long)s@%(parent_typeset_in_index_long)s!' \
                   '%(sort_as_long)s@%(typeset_in_index_long)s' \
-                  '%(typeset_page_number)s}{%(page)d}' % locals()
+                  '%(typeset_page_number)s}{%(page)s}' % locals()
             
 #             yield '\indexentry{' \
 #                   '%(parent_sort_as_short)s@%(parent_typeset_in_index_short)s!' \
@@ -544,7 +544,7 @@ class AcronymEntry(Entry):
             yield '\indexentry{' \
                   '%(sort_as_long)s@%(typeset_in_index_long)s' \
                   '%(typeset_page_number)s}' \
-                  '{%(page)d}' % locals()
+                  '{%(page)s}' % locals()
             
 #             yield '\indexentry{%(sort_as_short)s@' \
 #                   '%(typeset_in_index_short)s|see{%(typeset_in_index_long)s}}' \
@@ -736,10 +736,10 @@ class ConceptEntry(Entry):
             yield '\indexentry{' \
                   '%(parent_sort_as)s@%(parent_typeset_in_index)s!' \
                   '%(sort_as)s@%(typeset_in_index)s' \
-                  '%(typeset_page_number)s}{%(page)d}' % locals()
+                  '%(typeset_page_number)s}{%(page)s}' % locals()
         else:
             yield '\indexentry{%(sort_as)s@%(typeset_in_index)s' \
-                  '%(typeset_page_number)s}{%(page)d}' \
+                  '%(typeset_page_number)s}{%(page)s}' \
                   % locals()
 
     def generate_internal_macros(self, inflection):
@@ -954,7 +954,7 @@ class PersonEntry(Entry):
             return                   # Skip the regular index entries.
         
         yield '\indexentry{%(sort_as)s@%(typeset_in_index)s' \
-              '%(typeset_page_number)s}{%(page)d}' \
+              '%(typeset_page_number)s}{%(page)s}' \
               % locals()
 
     def generate_internal_macros(self, inflection):

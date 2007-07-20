@@ -36,7 +36,7 @@ class IndexSyntaxError(_IndexError, SyntaxError):
 
 class Index(list):
     _intex_re = re.compile('\\\@writefile\{%s\}' \
-                           '\{\\\indexentry\{(?P<key>.*)\}\{(?P<page>\d+)\}\}' \
+                           '\{\\\indexentry\{(?P<key>.*)\}\{(?P<page>\w+)\}\}' \
                            % (INTEX_DEFAULT_INDEX))
     
     _concept_types = ['ACRONYMS', 'PEOPLE', 'CONCEPTS']
@@ -104,9 +104,9 @@ class Index(list):
     (?P<indent>\s+)?                       # (possible) indentation,
     (?P<initials>%(FIELD)s)?               # an entry,
     [%(FIELD_SEPARATORS)s]*                # a separator,
-    (?P<last_name>%(FIELD)s)?              # the full form,
-    [%(FIELD_SEPARATORS)s]*                # another separator,
-    (?P<first_name>%(FIELD)s)?             # the full form,
+    (?P<last_name>%(FIELD)s)?              # the last name,
+    [%(FIELD_SEPARATORS)s,]*               # another separator or ",",
+    (?P<first_name>%(FIELD)s)?             # the first name,
     [%(FIELD_SEPARATORS)s]*                # another separator,
     (?P<meta>%(META_TOKEN)s.+)?            # meta information
     $                                      # at the end.
@@ -217,7 +217,7 @@ class Index(list):
                 # of the session.
                 raise IndentationError('On line %d in file "%s:\n%s' \
                                        % ((self._line_num + 1),
-                                          self._current_file,
+                                          self._filename,
                                           self._current_line))
             else:
                 self._indentation_level[indent] = len(self._indentation_level)
@@ -264,8 +264,8 @@ class Index(list):
     def from_file(cls, filename):
         self = cls()
         
-        self._current_file = filename
-
+        self._filename = filename
+        
         logging.info('Reading index definitions from "%s".', filename)
         
         stream = open(filename, 'r')
@@ -322,8 +322,6 @@ class Index(list):
             
         stream.close()            # Explicitly close the input stream.
         
-        self._current_file = None
-        
         return self
 
     def __str__(self):
@@ -371,8 +369,8 @@ class Index(list):
             for inflection, phrase in entry.reference.iteritems():
                 if phrase in references:
                     logging.error('Duplicate full-form reference "%s" ' \
-                                  'detected.  Please correct your .itx file.' \
-                                  % phrase)
+                                  'detected.  Please correct the file "%s".' \
+                                  % phrase, self._filename)
                     sys.exit(1)
                     
                 references[phrase] = (entry, inflection)
@@ -390,10 +388,11 @@ class Index(list):
         self.references = references
 
     def get_auxiliary_entries(self, filename):
-        for line in open(filename, 'r'):
+        for i, line in enumerate(open(filename, 'r')):
+            line_number = (i + 1)
             match = self._intex_re.match(line.rstrip())
             if not match:
-                yield (False, line)
+                yield (line_number, False, line)
                 continue
             key, page = match.groups()
 
@@ -406,7 +405,9 @@ class Index(list):
             else:
                 typeset_page_number = ''
                 
-            yield (True, (key, int(page), typeset_page_number))
+            # Do _not_ try to convert page into an integer, it may
+            # occurr as roman numerals.
+            yield (line_number, True, (key, page, typeset_page_number))
             
     def interpret_auxiliary(self, auxiliary_filename, internal_file,
                             index_file):
@@ -414,9 +415,11 @@ class Index(list):
         already_output = set()
         already_handled = set()
         
-        for is_concept, data in self.get_auxiliary_entries(auxiliary_filename):
+        for line_number, is_concept, data \
+                in self.get_auxiliary_entries(auxiliary_filename):
             if not is_concept:
-                logging.debug('Ignoring non-concept: "%s"', data.rstrip())
+                logging.debug('Ignoring non-concept: "%s" on line %d in "%s".',
+                              data.rstrip(), line_number, auxiliary_filename)
                 continue
             
             key, page, typeset_page_number = data
