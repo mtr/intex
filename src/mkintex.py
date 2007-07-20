@@ -131,6 +131,10 @@ def main():
         logging.warning('No LaTeX auxiliary file specified; exiting.')
         sys.exit(1)
 
+    if options.index_filename is None:
+        logging.warning('No output index file specified; exiting.')
+        sys.exit(1)
+        
     if len(args) == 0:
         suffix_re = re.compile('^.*\.%s$' % (INTEX_INPUT_EXT))
         
@@ -172,13 +176,13 @@ def main():
             
     if options.only_build_index:
         return
-
+    
     with nested(open(options.ito_filename, 'w'),
                 open(options.index_filename, 'w')) \
         as (internal_file, index_file):
         not_found = index.interpret_auxiliary(auxiliary, internal_file,
                                               index_file)
-
+        
     for reference, page in not_found:
         logging.warn('On page %s, reference to "%s" was not found '
                      'in the index.', page, reference)
