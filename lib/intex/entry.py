@@ -401,6 +401,7 @@ class Entry(object):
                                            inflection, current_inflection,
                                            field)
                 for pos, part in enumerate(parts)]
+            
             # Remove empty/blank elements.
             template_list = [part for part in template_list if part]
             
@@ -614,6 +615,7 @@ class AcronymEntry(Entry):
             ]
         
         if indent_level == 0:
+            # Main entry.
             if not full_form:
                 raise MissingAcronymExpansionError(concept)
                     
@@ -643,6 +645,7 @@ class AcronymEntry(Entry):
                 getattr(self, field)[complement_inflection] = value
                 
         else:
+            # Sub-entry.
             if full_form is None:
                 full_form = concept
                 
@@ -652,6 +655,7 @@ class AcronymEntry(Entry):
                                              current_inflection,
                                              field_variable_map,
                                              full_form).items():
+                    value = self.unescape(value.strip(), FIELD_SEPARATORS + '-')
                     getattr(self, field)[inflection] = value
                     
         if current_inflection == Entry.INFLECTION_NONE:
