@@ -1,11 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-# $Id: entry.py 1064 2007-07-22 13:45:23Z mtr $
+# $Id$
 """
 Copyright (C) 2007 by Linpro AS
 """
 __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
-__revision__ = "$Rev: 1064 $"
+__revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
 from utils import escape_aware_split
