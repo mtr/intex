@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-SUBDIRS = doc src 
+SUBDIRS =  src latex doc 
 
 ACLOCAL_AMFLAGS = -I m4
 

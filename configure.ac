@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl 
 dnl $Id$
 dnl
-AC_INIT(intex, 1.0.6)
+AC_INIT(intex, 1.0.8)
 AC_CONFIG_SRCDIR(src/mkintex.py)
 AM_INIT_AUTOMAKE
 
@@ -16,6 +16,7 @@ AC_OUTPUT([Makefile
 	   bin/config.sh
 	   doc/Makefile
 	   doc/mkintex.xml
+	   latex/Makefile
 	   lib/intex/config.py
 	   src/Makefile
 	   src/post-install.sh

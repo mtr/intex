@@ -33,6 +33,7 @@ def parse_command_line(command_line_options, usage):
     # Parse the command line.
     return parser.parse_args()
 
+
 def resolve_auxiliary_and_args(args):
     """Resolve the name of the current LaTeX auxiliary file (.aux)
     based on the supplied arguments and the current working directory.
@@ -114,7 +115,7 @@ def main():
     
     # Sort out the name for the basic log.
     logging.root.name = os.path.basename(__file__)
-
+    
     log_level = None
     
     if options.verbose:

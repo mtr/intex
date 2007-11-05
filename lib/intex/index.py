@@ -20,7 +20,9 @@ from config import (
     TOKEN_COMMENT,
     TOKEN_ENTRY_META_INFO,
     )
-from entry import AcronymEntry, ConceptEntry, PersonEntry
+from acronym_entry import AcronymEntry
+from concept_entry import ConceptEntry
+from person_entry import PersonEntry
 from stack import Stack
 from utils import flatten, escape_aware_rsplit
 
@@ -425,8 +427,12 @@ class Index(list):
             logging.debug('Handling reference "%s" on page %s.', key, page)
             
             if key not in self.references:
-                not_found.add((key, page))
-                continue
+                if key.lower() in self.references:
+                    key = key.lower()
+                    logging.debug('lowered key: %s', key)
+                else:
+                    not_found.add((key, page))
+                    continue
             
             concept, inflection = self.references[key]
             logging.debug('Reference expanded to %s (inflection=%s)',
