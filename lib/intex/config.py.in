@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 # $Id$
 """
-Copyright (C) 2007 by Linpro AS
+Copyright (C) 2007 by Martin Thorsen Ranang
 """
-__author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
+__author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
