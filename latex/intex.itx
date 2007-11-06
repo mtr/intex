@@ -41,7 +41,11 @@ concept
   person (-)
   plain (-)
   sub\--
+
+dog
+
 idea
+index
 
 (meat eater)@{m$^{\textrm{e}}$a$_{\textrm{t}}$ eater} --> carnivore
 
@@ -56,6 +60,8 @@ Python
 
 TeXnician@{\TeX}nician
   -'s tool
+
+vertex
 
 % Local Variables: 
 % mode: latex

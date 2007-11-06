@@ -336,32 +336,51 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % \end{SideBySideExample}
 %
 %
+% \makeatletter
+% \@itx@margin@plainfalse%
+% \makeatother
 % \begin{SideBySideExample}[xrightmargin=5cm]
-%   \makeatletter
-%   \@itx@margin@plainfalse%
-%   \makeatother
-%   %
 %   The word \co{carnivore} means
 %   \co{meat eater}.  There are both
 %   \co{feline} and \co{canine}
 %   \co{meat eaters} in the animal
 %   kingdom.
 % \end{SideBySideExample}
+% \makeatletter
+% \@itx@margin@plaintrue%
+% \makeatother
 %
-% It is also possible to refer to a concept using
-% capitalized words, as in
+% It is also possible to refer to a concept using capitalized words,
+% as in
 %
+% \makeatletter
+% \@itx@margin@plainfalse%
+% \makeatother
 % \begin{SideBySideExample}[xrightmargin=5cm]
-%   \makeatletter
-%   \@itx@margin@plainfalse%
-%   \makeatother
-%   %
 %   \co{Carnivore} eats meat.
 % \end{SideBySideExample}
+% \makeatletter
+% \@itx@margin@plaintrue%
+% \makeatother
 %
-% In this section, let's assume that we would like to write
-% about the \co{InTeX logo}.  This might be a good time to go drink
-% some \co{H2O}.
+% The package also supports ``special'' typesetting of acronyms, like
+%
+% \makeatletter
+% \@itx@margin@plainfalse%
+% \makeatother
+% \begin{SideBySideExample}[xrightmargin=5cm]
+%   \verb|mkintex| automatically inflects 
+%   words following common patterns.  For
+%   example, \co{index} and \co{indices} 
+%   both refer to the same concept, even
+%   though only \verb|index| is entered 
+%   in the \InTeX-file.  The same goes for
+%   \co{vertex} and \co{vertices}, and
+%   \co{dog} and \co{dogs}.
+% \end{SideBySideExample}
+% \makeatletter
+% \@itx@margin@plaintrue%
+% \makeatother
 %
 % The \InTeX\ package handles the notion of multiple names for the
 % same concept too.  For example, a lot of people believes that
