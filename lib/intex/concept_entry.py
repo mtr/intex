@@ -29,6 +29,20 @@ class ConceptEntry(Entry):
         # typeset in the index.
         'typeset_in_index',
         ]
+
+    # Redefining _LINE_FORMAT to handle two Capitalized columns.
+    _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
+                   '%%-%(_column_width)ds ' \
+                   '%%-%(_column_width)ds ' \
+                   '%%-%(_column_width)ds ' \
+                   '%%-%(_column_width)ds' 
+    
+    _repr_inflections = (
+        Entry.INFLECTION_SINGULAR,
+        Entry.INFLECTION_PLURAL,
+        Entry.INFLECTION_SINGULAR_CAPITALIZED,
+        Entry.INFLECTION_PLURAL_CAPITALIZED,
+        )
     
     def __init__(self, index, parent, concept=None, indent_level=None,
                  plural=None, index_as=None, sort_as=None, meta=None,
@@ -36,12 +50,14 @@ class ConceptEntry(Entry):
         # Set a couple of defining attributes before calling our base
         # constructor.
         for attribute in self._generated_fields:
-            setattr(self, attribute, dict.fromkeys([Entry.INFLECTION_SINGULAR,
-                                                    Entry.INFLECTION_PLURAL]))
-
+            setattr(self, attribute,
+                    dict.fromkeys([Entry.INFLECTION_SINGULAR,
+                                   Entry.INFLECTION_PLURAL,
+                                   ]))
+        
         # Call the base constructor.
         Entry.__init__(self, index, parent, meta)
-
+        
         # If this entry is an alias for another entry, indicate that
         # here.
         self.alias = alias
@@ -54,7 +70,7 @@ class ConceptEntry(Entry):
             concept = ''
             
         self._setup(concept, self._meta, indent_level)
-
+        
     def generate_index_entries(self, page, typeset_page_number=''):
         inflection = self.index_inflection
 
@@ -110,21 +126,25 @@ class ConceptEntry(Entry):
     
     def get_plain_header(self):
         return self._line_format \
-               % ('',
-                  self.bold_it('singular'.center(self._column_width)),
-                  self.bold_it('plural'.center(self._column_width)))
+               % (('', ) \
+               + tuple(self.bold_it(inflection.center(self._column_width))
+                       for inflection in self._repr_inflections))
 
     def __str__(self):
         if self.alias:
-            alias_line = '\n' + self._line_format % ('alias', self.alias, '', )
+            alias_line = '\n' \
+                         + self._line_format % ('alias', self.alias, '', '', '')
         else:
             alias_line = ''
+            
+        line_fields = [(attribute,) \
+                       + tuple(getattr(self, attribute).has_key(inflection) \
+                               and getattr(self, attribute)[inflection] or ''
+                               for inflection in self._repr_inflections)
+                       for attribute in self._generated_fields]
 
-        return '\n'.join([self._line_format \
-                          % (attribute,
-                             getattr(self, attribute)['singular'],
-                             getattr(self, attribute)['plural'],)
-                          for attribute in self._generated_fields]) \
+        return '\n'.join([self._line_format % fields
+                          for fields in line_fields]) \
                 + alias_line
     
     def _setup(self, concept, meta, indent_level):
@@ -139,7 +159,7 @@ class ConceptEntry(Entry):
         # current entry.
         self.index_inflection = current_inflection
 
-        field_variable_map = [
+        attribute_variable_map = [
             ('reference', 'reference'),
             ('reference_short', 'reference'),
             ('typeset_in_text', 'typeset'),
@@ -150,9 +170,9 @@ class ConceptEntry(Entry):
             reference, typeset = self.format_reference_and_typeset(concept)
             reference_short = []        # Only used for sub-entries.
             
-            for field, variable in field_variable_map:
+            for attribute, variable in attribute_variable_map:
                 value = ' '.join(locals()[variable])
-                getattr(self, field)[current_inflection] = value
+                getattr(self, attribute)[current_inflection] = value
 
             if meta.has_key(Entry.META_COMPLEMENT_INFLECTION):
                 reference, typeset \
@@ -163,22 +183,22 @@ class ConceptEntry(Entry):
                     self.get_complement_inflections(reference, typeset,
                                                     current_inflection)
 
-            for field, variable in field_variable_map:
+            for attribute, variable in attribute_variable_map:
                 value = ' '.join(locals()[variable])
-                getattr(self, field)[complement_inflection] = value
+                getattr(self, attribute)[complement_inflection] = value
             
         else:
             # This is a sub-entry.
             for inflection in (current_inflection, complement_inflection):
-                for field, value \
+                for attribute, value \
                     in self.expand_sub_entry(concept, inflection,
                                              current_inflection,
-                                             field_variable_map).items():
-                    getattr(self, field)[inflection] = value
+                                             attribute_variable_map).items():
+                    getattr(self, attribute)[inflection] = value
                     
         for (inflection, attribute) in cartesian(
             (Entry.INFLECTION_SINGULAR, Entry.INFLECTION_PLURAL, ),
-            [field for field, variable in field_variable_map]):
+            [attribute for attribute, variable in attribute_variable_map]):
             concept = getattr(self, attribute)[inflection]
             getattr(self, attribute)[inflection] \
                 = self.unescape(concept.strip(), FIELD_SEPARATORS + '-')
@@ -186,5 +206,24 @@ class ConceptEntry(Entry):
             if current_inflection == Entry.INFLECTION_NONE:
                 getattr(self, attribute)[inflection] = \
                     getattr(self, attribute)[Entry.INFLECTION_NONE]
-                
-        #logging.debug('self = %s', self)
+
+        # Create capitalized versions of the different inflections.
+        for (inflection, attribute) \
+                in cartesian((Entry.INFLECTION_SINGULAR,
+                              Entry.INFLECTION_PLURAL,
+                              Entry.INFLECTION_NONE,
+                              ),
+                             [attribute
+                              for attribute, variable \
+                              in attribute_variable_map[:3]]):
+
+            if hasattr(self, attribute) \
+               and getattr(self, attribute).has_key(inflection):
+                original = getattr(self, attribute)[inflection]
+                capitalized = self.capitalize(original)
+
+                if capitalized != original:
+                    capitalized_inflection = Entry._capitalized[inflection]
+                    getattr(self,
+                            attribute)[capitalized_inflection] = capitalized
+        

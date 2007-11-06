@@ -369,8 +369,8 @@ class Index(list):
             for inflection, phrase in entry.reference.iteritems():
                 if phrase in references:
                     logging.error('Duplicate full-form reference "%s" ' \
-                                  'detected.  Please correct the file "%s".' \
-                                  % phrase, self._filename)
+                                  'detected.  Please correct the file "%s".', \
+                                  phrase, self._filename)
                     sys.exit(1)
                     
                 references[phrase] = (entry, inflection)

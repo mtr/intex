@@ -8,13 +8,11 @@ __author__ = "Martin Thorsen Ranang <mtr@linpro.no>"
 __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
-from functools import partial
 import logging
 import re
-import sys
 
 from config import FIELD_SEPARATORS, TOKEN_ENTRY_META_INFO, TOKEN_TYPESET_AS
-from paren_parser import ParenParser#, cartesian
+from paren_parser import ParenParser
 from utils import flatten, escape_aware_split, escape_aware_rsplit
 
 ESCAPE_TOKEN = '\\'
@@ -55,13 +53,23 @@ class Entry(object):
         'inflection_plural',
         'inflection_singular',
         'inflection_none',
+        # For capitalization support:
+        'inflection_plural_capitalized',
+        'inflection_singular_capitalized',
+        'inflection_none_capitalized',
         # Meaning of placeholders:
         'placeholder_in_text_and_index',
         'placeholder_in_index_only',
         ):
         exec("%s='%s'" % (constant.upper(),
                           ''.join(constant.split('_', 1)[1:])))
-        
+
+    _capitalized = {
+        INFLECTION_PLURAL: INFLECTION_PLURAL_CAPITALIZED,
+        INFLECTION_SINGULAR: INFLECTION_SINGULAR_CAPITALIZED,
+        INFLECTION_NONE: INFLECTION_NONE_CAPITALIZED,
+        }
+    
     _shorthand_inflection = {
         '+': INFLECTION_PLURAL,
         '-': INFLECTION_SINGULAR,
@@ -121,7 +129,7 @@ class Entry(object):
     _column_width = 28
     _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
                    '%%-%(_column_width)ds ' \
-                   '%%-%(_column_width)ds'
+                   '%%-%(_column_width)ds' 
     
     def __init__(self, index, parent, meta):
         index.append(self)
@@ -456,6 +464,13 @@ class Entry(object):
     def to_latex(self):
         raise NotImplementedError
 
+    @staticmethod
+    def capitalize(string):
+        for i, token in enumerate(string):
+            if token.isalpha():
+                return string[:i] + token.upper() + string[i + 1:]
+            
+        return string
 
 def main():
     """Module mainline (for standalone execution).
