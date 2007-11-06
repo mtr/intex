@@ -86,11 +86,6 @@ class AcronymEntry(Entry):
                   '%(sort_as_long)s@%(typeset_in_index_long)s' \
                   '%(typeset_page_number)s}{%(page)s}' % locals()
             
-#             yield '\indexentry{' \
-#                   '%(parent_sort_as_short)s@%(parent_typeset_in_index_short)s!' \
-#                   '%(sort_as_short)s@%(typeset_in_index_short)s' \
-#                   '|see{---, %(typeset_in_index_long)s}}' \
-#                   '{%(page)d}' % locals()
             yield '\indexentry{' \
                   '%(parent_sort_as_short)s@%(parent_typeset_in_index_short)s!' \
                   '%(sort_as_short)s@%(typeset_in_index_short)s' \
@@ -103,9 +98,6 @@ class AcronymEntry(Entry):
                   '%(typeset_page_number)s}' \
                   '{%(page)s}' % locals()
             
-#             yield '\indexentry{%(sort_as_short)s@' \
-#                   '%(typeset_in_index_short)s|see{%(typeset_in_index_long)s}}' \
-#                   '{%(page)d}' % locals()
             yield '\indexentry{%(sort_as_short)s@' \
                   '%(typeset_in_index_short)s|see{%(typeset_in_index_long)s}}' \
                   '{0}' % locals()

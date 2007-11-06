@@ -46,7 +46,6 @@ class ConceptEntry(Entry):
         # here.
         self.alias = alias
         
-        #return                          # FIXME:
         if concept:
             # Unescape escaped field separators.  Other escaped tokens
             # are kept in escaped form.
@@ -71,9 +70,6 @@ class ConceptEntry(Entry):
                 yield entry
 
             orig_typeset_in_index = concept.typeset_in_index[inflection]
-#             yield '\indexentry{%(sort_as)s@' \
-#                   '%(typeset_in_index)s|see{%(orig_typeset_in_index)s}}' \
-#                   '{%(page)d}' % locals()
             yield '\indexentry{%(sort_as)s@' \
                   '%(typeset_in_index)s|see{%(orig_typeset_in_index)s}}' \
                   '{0}' % locals()
@@ -96,12 +92,9 @@ class ConceptEntry(Entry):
                   % locals()
 
     def generate_internal_macros(self, inflection):
-        logging.debug('inflection = %s', inflection)
         type_name = self.get_entry_type()
         reference = self.reference[inflection]
-        logging.debug('self.reference = %s', self.reference)
         typeset_in_text = self.typeset_in_text[inflection]
-        logging.debug('self.typeset_in_text = %s', self.reference)
         
         yield '\\new%(type_name)s{%(reference)s}{%(typeset_in_text)s}' \
               '{XC.0}' \
@@ -189,7 +182,9 @@ class ConceptEntry(Entry):
             concept = getattr(self, attribute)[inflection]
             getattr(self, attribute)[inflection] \
                 = self.unescape(concept.strip(), FIELD_SEPARATORS + '-')
+
             if current_inflection == Entry.INFLECTION_NONE:
                 getattr(self, attribute)[inflection] = \
                     getattr(self, attribute)[Entry.INFLECTION_NONE]
                 
+        #logging.debug('self = %s', self)

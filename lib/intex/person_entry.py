@@ -75,14 +75,8 @@ class PersonEntry(Entry):
 
         for particle in ['the', 'von', 'van', 'van der']:
             if first_name.endswith(particle):
-                #print 'pre:'
-                #print 'last_name = "%s"' % last_name
-                #print 'first_name = "%s"' % first_name
                 last_name = ' '.join([first_name[-len(particle):], last_name])
                 first_name = first_name[:-len(particle)]
-                #print 'post:'
-                #print 'last_name = "%s"' % last_name
-                #print 'first_name = "%s"' % first_name
                 break          # Will avoid the following else-clause.
             
         variables = locals()
@@ -112,7 +106,6 @@ class PersonEntry(Entry):
     def generate_index_entries(self, page, typeset_page_number=''):
         inflection = self.index_inflection
 
-        #sort_as = self.reference[inflection]
         typeset_in_index = self.typeset_in_index[inflection]
         sort_as = typeset_in_index
         
@@ -123,11 +116,6 @@ class PersonEntry(Entry):
             for entry in concept.generate_index_entries(page,
                                                         typeset_page_number):
                 yield entry
-
-            #orig_typeset_in_index = concept.typeset_in_index[inflection]
-            #yield '\indexentry{%(sort_as)s@' \
-            #      '%(typeset_in_index)s|see{%(orig_typeset_in_index)s}}' \
-            #      '{%(page)d}' % locals()
                 
             return                   # Skip the regular index entries.
         

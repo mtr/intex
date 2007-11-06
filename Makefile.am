@@ -44,7 +44,8 @@ deb: rpm
 tests:
 	PYTHONPATH=$(top_srcdir)/lib pytest test
 
+#etags --language-force=Python
 etags:
-	etags --language-force=Python \
+	etags --language=python \
 		src/* \
 		$$(find lib -name \*\.py |tr '\n' ' ')
