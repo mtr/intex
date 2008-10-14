@@ -91,7 +91,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 \usepackage[norsk,english]{babel}
 \usepackage{fancyvrb}
 \usepackage{url}
-\usepackage{hyperref}
+\usepackage[colorlinks=true]{hyperref}
 \usepackage{svn}
 \SVN $Rev$
 \SVN $Date$
@@ -793,6 +793,8 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 %
 % \begin{macro}{\itxs}
+%   The syntax is |\itxs{|\meta{type}|}{|\meta{identity}|}|.  A
+%   wrapper for |\@itxs|.
 %    \begin{macrocode}
 \newcommand*{\itxs}[2]{%
   \texorpdfstring{\protect\@itxs{#1}{#2}}{#1}}%
@@ -800,6 +802,9 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 %
 % \begin{macro}{\@itxs}
+%   The syntax is |\@itxs{|\meta{type}|}{|\meta{identity}|}|.
+%   Typesets the concept referred to by \meta{identity} in its
+%   \emph{short form} according to its \meta{type}.
 %    \begin{macrocode}
 \newcommand*{\@itxs}[2]{%
   \ifcase\number#1%
@@ -825,20 +830,51 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 %
 % \begin{macro}{\itxl}
+%   The syntax is |\itxl{|\meta{type}|}{|\meta{identity}|}|.  A
+%   wrapper for |\@itxl|.
 %    \begin{macrocode}
 \newcommand*{\itxl}{\protect\@itxl}%
 %    \end{macrocode}
 % \end{macro}
 %
 % \begin{macro}{\@itxl}
+%   The syntax is |\@itxl{|\meta{type}|}{|\meta{identity}|}|.
+%   Typesets the concept referred to by \meta{identity} in its
+%   \emph{long form} according to its \meta{type}.
 %    \begin{macrocode}
 \newcommand*{\@itxl}[2]{%
-  \ITX@itxl{#1}{#2}%
+  %\ITX@itxl{#1}{#2}%
+  \ifcase\number#1%
+%    \end{macrocode}
+% \begin{description}
+% \item[Plain Concept] Typeset the concept, \ldots
+%    \begin{macrocode}
+    \itxplainfollowfont{\ITX@itxs{#1}{#2}}\nolinebreak %
+  \or%
+%    \end{macrocode}
+% \item[Acronym] Typeset the concept (note in-between margin
+%   label), \ldots
+%    \begin{macrocode}
+    \itxacronymdeffont{\ITX@itxl{#1}{#2}}%
+  \or%
+%    \end{macrocode}
+% \item[Person] Typeset the concept (note the in-between margin
+%   label), \ldots
+%    \begin{macrocode}
+    \itxpersondeffont{%
+      \itxpersonfirstfont{\ITX@itxs{#1}{#2}} %
+      %\nolinebreak[3] %
+      \itxpersonlastfont{\ITX@itxl{#1}{#2}}%
+    }%
+  \fi%
 }%
 %    \end{macrocode}
+% \end{description}
 % \end{macro}
 %
 % \begin{macro}{\itxf}
+%   The syntax is |\itxf{|\meta{type}|}{|\meta{identity}|}|.  A wrapper
+%   for |\@itxf|.
 %    \begin{macrocode}
 \newcommand*{\itxf}[2]{%
   \texorpdfstring{\protect\@itxf{#1}{#2}}{\ITX@itxl{#1}{#2} (#1)}%
@@ -847,6 +883,9 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % \end{macro}
 % 
 % \begin{macro}{\@itxf}
+%   The syntax is |\@itxf{|\meta{type}|}{|\meta{identity}|}|.
+%   Typesets the concept referred to by \meta{identity} in its
+%   \emph{full form} according to its \meta{type}.
 %    \begin{macrocode}
 \newcommand*{\@itxf}[2]{%
   \ifcase\number#1%
@@ -924,7 +963,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   % Record this area:
 %    \begin{macrocode}
   \edef\curr@pos{\@itxarea{#1}}%
-  \PackageWarning{InTeX}{Current position for type "#1" is "\curr@pos".}%
+  %\PackageWarning{InTeX}{Current position for type "#1" is "\curr@pos"}%
 %    \end{macrocode}
   % Remember the last area where this concept (second argument) was used.
 %    \begin{macrocode}
@@ -944,23 +983,21 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 %  \end{macro}
 %
-% \begin{macro}{\@itxplain}
-%   The syntax is |\@itxplain{|\meta{type}|}{|\meta{identity}|}|.
-%   This command is responsible for keeping track of where the
-%   $\left(\meta{type}, \meta{identity}\right)$ tuple was last used
-%   and for typesetting it accordingly.
-%    \begin{macrocode}
-\newcommand*{\@itxplain}[2]{%
-%    \end{macrocode}
+% \begin{macro}{\@itxtypeset}
+%   The syntax is |\@itxtypeset{|\meta{type}|}{|\meta{identity}|}|.
+%   This command is responsible for typesetting the
+%   $\left(\meta{type}, \meta{identity}\right)$ tuple.
 %
-% First, update the ``last used'' status of the current concept so
-% that it refers to the current area.
+%   If the \meta{identity} was referred to in the frontmatter (part of
+%   books and reports), then a different set of rules should dictate
+%   the typesetting of the according concept.  Therefore, first find
+%   out if the package is used in an article, which does not have any
+%   |\if@mainmatter| macro.
 %    \begin{macrocode}
-  \@itxrecordarea{#1}{#2}%
-%    \end{macrocode}
-% Then, typeset the concept.
-%    \begin{macrocode}
-  %\if@mainmatter
+\@ifclassloaded{article}{%
+  \PackageInfo{InTeX}{Adjusting behavior to suite the article document
+    class\@gobble}%
+  \newcommand*{\@itxtypeset}[2]{% Article-mode.
     \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
 %    \end{macrocode}
 % The concept was last used in this area.  Hence, it is typeset in its
@@ -974,9 +1011,59 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \begin{macrocode}
       \itxf{#1}{#2}%
     \fi%
-  %\fi%
+  }%
+}{%
+%    \end{macrocode}
+% Since the current document class is \emph{not} article, we assume
+% that we are working with a book or report.
+%    \begin{macrocode}
+  \PackageInfo{InTeX}{Adjusting behavior to suite book/report document
+    classes\@gobble}%
+  \newcommand*{\@itxtypeset}[2]{% Book/report-mode.
+    \if@mainmatter
+      \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
+%    \end{macrocode}
+% The concept was last used in this area.  Hence, it is typeset in its
+% short form.
+%    \begin{macrocode}
+        \itxs{#1}{#2}%
+      \else%
+%    \end{macrocode}
+% The concept has not yet been used, or it was last used in another
+% area.  Hence, it is typeset in its full form.
+%    \begin{macrocode}
+        \itxf{#1}{#2}%
+      \fi%
+    \else%
+%    \end{macrocode}
+% Either in frontmatter or in backmatter.
+%    \begin{macrocode}
+      \itxl{#1}{#2}%
+    \fi%
+  }%
 }%
 %    \end{macrocode}
+%  \end{macro}
+%
+% \begin{macro}{\@itxplain}
+%   The syntax is |\@itxplain{|\meta{type}|}{|\meta{identity}|}|.
+%   This command is responsible for keeping track of where the
+%   $\left(\meta{type}, \meta{identity}\right)$ tuple was last used
+%   and for typesetting it accordingly.
+%
+%    \begin{macrocode}
+\newcommand*{\@itxplain}[2]{%
+%    \end{macrocode}
+%
+% First, update the ``last used'' status of the current concept so
+% that it refers to the current area.
+%    \begin{macrocode}
+  \@itxrecordarea{#1}{#2}%
+%    \end{macrocode}
+% Then, typeset the concept.
+%    \begin{macrocode}
+  \@itxtypeset{#1}{#2}%
+}%
 % \end{macro}
 %
 % \begin{macro}{\@itxalias}
@@ -1104,7 +1191,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 % The \meta{identity} refers to a main-entry.
 %    \begin{macrocode}
-        \PackageWarning{InTeX}{Main reference `#1' occurred}%
+        %\PackageInfo{InTeX}{Main reference `#1' occurred}%
         \edef\co@id{\csname fn\number\theco@type @\@tempb\endcsname}%
         \@itxplain{\number\theco@type}{\co@id}%
         \foundtrue%
