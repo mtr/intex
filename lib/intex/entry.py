@@ -95,6 +95,7 @@ class Entry(object):
     # Note that the order is significant (also when the pairs are
     # reversed below).
     _plural_to_singular = [
+        ('yses', 'ysis'),
         ('ices', 'ex'),
         ('ies', 'y'),
         ('ses', 's'),
