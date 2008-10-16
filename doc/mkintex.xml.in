@@ -9,15 +9,18 @@
   </refmeta>
   <refnamediv id='name'>
     <refname>mkintex</refname>
-    <refpurpose>an index preprocessor for LaTeX</refpurpose>
+    <refpurpose>an index preprocessor for the
+    <refentrytitle>InTeX</refentrytitle><manvolnum>5</manvolnum>
+    <refentrytitle>LaTeX</refentrytitle><manvolnum>1</manvolnum>
+    package</refpurpose>
   </refnamediv>
   <!-- body begins here -->
   <refsynopsisdiv id='synopsis'>
     <cmdsynopsis>
       <command>mkintex</command>
       <arg choice='opt'><replaceable>options</replaceable></arg>
-      <arg choice='plain'><replaceable>&lt;index&gt;</replaceable></arg>
-      <arg choice='opt' rep='repeat'><replaceable>index</replaceable></arg>
+      <arg choice='plain'><replaceable>&lt;InTeX-index&gt;</replaceable></arg>
+      <arg choice='opt' rep='repeat'><replaceable>InTeX-index</replaceable></arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   
@@ -102,19 +105,29 @@
   document, named &lt;<emphasis
   remap='I'>document_name</emphasis>&gt;.tex, that uses the
   <citerefentry><refentrytitle>InTeX</refentrytitle><manvolnum>5</manvolnum></citerefentry>
-  package.  Further we assume that you have defined a set of concepts,
-  acronyms, and propernouns for indexing in a file named &lt;<emphasis
-  remap='I'>document_name</emphasis>&gt;.itx.  Then, to run this
-  program the standard way, type</para>
+  package.  Furthermore, we assume that you have defined a set of
+  concepts, acronyms, and proper nouns for indexing in a file named
+  &lt;<emphasis remap='I'>document_name</emphasis>&gt;.itx.  Then, to
+  run this program the standard way, first process the document with
+  <citerefentry><refentrytitle>latex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+  (or
+  <citerefentry><refentrytitle>pdflatex</refentrytitle><manvolnum>1</manvolnum></citerefentry>)
+  by issuing the command</para>
   
   <para>latex &lt;<emphasis remap='I'>document_name</emphasis>&gt;</para>
   
-  <para>to run through the document once and generate both a DVI file
-  (.dvi) and an auxiliary file (.aux).  Next, run the
+  <para>This will process the document once and generate both a DVI
+  file (&lt;<emphasis remap='I'>document_name</emphasis>&gt;.dvi)---or
+  a PDF file (&lt;<emphasis
+  remap='I'>document_name</emphasis>&gt;.pdf)---and an auxiliary file
+  (&lt;<emphasis remap='I'>document_name</emphasis>&gt;.aux).  
+  </para>
+
+  <para>Next, run the
   <citerefentry><refentrytitle>mkintex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
   program</para>
   
-  <para>mkintex &lt;<emphasis remap='I'>document_name</emphasis>&gt; --index-file=&lt;<emphasis remap='I'>document_name</emphasis>&gt;.mtr</para>
+  <para>mkintex &lt;<emphasis remap='I'>document_name</emphasis>&gt; --index-file=&lt;<emphasis remap='I'>document_name</emphasis>&gt;.rix</para>
   
   <para>that will use as input both &lt;<emphasis
   remap='I'>document_name</emphasis>&gt;.aux and &lt;<emphasis
@@ -122,13 +135,13 @@
   files.  The first file is &lt;<emphasis
   remap='I'>document_name</emphasis>&gt;.ito, which will be used by
   <citerefentry><refentrytitle>latex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
-  in the next compilation of &lt;<emphasis
+  in following compilations of &lt;<emphasis
   remap='I'>document_name</emphasis>&gt;.tex, and &lt;<emphasis
-  remap='I'>document_name</emphasis>&gt;.mtr, which will be used by
+  remap='I'>document_name</emphasis>&gt;.rix, which will be used by
   <citerefentry><refentrytitle>makeindex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
   to produce a proper index for LaTeX to typeset:</para>
   
-  <para>makeindex -o intex.rid intex.mtr</para>
+  <para>makeindex -o intex.rid intex.rix</para>
   
   <para>After that, we have to run
   <citerefentry><refentrytitle>latex</refentrytitle><manvolnum>1</manvolnum></citerefentry>
@@ -143,20 +156,45 @@
   remap='I'>document_name</emphasis>&gt; is the name of the main LaTeX
   document, without the .tex ending.</para>
   
+  <para>For more information and examples of how to use the
+  <refentrytitle>InTeX</refentrytitle><manvolnum>5</manvolnum>
+  <refentrytitle>LaTeX</refentrytitle><manvolnum>1</manvolnum>
+  package, please see the file intex.pdf.
+  </para>
+
   </refsect1>
   
   <refsect1 id='authors'><title>AUTHORS</title>
   <para>
+    <contrib>Original author:</contrib>
     <author>
       <firstname>Martin</firstname>
-      <othername role="mi">Thorsen</othername>
+      <othername>Thorsen</othername>
       <surname>Ranang</surname>
-      <contrib>Original author</contrib>
-      <email>mtr@ranang.org</email>
     </author>
+    <email>mtr@ranang.org</email>.
   </para>
   </refsect1>
-  
+
+  <refsect1 id='copying'><title>COPYING</title>
+  <para>
+    InTeX is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+  </para>
+  <para>
+    InTeX is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+  </para>
+  <para>
+    You should have received a copy of the GNU General Public License
+    along with InTeX.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+  </para>
+  </refsect1>
+
   <refsect1 id='see_also'><title>SEE ALSO</title>
   <para>
     <citerefentry><refentrytitle>intex</refentrytitle>
