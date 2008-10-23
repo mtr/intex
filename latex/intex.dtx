@@ -290,12 +290,11 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % examples.  The central idea in \InTeX\ is that a phrase or a word
 % worth indexing constitutes some kind of a \co{concept}---in a broad
 % sense of the word.  A \co{concept} can be of several kinds.  It can
-% be either an \co{acronym} (or
-% abbreviation), the name of an entity (a \co{person concept}, or an
-% organization), or of the ``plain'' kind (simply a phrase).  Hence,
-% we will refer to the three kinds of \co{concepts} as
-% \emph{\co{acronym concepts}}, \emph{\co{person concepts}}, and
-% \emph{\co{plain concepts}}.
+% be either an \co{acronym} (or abbreviation), the name of an entity
+% (a \co{person concept}, or an organization), or of the ``plain''
+% kind (simply a phrase).  Hence, we will refer to the three kinds of
+% \co{concepts} as \emph{\co{acronym concepts}}, \emph{\co{person
+%     concepts}}, and \emph{\co{plain concepts}}.
 %
 % In the above paragraph, the word ``concepts'' was defined as a
 % \co{concept} of the \co{plain} kind, and it was defined to be
@@ -332,7 +331,11 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %   \@itx@margin@acronymfalse%
 %   \makeatother
 %   We could talk about multiple \co{IDs}, 
-%   or a single \co{ID}. 
+%   or a single \co{ID}.  Examples of 
+%   forced long- (``\coL{ID}''), 
+%   short- (``\coS{ID}''), 
+%   and full-format (``\coF{ID}'') 
+%   typesetting.
 % \end{SideBySideExample}
 %
 %
@@ -411,14 +414,14 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %
 % \subsection{Compilation}
 % \label{sec:compilation}
-% \DescribeMacro{makeintex} As mentioned earlier, the package includes
-% an external program named |makeintex|.  The typical usage of
-% |makeintex|, given that your document is named \meta{name}, would
+% \DescribeMacro{mkintex} As mentioned earlier, the package includes
+% an external program named |mkintex|.  The typical usage of
+% |mkintex|, given that your document is named \meta{name}, would
 % be \co{concept}:
 % 
 % \begin{enumerate}
 % \item |latex |\meta{name}|.tex|
-% \item |makeintex |\meta{name} \meta{name}|.itx -o |\meta{name}|.rix [-a acronyms.tex -p persons.tex]|
+% \item |mkintex |\meta{name} \meta{name}|.itx -o |\meta{name}|.rix [-a acronyms.tex -p persons.tex]|
 % \item |makeindex |\meta{name}
 % \item |makeindex -o |\meta{name}|.rid |\meta{name}|.rix|
 % \item |latex |\meta{name}|.tex|
@@ -984,8 +987,9 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %  \end{macro}
 %
 % \begin{macro}{\@itxtypeset}
-%   The syntax is |\@itxtypeset{|\meta{type}|}{|\meta{identity}|}|.
-%   This command is responsible for typesetting the
+%   The syntax is
+%   |\@itxtypeset{|\meta{type}|}{|\meta{identity}|}{|\meta{format
+%       code}|}|.  This command is responsible for typesetting the
 %   $\left(\meta{type}, \meta{identity}\right)$ tuple.
 %
 %   If the \meta{identity} was referred to in the frontmatter (part of
@@ -997,30 +1001,9 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 \@ifclassloaded{article}{%
   \PackageInfo{InTeX}{Adjusting behavior to suite the article document
     class\@gobble}%
-  \newcommand*{\@itxtypeset}[2]{% Article-mode.
-    \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
-%    \end{macrocode}
-% The concept was last used in this area.  Hence, it is typeset in its
-% short form.
-%    \begin{macrocode}
-      \itxs{#1}{#2}%
-    \else%
-%    \end{macrocode}
-% The concept has not yet been used, or it was last used in another
-% area.  Hence, it is typeset in its full form.
-%    \begin{macrocode}
-      \itxf{#1}{#2}%
-    \fi%
-  }%
-}{%
-%    \end{macrocode}
-% Since the current document class is \emph{not} article, we assume
-% that we are working with a book or report.
-%    \begin{macrocode}
-  \PackageInfo{InTeX}{Adjusting behavior to suite book/report document
-    classes\@gobble}%
-  \newcommand*{\@itxtypeset}[2]{% Book/report-mode.
-    \if@mainmatter
+  \newcommand*{\@itxtypeset}[3]{% Article-mode.
+    \ifx#3A%
+      %\PackageWarning{InTeX}{Typesetting format is automatic}%
       \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
 %    \end{macrocode}
 % The concept was last used in this area.  Hence, it is typeset in its
@@ -1036,9 +1019,55 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
       \fi%
     \else%
 %    \end{macrocode}
+% Explicit selected typesetting format.
+%    \begin{macrocode}
+      %\PackageWarning{InTeX}{Typesetting format = "#3"}%
+      \ifx#3S\itxs{#1}{#2}\fi%
+      \ifx#3L\itxl{#1}{#2}\fi%
+      \ifx#3F\itxf{#1}{#2}\fi%
+    \fi%
+  }%
+}{%
+%    \end{macrocode}
+% Since the current document class is \emph{not} article, we assume
+% that we are working with a book or report.
+%    \begin{macrocode}
+  \PackageInfo{InTeX}{Adjusting behavior to suite book/report document
+    classes\@gobble}%
+  \newcommand*{\@itxtypeset}[3]{% Book/report-mode.
+    \ifx#3A%
+      %\PackageWarning{InTeX}{Typesetting format is automatic}%
+%    \end{macrocode}
+% \emph{Automatic} typesetting.
+%    \begin{macrocode}
+      \if@mainmatter%
+        \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
+%    \end{macrocode}
+% The concept was last used in this area.  Hence, it is typeset in its
+% short form.
+%    \begin{macrocode}
+          \itxs{#1}{#2}%
+        \else%
+%    \end{macrocode}
+% The concept has not yet been used, or it was last used in another
+% area.  Hence, it is typeset in its full form.
+%    \begin{macrocode}
+          \itxf{#1}{#2}%
+        \fi%
+      \else%
+%    \end{macrocode}
 % Either in frontmatter or in backmatter.
 %    \begin{macrocode}
-      \itxl{#1}{#2}%
+        \itxl{#1}{#2}%
+      \fi%
+    \else%
+%    \end{macrocode}
+% Explicit selected typesetting format.
+%    \begin{macrocode}
+      %\PackageWarning{InTeX}{Typesetting format = "#3"}%
+      \ifx#3S\itxs{#1}{#2}\fi%
+      \ifx#3L\itxl{#1}{#2}\fi%
+      \ifx#3F\itxf{#1}{#2}\fi%
     \fi%
   }%
 }%
@@ -1046,13 +1075,22 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %  \end{macro}
 %
 % \begin{macro}{\@itxplain}
-%   The syntax is |\@itxplain{|\meta{type}|}{|\meta{identity}|}|.
-%   This command is responsible for keeping track of where the
-%   $\left(\meta{type}, \meta{identity}\right)$ tuple was last used
-%   and for typesetting it accordingly.
+%   The syntax is
+%   |\@itxplain{|\meta{type}|}{|\meta{identity}|}{|\meta{format
+%       code}|}|.  This command is responsible for keeping track of
+%   where the $\left(\meta{type}, \meta{identity}\right)$ tuple was
+%   last used and for typesetting it accordingly.
 %
+%   The \meta{format code} can be one of
+%   \begin{description}
+%   \item[|A|] for \emph{automatic} selection of any of the following,
+%     explicit, format codes.
+%   \item[|S|] for typesetting the entry in its \emph{short} form.
+%   \item[|L|] for typesetting the entry in its \emph{long} form.
+%   \item[|F|] for \emph{full-form} typesetting.
+%   \end{description}
 %    \begin{macrocode}
-\newcommand*{\@itxplain}[2]{%
+\newcommand*{\@itxplain}[3]{%
 %    \end{macrocode}
 %
 % First, update the ``last used'' status of the current concept so
@@ -1062,7 +1100,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 % Then, typeset the concept.
 %    \begin{macrocode}
-  \@itxtypeset{#1}{#2}%
+  \@itxtypeset{#1}{#2}{#3}%
 }%
 % \end{macro}
 %
@@ -1090,7 +1128,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %
 % \begin{macro}{\@itx@fakeindex}
 %   If no index is to be generated, we still need some output for
-%   |makeintex| to work with.  Hence, this command substitutes the
+%   |mkintex| to work with.  Hence, this command substitutes the
 %   |\index| command in the |index| package, and makes sure that an
 %   index entry with \emph{page} equal to |\thepage| is written to the
 %   auxiliary file instead.  However, the \emph{page} value will then
@@ -1113,24 +1151,33 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %
 % \begin{macro}{\co}
 %
-%   The |\co| command is the only command the user should need to use.
-%   The syntax is |\co{|\meta{identity}|}|, where \meta{identity}
-%   refers to a concept.  The idea is that the |\co{}| command should
-%   be wrapped around every concept the user want to either typeset or
-%   index in a special and consistent way (or both).  Note that |\co|
-%   is a wrapper for the |\@itx| command.
-%
+%   The |\co| command is the only command the user should \emph{need}
+%   to use.  The syntax is |\co{|\meta{identity}|}[|\meta{format
+%     code}|]|, where \meta{identity} refers to a concept and
+%   \meta{format code} is an optional argument that can be used to
+%   force a particular kind of typesetting.  The idea is that the
+%   |\co{}| command should be wrapped around every concept the user
+%   want to either typeset or index in a special and consistent way
+%   (or both).  Note that |\co| is a wrapper for the |\@itx| command.
+%   Please see the definition of |\@itxplain| for a description of the
+%   available format codes.  The default \meta{format code} is |A|.
 %    \begin{macrocode}
-%\newcommand{\co}{\@itx}
-\newcommand{\co}{\protect\@itx}%
+%\newcommand*{\co}{\protect\@itx}%
+\newcommand{\co}{\@itx}%
+\newcommand{\coS}[1]{\@itx[S]{#1}}%
+\newcommand{\coL}[1]{\@itx[L]{#1}}%
+\newcommand{\coF}[1]{\@itx[F]{#1}}%
+%\DeclareRobustCommand*{\co}{\protect\@itx}%
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\@itx}
 %   The |\@itx| command works just as described for |\co| above.
-%   Hence, |#1| is the \meta{identity}.
+%   Hence, |#1| is the \meta{format code}, and |#2| is the
+%   \meta{identity}.
 %    \begin{macrocode}
-\newcommand*{\@itx}[1]{%
-  \def\@tempa{#1}%
+%\newcommand*{\@itx}[2][A]{%
+\DeclareRobustCommand*{\@itx}[2][A]{%
+  \def\@tempa{#2}%
 %    \end{macrocode}
 % Handle, e.g., backslashes.
 %    \begin{macrocode}
@@ -1139,12 +1186,12 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %
 % If \InTeX\ should generate an index, simply use the |index| package
 % to write the identifying index entry.  The intricacies of how this
-% concept should be indexed is handled externally by the |makeintex|
+% concept should be indexed is handled externally by the |mkintex|
 % program that is part of the \InTeX\ package.
 %
 %    \begin{macrocode}
   \if@itx@index%
-    \index[raw]{#1}%
+    \index[raw]{#2}%
   \else%
     \@itx@fakeindex{\@tempb}%
   \fi%
@@ -1183,7 +1230,7 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 % a preference to main entries over alias entries (see the order
 % below).
 %    \begin{macrocode}
-        % \PackageWarning{InTeX}{Main AND alias reference `#1' occurred}%
+        % \PackageWarning{InTeX}{Main AND alias reference `#2' occurred}%
         % The reference refers to both main _and_ alias entries.  Do
         % nothing, this will be resolved through the |else|-cases
         % immediately below.
@@ -1191,16 +1238,16 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 % The \meta{identity} refers to a main-entry.
 %    \begin{macrocode}
-        %\PackageInfo{InTeX}{Main reference `#1' occurred}%
+        %\PackageInfo{InTeX}{Main reference `#2' occurred}%
         \edef\co@id{\csname fn\number\theco@type @\@tempb\endcsname}%
-        \@itxplain{\number\theco@type}{\co@id}%
+        \@itxplain{\number\theco@type}{\co@id}{#1}%
         \foundtrue%
       \fi%
 %   \else%
 %    \end{macrocode}
 % The \meta{identity} refers to an alias-entry.
 %    \begin{macrocode}
-%      \PackageWarning{InTeX}{Alias reference `#1' occurred}%
+%      \PackageWarning{InTeX}{Alias reference `#2' occurred}%
 %      %  XXX: It seems that this case never occurrs.
 %      \edef\co@id{\csname fn\number\theco@type e@\@tempb\endcsname}%
 %      \@itxalias{\number\theco@type}{\co@id}%
@@ -1221,11 +1268,11 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
   \iffound%
 % Do nothing.
   \else%
-    \PackageWarning{InTeX}{Reference `#1' to undefined concept}%
+    \PackageWarning{InTeX}{Reference `#2' to undefined concept}%
     \if@itx@warn@undef%
-      \textbf{\itxundefcomment{#1}}%
+      \textbf{\itxundefcomment{#2}}%
     \else%
-      #1%
+      #2%
     \fi%
   \fi%
 }%
