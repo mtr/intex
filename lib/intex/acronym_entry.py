@@ -69,13 +69,16 @@ class AcronymEntry(Entry):
 
         self._setup(acronym, full_form, self._meta, indent_level)
 
+        # To enable a ConceptEntry to refer to an AcronymEntry:
+        self.typeset_in_index = self.typeset_in_index_short
+
     def get_index_entry(self, length, inflection):
         sort_as = getattr(self, 'sort_as_' + length)[inflection]
         typeset_in_index = getattr(self,
                                    'typeset_in_index_' + length)[inflection]
         
         return '%(sort_as)s@%(typeset_in_index)s' % locals()
-    
+
     def generate_index_entries(self, page, typeset_page_number=''):
         inflection = self.index_inflection
         

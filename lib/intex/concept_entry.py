@@ -101,6 +101,7 @@ class ConceptEntry(Entry):
                 yield entry
 
             orig_typeset_in_index = concept.typeset_in_index[inflection]
+            
             yield '\indexentry{%(sort_as)s@' \
                   '%(typeset_in_index)s|see{%(orig_typeset_in_index)s}}' \
                   '{0}' % locals()
