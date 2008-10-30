@@ -70,7 +70,7 @@ class AcronymEntry(Entry):
         self._setup(acronym, full_form, self._meta, indent_level)
 
         # To enable a ConceptEntry to refer to an AcronymEntry:
-        self.typeset_in_index = self.typeset_in_index_short
+        self.typeset_in_index = self.typeset_in_index_long
 
     def get_index_entry(self, length, inflection):
         sort_as = getattr(self, 'sort_as_' + length)[inflection]
