@@ -55,6 +55,8 @@ class Index(list):
     _intex_re = re.compile('\\\@writefile\{%s\}' \
                            '\{\\\indexentry\{(?P<key>.*)\}\{(?P<page>\w+)\}\}' \
                            % (INTEX_DEFAULT_INDEX))
+
+    _aux_input_re = re.compile('\\\@input\{(?P<filename>.*\.aux)\}')
     
     _concept_types = ['ACRONYMS', 'PEOPLE', 'CONCEPTS']
     _index_attrbiutes = {
@@ -405,9 +407,22 @@ class Index(list):
     def get_auxiliary_entries(self, filename):
         for i, line in enumerate(open(filename, 'r')):
             line_number = (i + 1)
+
+            # Handle recursive \@include-statements within .aux files.
+            match = self._aux_input_re.match(line.rstrip())
+            if match:
+                input_filename = match.group('filename')
+                
+                logging.info('Will include "%s"', (input_filename, ))
+
+                for result in self.get_auxiliary_entries(input_filename):
+                    yield result
+                    
+                continue
+            
             match = self._intex_re.match(line.rstrip())
             if not match:
-                yield (line_number, False, line)
+                yield (filename, line_number, False, line)
                 continue
             key, page = match.groups()
 
@@ -422,7 +437,8 @@ class Index(list):
                 
             # Do _not_ try to convert page into an integer, it may
             # occurr as roman numerals.
-            yield (line_number, True, (key, page, typeset_page_number))
+            yield (filename, line_number, True,
+                   (key, page, typeset_page_number))
             
     def interpret_auxiliary(self, auxiliary_filename, internal_file,
                             index_file):
@@ -430,11 +446,11 @@ class Index(list):
         already_output = set()
         already_handled = set()
         
-        for line_number, is_concept, data \
+        for filename, line_number, is_concept, data \
                 in self.get_auxiliary_entries(auxiliary_filename):
             if not is_concept:
                 logging.debug('Ignoring non-concept: "%s" on line %d in "%s".',
-                              data.rstrip(), line_number, auxiliary_filename)
+                              data.rstrip(), line_number, filename)
                 continue
             
             key, page, typeset_page_number = data

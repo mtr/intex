@@ -179,7 +179,7 @@ def main():
             sys.exit(1)
 
     if options.verbose:
-        logging.info('Will use LaTeX auxiliary file: "%s"', auxiliary)
+        logging.info('Will use "%s" as (main) LaTeX auxiliary file', auxiliary)
         logging.info('Will use InTeX input files: %s',
                      ', '.join(imap('"%s"'.__mod__, filenames)))
         
