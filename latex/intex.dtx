@@ -988,6 +988,90 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %    \end{macrocode}
 %  \end{macro}
 %
+% \begin{macro}{\@itx@init@nonbookmode}
+%   The syntax is |\@itx@init@nonbookmode|.  This command is responsible
+%   for setting up miscellaneous aspects of the package when used in
+%   nonbook environments.
+%    \begin{macrocode}
+\newcommand\@itx@init@nonbookmode{%
+  \newcommand*{\@itxtypeset}[3]{% Article-mode.
+    \ifx##3A%
+      %\PackageWarning{InTeX}{Typesetting format is automatic}%
+      \expandafter\ifx\csname itx@##2\endcsname\ITX@used%
+%    \end{macrocode}
+% The concept was last used in this area.  Hence, it is typeset in its
+% short form.
+%    \begin{macrocode}
+        \itxs{##1}{##2}%
+      \else%
+%    \end{macrocode}
+% The concept has not yet been used, or it was last used in another
+% area.  Hence, it is typeset in its full form.
+%    \begin{macrocode}
+        \itxf{##1}{##2}%
+      \fi%
+    \else%
+%    \end{macrocode}
+% Explicit selected typesetting format.
+%    \begin{macrocode}
+      %\PackageWarning{InTeX}{Typesetting format = "##3"}%
+      \ifx##3S\itxs{##1}{##2}\fi%
+      \ifx##3L\itxl{##1}{##2}\fi%
+      \ifx##3F\itxf{##1}{##2}\fi%
+    \fi%
+  }%
+}%
+%    \end{macrocode}
+%  \end{macro}
+%
+% \begin{macro}{\@itx@init@bookmode}
+%   The syntax is |\@itx@init@bookmode|.  This command is responsible
+%   for setting up miscellaneous aspects of the package when used in
+%   book environments.
+%    \begin{macrocode}
+\newcommand\@itx@init@bookmode{%
+  \PackageInfo{InTeX}{Adjusting behavior to suite book/report document
+    classes\@gobble}%
+  \newcommand*{\@itxtypeset}[3]{% Book/report-mode.
+    \ifx##3A%
+      %\PackageWarning{InTeX}{Typesetting format is automatic}%
+%    \end{macrocode}
+% \emph{Automatic} typesetting.
+%    \begin{macrocode}
+      \if@mainmatter%
+        \expandafter\ifx\csname itx@##2\endcsname\ITX@used%
+%    \end{macrocode}
+% The concept was last used in this area.  Hence, it is typeset in its
+% short form.
+%    \begin{macrocode}
+          \itxs{##1}{##2}%
+        \else%
+%    \end{macrocode}
+% The concept has not yet been used, or it was last used in another
+% area.  Hence, it is typeset in its full form.
+%    \begin{macrocode}
+          \itxf{##1}{##2}%
+        \fi%
+      \else%
+%    \end{macrocode}
+% Either in frontmatter or in backmatter.
+%    \begin{macrocode}
+        \itxl{##1}{##2}%
+      \fi%
+    \else%
+%    \end{macrocode}
+% Explicit selected typesetting format.
+%    \begin{macrocode}
+      %\PackageWarning{InTeX}{Typesetting format = "##3"}%
+      \ifx##3S\itxs{##1}{##2}\fi%
+      \ifx##3L\itxl{##1}{##2}\fi%
+      \ifx##3F\itxf{##1}{##2}\fi%
+    \fi%
+  }%
+}
+%    \end{macrocode}
+%  \end{macro}
+%
 % \begin{macro}{\@itxtypeset}
 %   The syntax is
 %   |\@itxtypeset{|\meta{type}|}{|\meta{identity}|}{|\meta{format
@@ -1000,79 +1084,39 @@ Support for concept, acronym, and proper-name typesetting and indexing]%
 %   out if the package is used in an article, which does not have any
 %   |\if@mainmatter| macro.
 %    \begin{macrocode}
+\newif\if@itx@bookmode%
+\@itx@bookmodetrue%
+%    \end{macrocode}
+% Adjust the defaults so they make sense when used with the article
+% document class.
+%    \begin{macrocode}
 \@ifclassloaded{article}{%
   \PackageInfo{InTeX}{Adjusting behavior to suite the article document
     class\@gobble}%
-  \newcommand*{\@itxtypeset}[3]{% Article-mode.
-    \ifx#3A%
-      %\PackageWarning{InTeX}{Typesetting format is automatic}%
-      \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
+  \@itx@init@nonbookmode%
+  \@itx@bookmodefalse%
+}{}%
 %    \end{macrocode}
-% The concept was last used in this area.  Hence, it is typeset in its
-% short form.
+% Adjust the defaults so they make sense when used with the beamer
+% document class.
 %    \begin{macrocode}
-        \itxs{#1}{#2}%
-      \else%
+\@ifclassloaded{beamer}{%
+  \PackageInfo{InTeX}{Adjusting behavior to suite the beamer document
+    class\@gobble}%
+  \@itx@init@nonbookmode%
+  \@itx@bookmodefalse%
+  \renewcommand*\itxacronymarea{0}%
+  \@itx@margin@plainfalse%
+  \@itx@margin@acronymfalse%
+  \@itx@margin@personfalse%
+}{}%
 %    \end{macrocode}
-% The concept has not yet been used, or it was last used in another
-% area.  Hence, it is typeset in its full form.
+% Assume that the current document class is one of the book or report
+% classes, or another class with a definition of |\thechapter|.
 %    \begin{macrocode}
-        \itxf{#1}{#2}%
-      \fi%
-    \else%
-%    \end{macrocode}
-% Explicit selected typesetting format.
-%    \begin{macrocode}
-      %\PackageWarning{InTeX}{Typesetting format = "#3"}%
-      \ifx#3S\itxs{#1}{#2}\fi%
-      \ifx#3L\itxl{#1}{#2}\fi%
-      \ifx#3F\itxf{#1}{#2}\fi%
-    \fi%
-  }%
-}{%
-%    \end{macrocode}
-% Since the current document class is \emph{not} article, we assume
-% that we are working with a book or report.
-%    \begin{macrocode}
-  \PackageInfo{InTeX}{Adjusting behavior to suite book/report document
-    classes\@gobble}%
-  \newcommand*{\@itxtypeset}[3]{% Book/report-mode.
-    \ifx#3A%
-      %\PackageWarning{InTeX}{Typesetting format is automatic}%
-%    \end{macrocode}
-% \emph{Automatic} typesetting.
-%    \begin{macrocode}
-      \if@mainmatter%
-        \expandafter\ifx\csname itx@#2\endcsname\ITX@used%
-%    \end{macrocode}
-% The concept was last used in this area.  Hence, it is typeset in its
-% short form.
-%    \begin{macrocode}
-          \itxs{#1}{#2}%
-        \else%
-%    \end{macrocode}
-% The concept has not yet been used, or it was last used in another
-% area.  Hence, it is typeset in its full form.
-%    \begin{macrocode}
-          \itxf{#1}{#2}%
-        \fi%
-      \else%
-%    \end{macrocode}
-% Either in frontmatter or in backmatter.
-%    \begin{macrocode}
-        \itxl{#1}{#2}%
-      \fi%
-    \else%
-%    \end{macrocode}
-% Explicit selected typesetting format.
-%    \begin{macrocode}
-      %\PackageWarning{InTeX}{Typesetting format = "#3"}%
-      \ifx#3S\itxs{#1}{#2}\fi%
-      \ifx#3L\itxl{#1}{#2}\fi%
-      \ifx#3F\itxf{#1}{#2}\fi%
-    \fi%
-  }%
-}%
+\if@itx@bookmode%
+  \@itx@init@bookmode%
+\fi%
 %    \end{macrocode}
 %  \end{macro}
 %

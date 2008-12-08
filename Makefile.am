@@ -35,7 +35,7 @@ rpm: all release $(pysetyp)
 	@python $(pysetyp) clean
 	@python $(pysetyp) bdist_rpm --python=$(PYTHON) --release=$(RELEASE) --post-install=$(top_srcdir)/src/post-install.sh --post-uninstall=$(top_srcdir)/src/post-uninstall.sh
 
-deb_sign:
+deb_sign: deb
 	pushd $(DISTDIR) && dpkg-sig --sign builder $(PACKAGE)_$(VERSION)-$(RELEASE)_all.deb && popd
 
 deb: rpm
