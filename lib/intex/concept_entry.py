@@ -123,8 +123,8 @@ class ConceptEntry(Entry):
             
         if parent:
             if self.META_SORT_AS in parent._meta:
-                sort_as = parent._meta[self.META_SORT_AS]
-                logging.info('Explicit sort key given "%s" => "%s".',
+                parent_sort_as = parent._meta[self.META_SORT_AS]
+                logging.info('Explicit parent sort key given "%s" => "%s".',
                              parent.reference[inflection], sort_as)
             else:
                 parent_sort_as = parent.reference[inflection]
