@@ -42,7 +42,7 @@ concept
   plain (-)
   sub\--
 
-dog	:sort_as=sog me bold :comment=red
+dog	:sort_as=sog me bold :comment=\textit{(explicitly sorted)}
 
 idea
 index

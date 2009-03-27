@@ -115,17 +115,22 @@ class ConceptEntry(Entry):
             return                   # Skip the regular index entries.
         
         parent = self.parent
-        
+
+        if self.META_COMMENT in self._meta:
+            comment = ' %s' % (self._meta[self.META_COMMENT], )
+        else:
+            comment = ''
+            
         if parent:
             parent_sort_as = parent.reference[inflection]
             parent_typeset_in_index = parent.typeset_in_index[inflection]
             
             yield '\indexentry{' \
                   '%(parent_sort_as)s@%(parent_typeset_in_index)s!' \
-                  '%(sort_as)s@%(typeset_in_index)s' \
+                  '%(sort_as)s@%(typeset_in_index)s%(comment)s' \
                   '%(typeset_page_number)s}{%(page)s}' % locals()
         else:
-            yield '\indexentry{%(sort_as)s@%(typeset_in_index)s' \
+            yield '\indexentry{%(sort_as)s@%(typeset_in_index)s%(comment)s' \
                   '%(typeset_page_number)s}{%(page)s}' \
                   % locals()
 

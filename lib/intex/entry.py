@@ -209,7 +209,8 @@ class Entry(object):
                 key, value = escape_aware_split(part, '=', 1)
                 
                 if key == 'sort_as':
-                    info[self.META_SORT_AS] = value.rstrip()
+                    info[self.META_SORT_AS] = \
+                                        self.paren_parser.strip(value.rstrip())
                 elif key == 'comment':
                     info[self.META_COMMENT] = value.rstrip()
                 else:
