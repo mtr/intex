@@ -114,15 +114,17 @@ class ConceptEntry(Entry):
                 
             return                   # Skip the regular index entries.
         
-        parent = self.parent
-
         if self.META_COMMENT in self._meta:
             comment = ' %s' % (self._meta[self.META_COMMENT], )
         else:
             comment = ''
-            
+
+        parent = self.parent
+
+        print '*** there ***'
+          
         if parent:
-            print parent._meta
+            print '*** here ***', parent._meta
             if self.META_SORT_AS in parent._meta:
                 parent_sort_as = parent._meta[self.META_SORT_AS]
                 logging.info('Explicit parent sort key given "%s" => "%s".',
