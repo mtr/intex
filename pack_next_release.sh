@@ -5,4 +5,6 @@
 
 make next_release
 make tag_release
+svn update
+svn2cl
 make deb_sign
