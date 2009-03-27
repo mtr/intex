@@ -122,7 +122,13 @@ class ConceptEntry(Entry):
             comment = ''
             
         if parent:
-            parent_sort_as = parent.reference[inflection]
+            if self.META_SORT_AS in parent._meta:
+                sort_as = parent._meta[self.META_SORT_AS]
+                logging.info('Explicit sort key given "%s" => "%s".',
+                             parent.reference[inflection], sort_as)
+            else:
+                parent_sort_as = parent.reference[inflection]
+                
             parent_typeset_in_index = parent.typeset_in_index[inflection]
             
             yield '\indexentry{' \
