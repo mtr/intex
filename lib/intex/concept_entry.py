@@ -89,7 +89,13 @@ class ConceptEntry(Entry):
     def generate_index_entries(self, page, typeset_page_number=''):
         inflection = self.index_inflection
 
-        sort_as = self.reference[inflection]
+        if self.META_SORT_AS in self._meta:
+            sort_as = self._meta[self.META_SORT_AS]
+            logging.info('Explicit sort key given "%s" => "%s".',
+                         self.reference[inflection], sort_as)
+        else:
+            sort_as = self.reference[inflection]
+            
         typeset_in_index = self.typeset_in_index[inflection]
 
         # If this is an alias entry, the index entries are affected.

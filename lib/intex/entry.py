@@ -64,6 +64,8 @@ class Entry(object):
         'meta_complement_inflection',
         'meta_given_inflection',
         'meta_text_vs_index_hint',
+        'meta_sort_as',
+        'meta_comment',
         # Some inflection values:
         'inflection_plural',
         'inflection_singular',
@@ -204,7 +206,14 @@ class Entry(object):
                 logging.error('Unsuspected data in meta directive.')
                 
             if not part.startswith('#'):
-                info[self.META_TEXT_VS_INDEX_HINT] = part
+                key, value = escape_aware_split(part, '=', 1)
+                
+                if key == 'sort_as':
+                    info[self.META_SORT_AS] = value.rstrip()
+                elif key == 'comment':
+                    info[self.META_COMMENT] = value.rstrip()
+                else:
+                    info[self.META_TEXT_VS_INDEX_HINT] = part
                 continue
             
             if len(part) == 2:

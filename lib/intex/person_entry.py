@@ -25,7 +25,7 @@ __version__ = "@VERSION@"
 
 from utils import escape_aware_split
 from entry import Entry
-
+import string
 
 class PersonEntry(Entry):
     _generated_fields = [
@@ -49,7 +49,9 @@ class PersonEntry(Entry):
     _column_width = 40
     _line_format = '%(_bold_on)s%%%(_label_width)ds%(_bold_off)s ' \
                    '%%-%(_column_width)ds'
-    
+
+    _sortkey_remove = [',', '\\', '"', "'", '{', '}', ]
+
     def __init__(self, index, parent, initials=None, name=None,
                  index_as=None, sort_as=None, meta=None, alias=None,
                  **rest):
@@ -122,7 +124,20 @@ class PersonEntry(Entry):
         inflection = self.index_inflection
 
         typeset_in_index = self.typeset_in_index[inflection]
-        sort_as = typeset_in_index
+
+        # TODO: Handle this in a more proper manner.  The use of
+        # uppercase and removal of commas was done for compatibility
+        # with the authorindex package.
+        # The original read: sort_as = typeset_in_index
+        #
+        table = string.maketrans('', '')
+        delete = ''.join(self._sortkey_remove)
+        
+        sort_as = typeset_in_index.upper().translate(table, delete)
+
+        # For compatibility with the authorindex package:
+        last, rest = typeset_in_index.split(None, 1)
+        typeset_in_index = '%s %s' % (last, '~'.join(rest.split()), )
         
         # If this is an alias entry, the index entries are affected.
         # Generate the index entries accordingly.
