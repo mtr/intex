@@ -121,10 +121,7 @@ class ConceptEntry(Entry):
 
         parent = self.parent
 
-        print '*** there ***'
-          
         if parent:
-            print '*** here ***', parent._meta
             if self.META_SORT_AS in parent._meta:
                 parent_sort_as = parent._meta[self.META_SORT_AS]
                 logging.info('Explicit parent sort key given "%s" => "%s".',
@@ -200,7 +197,7 @@ class ConceptEntry(Entry):
             ('reference_short', 'reference'),
             ('typeset_in_text', 'typeset'),
             ('typeset_in_index', 'typeset')]
-
+        
         if indent_level == 0:
             # If CONCEPT, then the current entry is a main entry.
             reference, typeset = self.format_reference_and_typeset(concept)

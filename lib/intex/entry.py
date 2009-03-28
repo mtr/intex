@@ -308,7 +308,7 @@ class Entry(object):
 
     def format_reference_and_typeset(self, string, strip_parens=True):
         parts = self.paren_parser.split(string)
-        
+
         if strip_parens:
             parts = [self.paren_parser.strip(part, '([') for part in parts]
             
@@ -320,6 +320,9 @@ class Entry(object):
             # ParenParser.split did not honor its MAXSPLIT argument (1
             # below).
             alternatives = self.escape_aware_split(part, TOKEN_TYPESET_AS, 1)
+
+            alternatives = [self.paren_parser.strip(alternative, '{')
+                            for alternative in alternatives]
             
             if strip_parens:
                 alternatives = [self.paren_parser.strip(alternative, '([')
@@ -351,11 +354,9 @@ class Entry(object):
 
     def expand_sub_entry_part(self, template, is_last_token, inflection,
                               current_inflection, field):
-        """
-
-        Note: CURRENT_INFLECTION refers to the inflection given in the
-        source file, while INFLECTION is the target inflection of the
-        entry we are generating.
+        """Note: CURRENT_INFLECTION refers to the inflection given in
+        the source file, while INFLECTION is the target inflection of
+        the entry we are generating.
         """
         formatted = ''
         
@@ -424,8 +425,6 @@ class Entry(object):
         results = dict()
         variables = locals()
 
-        #print template
-        
         for field, variable in field_variable_map:
             if not variables.has_key(variable):
                 continue
