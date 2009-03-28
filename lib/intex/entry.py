@@ -299,6 +299,9 @@ class Entry(object):
     def escape_aware_split(self, string, delimiter=None, maxsplit=None):
         parts = self.paren_parser.split(string, delimiter, maxsplit)
 
+        #if delimiter is None:
+        #    delimiter = ' '
+            
         for i, part in reversed(list(enumerate(parts))):
             if part[-1] == ESCAPE_TOKEN:
                 parts[i] = delimiter.join((parts[i], parts[i + 1]))
@@ -321,9 +324,12 @@ class Entry(object):
             # below).
             alternatives = self.escape_aware_split(part, TOKEN_TYPESET_AS, 1)
 
+            # Perhaps a bad solution to a problem of @-typesetting
+            # sub-entries.  Thus, if you _want_ surrounding {}s, then
+            # use a double set of them.
             alternatives = [self.paren_parser.strip(alternative, '{')
                             for alternative in alternatives]
-            
+
             if strip_parens:
                 alternatives = [self.paren_parser.strip(alternative, '([')
                                 for alternative in alternatives]
