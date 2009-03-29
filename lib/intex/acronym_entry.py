@@ -23,8 +23,9 @@ __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 __revision__ = "$Rev$"
 __version__ = "@VERSION@"
 
-from entry import Entry
+import logging
 
+from entry import Entry
 from config import FIELD_SEPARATORS
 
 class AcronymEntry(Entry):
@@ -82,7 +83,13 @@ class AcronymEntry(Entry):
     def generate_index_entries(self, page, typeset_page_number=''):
         inflection = self.index_inflection
         
-        sort_as_long = self.sort_as_long[inflection]
+        if self.META_SORT_AS in self._meta:
+            sort_as_long = self._meta[self.META_SORT_AS]
+            logging.info('Explicit sort key given "%s" => "%s".',
+                         self.sort_as_long[inflection], sort_as_long)
+        else:
+            sort_as_long = self.sort_as_long[inflection]
+            
         sort_as_short = self.sort_as_short[inflection]
         
         typeset_in_index_long = self.typeset_in_index_long[inflection]
