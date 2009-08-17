@@ -116,6 +116,11 @@ class AcronymEntry(Entry):
                   '%(parent_sort_as_long)s@%(parent_typeset_in_index_long)s!' \
                   '%(sort_as_long)s@%(typeset_in_index_long)s' \
                   '%(typeset_page_number)s}{%(page)s}' % locals()
+
+            yield '\indexentry{' \
+                  '%(parent_sort_as_short)s@%(parent_typeset_in_index_short)s' \
+                  '|see{%(parent_typeset_in_index_long)s}}' \
+                  '{0}' % locals()
             
             yield '\indexentry{' \
                   '%(parent_sort_as_short)s@%(parent_typeset_in_index_short)s!' \
