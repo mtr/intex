@@ -70,8 +70,6 @@ class AcronymEntry(Entry):
 
         self._setup(acronym, full_form, self._meta, indent_level)
 
-        logging.debug('MTR: 7: self._meta = %s', self._meta)
-        
         # To enable a ConceptEntry to refer to an AcronymEntry:
         self.typeset_in_index = self.typeset_in_index_long
 
@@ -84,8 +82,6 @@ class AcronymEntry(Entry):
 
     def generate_index_entries(self, page, typeset_page_number=''):
         inflection = self.index_inflection
-        
-        logging.debug('MTR: 6: self._meta = %s', self._meta)
         
         if self.META_SORT_AS in self._meta:
             sort_as_long = self._meta[self.META_SORT_AS]
@@ -106,8 +102,6 @@ class AcronymEntry(Entry):
             parent_typeset_in_index_long \
                 = parent.typeset_in_index_long[inflection]
 
-            logging.debug('MTR: self.sort_as_long = "%s", parent_sort_as_long = "%s"', self.sort_as_long, parent_sort_as_long)
-            
             parent_sort_as_short = parent.sort_as_short[inflection]
             parent_typeset_in_index_short \
                 = parent.typeset_in_index_short[inflection]
@@ -206,15 +200,11 @@ class AcronymEntry(Entry):
             reference, typeset = self.format_reference_and_typeset(concept)
             reference_short = [] # Only used for sub-entries.
 
-            logging.debug('MTR: 1: full_form = "%s"', full_form)
-            
             sort_as_long, typeset_long \
                 = self.format_reference_and_typeset(full_form) 
             if self.META_SORT_AS in self._meta:
                 sort_as_long = [self._meta[self.META_SORT_AS]]
 
-            logging.debug('MTR: 1: sort_as_long = "%s", typeset_long = "%s"', sort_as_long, typeset_long)
-            
             for field, variable in field_variable_map:
                 value = ' '.join(locals()[variable])
                 getattr(self, field)[current_inflection] = value
@@ -230,8 +220,6 @@ class AcronymEntry(Entry):
                 sort_as_long, typeset_long = \
                     self.get_complement_inflections(sort_as_long, typeset_long,
                                                     current_inflection)
-
-                logging.debug('MTR: 2: sort_as_long = "%s", typeset_long = "%s"', sort_as_long, typeset_long)
 
             for field, variable in field_variable_map:
                 value = ' '.join(locals()[variable])

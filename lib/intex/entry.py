@@ -164,7 +164,6 @@ class Entry(object):
         
         if meta:
             self._meta = self.parse_meta(meta.strip())
-            logging.debug('MTR: 5: self._meta = %s', self._meta)
         else:
             self._meta = dict()
 
@@ -210,10 +209,8 @@ class Entry(object):
                 key, value = escape_aware_split(part, '=', 1)
                 
                 if key == 'sort_as':
-                    logging.debug('MTR: 4: sort_as: "%s"', value)
                     info[self.META_SORT_AS] = \
                                         self.paren_parser.strip(value.rstrip())
-                    logging.debug('MTR: 4.1: sort_as: "%s"', info[self.META_SORT_AS])
                 elif key == 'comment':
                     info[self.META_COMMENT] = value.rstrip()
                 else:
