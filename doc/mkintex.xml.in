@@ -9,7 +9,7 @@
   </refmeta>
   <refnamediv id='name'>
     <refname>mkintex</refname>
-    <refpurpose>an index preprocessor for the
+    <refpurpose>index preprocessor for the
     <refentrytitle>InTeX</refentrytitle><manvolnum>5</manvolnum>
     <refentrytitle>LaTeX</refentrytitle><manvolnum>1</manvolnum>
     package</refpurpose>
