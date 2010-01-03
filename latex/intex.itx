@@ -1,3 +1,5 @@
+% -*- latex -*-
+%
 % $Id$
 %
 % name=main
@@ -39,6 +41,8 @@ carnivore
   canine
     Gray Wolf
     domestic dog
+compound@com\\\-pound	:indexed=compound
+  -\-word analyzer
 concept
   acronym (-)
   person (-)
