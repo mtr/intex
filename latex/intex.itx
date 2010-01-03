@@ -41,7 +41,7 @@ carnivore
   canine
     Gray Wolf
     domestic dog
-compound@com\\\-pound	:indexed=compound
+compound@com\\\-pound
   -\-word analyzer
 concept
   acronym (-)

@@ -78,8 +78,6 @@ class ConceptEntry(Entry):
         self.alias = alias
         
         if concept:
-            # Unescape escaped field separators.  Other escaped tokens
-            # are kept in escaped form.
             concept = self.unescape(concept.strip())
         else:
             concept = ''
@@ -129,8 +127,11 @@ class ConceptEntry(Entry):
                              parent.reference[inflection], page, parent_sort_as)
             else:
                 parent_sort_as = parent.reference[inflection]
-                
-            parent_typeset_in_index = parent.typeset_in_index[inflection]
+
+            # Avoid erroneous typesetting of explicit hyphenation
+            # hints.
+            parent_typeset_in_index = self.unescape(
+                parent.typeset_in_index[inflection], '-')
             
             yield '\indexentry{' \
                   '%(parent_sort_as)s@%(parent_typeset_in_index)s!' \
@@ -232,7 +233,8 @@ class ConceptEntry(Entry):
                     
         for (inflection, attribute) in cartesian(
             (Entry.INFLECTION_SINGULAR, Entry.INFLECTION_PLURAL, ),
-            [attribute for attribute, variable in attribute_variable_map]):
+            [attribute for (attribute, variable) in attribute_variable_map]):
+            
             concept = getattr(self, attribute)[inflection]
             getattr(self, attribute)[inflection] \
                 = self.unescape(concept.strip(), FIELD_SEPARATORS + '-')

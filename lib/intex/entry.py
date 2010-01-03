@@ -236,8 +236,10 @@ class Entry(object):
             return parts[0].rstrip(), parts[1].lstrip()
         else:
             raise MultipleAliasIndicatorsError('string="%s"' % string) 
-            
-    def unescape(self, string, escaped_tokens=FIELD_SEPARATORS):
+
+    @staticmethod
+    def unescape(string, escaped_tokens=FIELD_SEPARATORS,
+                 escape_token=ESCAPE_TOKEN):
         """Unescapes escaped field separators.
         """
         # It must shrink or stay the same size.  It cannot grow.
@@ -247,16 +249,15 @@ class Entry(object):
         previous_token = None
         
         for i, token in reversed(list(enumerate(string))):
-            if (token == ESCAPE_TOKEN) \
+            if (token == escape_token) \
                    and (previous_token in escaped_tokens) \
-                   and not (previous_token == ESCAPE_TOKEN):
+                   and not (previous_token == escape_token):
                 # If CONTIGUOUS_ESCAPES is zero or even.
                 del new[i]
                 
             previous_token = token
             
         return ''.join(new)
-        #return self._unescape_re.sub('\g<pre>\g<post>', string)
 
     def get_complement_inflections(self, reference, typeset,
                                    current_inflection):
@@ -293,9 +294,9 @@ class Entry(object):
             current_inflection = self.index.default_inflection
 
         complement_inflection = self._complement_inflection[current_inflection]
-
+        
         return current_inflection, complement_inflection
-
+    
     def escape_aware_split(self, string, delimiter=None, maxsplit=None):
         parts = self.paren_parser.split(string, delimiter, maxsplit)
 
@@ -446,7 +447,7 @@ class Entry(object):
             template_list = [part for part in template_list if part]
             
             results[field] = ' '.join(template_list)
-            
+        
         return results
     
     # Accessors for the 'identity' property (_-prefixed to force
