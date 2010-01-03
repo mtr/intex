@@ -34,6 +34,8 @@ Madonna	Madonna
 VWvG	van Gogh, Vincent Willem
 
 % *CONCEPTS*
+Bokmålsordboka@\textit{Bokmålsordboka}	:sort_as=Bokmålsordboka
+
 carnivore
   feline
     domestic cat
@@ -43,6 +45,8 @@ carnivore
     domestic dog
 compound@com\\\-pound
   -\-word analyzer
+  non\-deverbal verb -
+  Norwegian -\-word analysis
 concept
   acronym (-)
   person (-)
