@@ -93,6 +93,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 \usepackage{url}
 \usepackage[colorlinks=true]{hyperref}
 \usepackage{svn}
+\usepackage{booktabs}
 \SVN $Rev$
 \SVN $Date$
 \EnableCrossrefs
@@ -331,22 +332,39 @@ and version 1.2 or later is part of all distributions of LaTeX version
 %   \@itx@margin@acronymfalse%
 %   \makeatother
 %   We could talk about multiple \co{IDs}, 
-%   or a single \co{ID}.  Examples of 
-%   forced long- (``\coL{ID}''), 
-%   short- (``\coS{ID}''), 
-%   and full-format (``\coF{ID}'') 
-%   typesetting.
+%   or a single \co{ID}.  The following 
+%   table shows explicitly defined 
+%   formatting:\\
+%
+%   \begin{tabular}{@{}ll@{}}
+%     \toprule
+%     Format & Expansion \\
+%     \midrule 
+%     forced long & ``\coL{ID}''\\
+%     short & ``\coS{ID}''\\
+%     full & ``\coF{ID}'' \\
+%     \bottomrule
+%   \end{tabular}
 % \end{SideBySideExample}
 %
 % \begin{SideBySideExample}[xrightmargin=5cm]
 %   \makeatletter
 %   \@itx@margin@acronymfalse%
 %   \makeatother
-%   The \InTeX package also supports 
+%   The \InTeX\ package also supports 
 %   indexing sub-terms of acronyms,
 %   like the \co{Swedish SIMPLE}, which
 %   is part of the \co{SIMPLE} project.
 % \end{SideBySideExample}
+%
+% The package supports typesetting words differently in the text and
+% in the index.  For example, take a look at the definition of the
+% term ``\co{compound-word analyzer}'' in the \InTeX-file.  Example
+% that provokes hyphenation: great, wonderful \co{compound-word
+%   analyzer}; \co{compound-word analyzer}; \co{compound-word
+%   analyzer}; \co{compound-word analyzer}; \co{compound-word
+%   analyzer}; \co{compound-word analyzer}; \co{compound-word
+%   analyzer}; \co{compound-word analyzer}.
 %
 % \makeatletter
 % \@itx@margin@plainfalse%
@@ -372,7 +390,7 @@ and version 1.2 or later is part of all distributions of LaTeX version
 % \@itx@margin@plainfalse%
 % \makeatother
 % \begin{SideBySideExample}[xrightmargin=5cm]
-%   \co{Carnivore} eats meat.
+%   \co{Carnivore} eat meat.
 % \end{SideBySideExample}
 % \makeatletter
 % \@itx@margin@plaintrue%
