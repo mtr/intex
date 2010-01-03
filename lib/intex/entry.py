@@ -315,7 +315,9 @@ class Entry(object):
 
         if strip_parens:
             parts = [self.paren_parser.strip(part, '([') for part in parts]
-            
+
+        #parts = [self.unescape(part, '-') for part in parts]
+        
         reference = []
         typeset = []
         
@@ -344,6 +346,8 @@ class Entry(object):
 
         reference = flatten(self.escape_aware_split(part) for part in reference)
         typeset = flatten(self.escape_aware_split(part) for part in typeset)
+        
+        #typeset = [self.unescape(part, '-') for part in typeset]
         
         return reference, typeset
 

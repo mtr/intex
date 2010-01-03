@@ -119,7 +119,7 @@ class ConceptEntry(Entry):
 
         parent = self.parent
 
-        if parent:
+        if  not parent is None:
             if self.META_SORT_AS in parent._meta:
                 parent_sort_as = parent._meta[self.META_SORT_AS]
                 logging.info('Explicit parent sort key given "%s" '
@@ -132,12 +132,17 @@ class ConceptEntry(Entry):
             # hints.
             parent_typeset_in_index = self.unescape(
                 parent.typeset_in_index[inflection], '-')
+            #parent_typeset_in_index = parent.typeset_in_index[inflection]
             
             yield '\indexentry{' \
                   '%(parent_sort_as)s@%(parent_typeset_in_index)s!' \
                   '%(sort_as)s@%(typeset_in_index)s%(comment)s' \
                   '%(typeset_page_number)s}{%(page)s}' % locals()
         else:
+            # Avoid erroneous typesetting of explicit hyphenation
+            # hints.
+            typeset_in_index = self.unescape(typeset_in_index, '-')
+            
             yield '\indexentry{%(sort_as)s@%(typeset_in_index)s%(comment)s' \
                   '%(typeset_page_number)s}{%(page)s}' \
                   % locals()
@@ -146,7 +151,11 @@ class ConceptEntry(Entry):
         type_name = self.get_entry_type()
         reference = self.reference[inflection]
         typeset_in_text = self.typeset_in_text[inflection]
+        #typeset_in_text = self.unescape(self.typeset_in_text[inflection], '-')
         
+        if self.parent is None:
+            typeset_in_text = self.unescape(typeset_in_text, '-')
+            
         yield '\\new%(type_name)s{%(reference)s}{%(typeset_in_text)s}' \
               '{XC.0}' \
               % locals()
