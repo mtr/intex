@@ -1,0 +1,399 @@
+[2013-03-12 02:57:42 +0100] Added example of rendered PDF.
+
+[2013-03-12 02:55:36 +0100] Updated autotools config.
+
+[2013-03-12 02:46:37 +0100] Cleaned up directory layout.
+
+[2010-01-03 01:00:37 +0000] Fixed bug related to correct typesetting of explicitly provided hyphenation hints.
+
+[2010-01-03 00:22:57 +0000] Updated documentation.  Added examples.  Increased version number.
+
+
+[2010-01-03 00:07:09 +0000] Fixed erroneous typesetting of explicitly provided hyphenation hints in index entries.  For example, it is now possible to have entries like compound@com\-pound in the InTeX file.
+
+[2010-01-03 00:02:13 +0000] Updated documentation.
+
+[2010-01-03 00:01:54 +0000] Added dash-compounded entry with explicit hyphenation hints.  Also added Emacs mode hints.
+
+[2009-08-17 05:39:26 +0000] Removed superfluous debug messages.
+
+
+[2009-08-17 05:37:56 +0000] Fixed index 'see' references for acronyms.
+
+
+[2009-08-17 05:24:42 +0000] Updated documentation.  Added superfluous debug statements.  Made explicitly sorted, specially typeset acronyms behave as intended.
+
+
+[2009-03-29 00:17:41 +0000] Added support for explicit sorting of acronym entries too.
+
+
+[2009-03-28 14:18:08 +0000] Fixed bug related to the correct handling of explicitly sorted 
+subentries.
+
+
+[2009-03-28 10:17:52 +0000] Made sure explicit sorting of sub-entries is handeled correctly.
+
+
+[2009-03-27 15:51:50 +0000] Development release.
+
+
+[2009-03-27 15:47:41 +0000] Update.
+
+
+
+[2009-03-27 15:45:26 +0000] Fixed sort_as bug.
+
+
+[2009-03-27 15:39:31 +0000] Support for proper handling of children of :sort_as= elements.
+
+
+
+[2009-03-27 07:25:40 +0000] Adjusted the dist procedure.
+
+
+[2009-03-27 07:23:32 +0000] Added support for index comments and explicitly grouping of sort_as 
+values.
+
+
+[2009-03-27 07:09:00 +0000] Added support for meta directive :sort_as=<key> for concept entries.  
+Added script for packaging.
+
+
+[2008-12-08 23:39:05 +0000] Cleaned up some code and added compatibility support for the Beamer package.
+
+[2008-12-08 23:37:51 +0000] Cleaned up some code and added compatibility support for the Beamer package.
+
+[2008-11-10 10:36:55 +0000] New version.
+
+[2008-11-10 10:36:07 +0000] Added support for handling recursive \@include{}-statements from within .aux files.
+
+[2008-10-30 21:47:27 +0000] Made references from ConceptEntry to AcronymEntry expand to the long form of the acronym.
+
+[2008-10-30 17:21:19 +0000] New release.
+
+[2008-10-30 17:20:33 +0000] Added support for referring from plain entries to acronym entries.
+
+[2008-10-23 13:58:00 +0000] Implemented support for explicitly typesetting a concept in short, long, or full format with the macros \coS, \coL, and \coF, respectively.
+
+[2008-10-16 10:31:02 +0000] Added copyright information and improved documentation.
+
+[2008-10-14 19:38:31 +0000] Added singular -> plural conversion rule for 'ysis' -> 'yses' (as in analysis).
+
+[2008-10-14 09:23:23 +0000] Added special handling of front-, main-, and backmatter in books and reports.
+
+[2008-10-13 23:34:32 +0000] Fixed index name.  Removed non-% ending code lines.
+
+[2008-01-16 17:14:42 +0000] Commented out unneeded counter.
+
+
+[2007-11-06 22:09:32 +0000] Added support for inflection of 'latin' words.
+
+[2007-11-06 22:06:35 +0000] Added support for inflection of 'latin' words.
+
+[2007-11-06 15:50:38 +0000] Updated copyright and e-mail strings.
+
+[2007-11-06 15:37:16 +0000] Added capitalization of keywords, so that they are recognized if referred to with a capital first letter in text.  For example \co{Carnivore} will match "carnivore".
+
+[2007-11-06 08:28:20 +0000] Removed commented-out debugging code.
+
+[2007-11-05 20:56:48 +0000] Sat all SVN properties.
+
+[2007-11-05 20:53:20 +0000] Added Makefile.am for latex/.  Refactored the different Entry sub-classes.
+
+[2007-07-22 13:46:24 +0000] Bumped version.
+
+
+[2007-07-22 13:45:23 +0000] Now, acronym sub-entries will be unescaped after expansion.
+
+[2007-07-20 14:36:58 +0000] Bumped version.
+
+
+[2007-07-20 14:36:16 +0000] Corrected erroneous parsing of PERSON entries after commas were removed from the field separators.
+
+[2007-07-20 14:35:14 +0000] Corrected erroneous parsing of PERSON entries after commas were removed from the field separators.
+
+[2007-07-20 14:27:57 +0000] Added test for mandatory output index filename.
+
+[2007-07-20 14:07:16 +0000] Corrected erroneous parsing of PERSON entries after commas were removed from the field separators.
+
+[2007-07-20 13:28:57 +0000] Bumped version.
+
+
+[2007-07-20 13:27:54 +0000] Removed commas (',') from the FIELD_DELIMITERS.  Really did it this time.
+
+[2007-07-20 13:19:49 +0000] Bumped version.
+-Denne linjen og de som er under vil bli ignorert--
+
+M    configure.ac
+
+
+[2007-07-20 13:18:34 +0000] Removed commas (',') from the FIELD_DELIMITERS.
+
+[2007-07-19 23:28:46 +0000] Bumped version.
+
+
+[2007-07-19 23:27:52 +0000] Fixed typo.
+
+[2007-07-19 23:27:16 +0000] Fixed 'see' cross-references so that multiple cross-references do not accumulate in the typeset index.
+
+[2007-07-19 14:30:05 +0000] Detected new syntax error situation when no current type ('*ACRONYMS*', '*CONCEPTS*', or '*PERSONS*') has been defined.
+
+[2007-07-19 12:06:06 +0000] Updated the post-[un]install.sh templates.
+
+[2007-07-19 11:45:50 +0000] Updated the post-[un]install.sh templates.
+
+[2007-07-19 11:44:01 +0000] Updated the post-[un]install.sh templates.
+
+[2007-07-19 11:43:23 +0000] Updated the post-[un]install.sh templates.
+
+[2007-07-19 11:19:37 +0000] Bumped release.
+
+
+[2007-07-19 11:15:14 +0000] Added missing directory.
+
+[2007-07-19 11:14:41 +0000] Added missing capitalizatoin to the title.
+
+[2007-07-19 11:14:01 +0000] Improved the README.
+
+[2007-07-19 11:13:07 +0000] Fixed a problem with the packaging of man pages inside the RPM.  The RPM build step compressed the man page, and could therefore not relocate it (without the .gz suffix).  By adding the man page already compressed to the distributed files, the problem is solved.
+
+[2007-07-19 11:12:49 +0000] Fixed a problem with the packaging of man pages inside the RPM.  The RPM build step compressed the man page, and could therefore not relocate it (without the .gz suffix).  By adding the man page already compressed to the distributed files, the problem is solved.
+
+[2007-07-19 11:12:29 +0000] Fixed a problem with the packaging of man pages inside the RPM.  The RPM build step compressed the man page, and could therefore not relocate it (without the .gz suffix).  By adding the man page already compressed to the distributed files, the problem is solved.
+
+[2007-07-19 11:12:14 +0000] Fixed a problem with the packaging of man pages inside the RPM.  The RPM build step compressed the man page, and could therefore not relocate it (without the .gz suffix).  By adding the man page already compressed to the distributed files, the problem is solved.
+
+[2007-07-19 11:11:38 +0000] Fixed a problem with the packaging of man pages inside the RPM.  The RPM build step compressed the man page, and could therefore not relocate it (without the .gz suffix).  By adding the man page already compressed to the distributed files, the problem is solved.
+
+[2007-07-19 01:06:39 +0000] Converted the man page to DocBook formatting.  Now docbook2x-man and docbook2x-texi may be used to generate man pages and texinfo documentation, respectively.
+
+[2007-07-19 00:57:18 +0000] Converted the man page to DocBook formatting.  Now docbook2x-man and docbook2x-texi may be used to generate man pages and texinfo documentation, respectively.
+
+[2007-07-19 00:57:05 +0000] Converted the man page to DocBook formatting.  Now docbook2x-man and docbook2x-texi may be used to generate man pages and texinfo documentation, respectively.
+
+[2007-07-19 00:25:00 +0000] Added a man page for the mkintex command.
+
+[2007-07-18 21:16:21 +0000] Added install path information.
+
+[2007-07-18 12:49:41 +0000] Updated files to ensure package building works OK.
+
+
+[2007-07-18 12:40:34 +0000] Updated the aclocal.m4 file.
+
+[2007-07-18 12:39:32 +0000] Commented out gettext-macro since it is not needed for this project.
+
+[2007-07-18 12:33:41 +0000] Added missing aclocal.m4.
+
+[2007-07-18 11:52:26 +0000] Added auto{make,conf} framework files.  This is a step in the process of building Deb and RPM packages.
+
+[2007-07-18 11:52:15 +0000] Added auto{make,conf} framework files.  This is a step in the process of building Deb and RPM packages.
+
+[2007-07-18 11:49:26 +0000] Added auto{make,conf} framework files.  This is a step in the process of building Deb and RPM packages.
+
+[2007-07-18 11:38:50 +0000] Added scripts to handle build and release info.
+
+[2007-07-18 11:22:28 +0000] Adjusted the documentation.
+
+[2007-07-18 11:10:10 +0000] Implemented aliasing of plain and person concepts.  May do it for acronym entries later, if it becomes necessary.
+
+[2007-07-18 11:07:18 +0000] Improved the documentation.  Added several \<begin|end>{macro}-sections.  Changed enumeration in the documentation of case-switches to descriptions.
+
+[2007-07-18 11:04:59 +0000] Improved the documentation.  Added several \<begin|end>{macro}-sections.  Changed enumeration in the documentation of case-switches to descriptions.
+
+[2007-07-17 19:55:46 +0000] Fixed bug in escape_aware_[r]split caused by wrong 'sliding window' size due to ignoring length of delimiter.
+
+[2007-07-17 19:54:15 +0000] Fixed bug in escape_aware_[r]split caused by wrong 'sliding window' size due to ignoring length of delimiter.
+
+[2007-07-17 19:48:34 +0000] Sat Subversion keyword properties.
+
+[2007-07-17 18:26:31 +0000] Corrected the implementation of the escape-aware split-function.
+
+[2007-07-17 18:26:24 +0000] Corrected the implementation of the escape-aware split-function.
+
+[2007-07-15 12:07:45 +0000] Implemented compatibility with the hyperref package.
+
+[2007-07-15 12:06:59 +0000] Updated the documentation.
+
+[2007-07-14 00:44:51 +0000] Updated the LaTeX package (and documentation) and the index definition.
+
+[2007-07-14 00:44:13 +0000] Implemented LaTeX index generation and internal indexing.
+
+[2007-07-14 00:43:03 +0000] Added a new file.
+
+[2007-07-14 00:42:50 +0000] Implemented post-preprocessing unescaping of concepts.
+
+[2007-07-10 17:01:51 +0000] Added a syntax error exception.
+
+[2007-07-10 14:22:48 +0000] Sat a lot of properties.
+
+[2007-07-10 14:22:30 +0000] Added new documentation.
+
+[2007-07-10 14:15:17 +0000] Sat a lot of properties.  Added new ITX file for the DTX-based documentation.
+
+[2007-07-10 14:14:44 +0000] Sat a lot of properties.  Added new ITX file for the DTX-based documentation.
+
+[2007-07-10 13:47:40 +0000] Continuing work on intex.dtx based on a copy of it.
+
+[2007-07-10 13:46:23 +0000] Added directory for holding LaTeX documents.
+
+[2007-07-10 13:37:36 +0000] Implemented first reference index.
+
+[2007-07-10 12:55:46 +0000] Made the entry output formatting more coherent and implemented complete-index printing.
+
+[2007-07-10 00:13:22 +0000] Finally implemented the handling of person-entries too.
+
+[2007-07-09 15:30:37 +0000] Implemented better handling of sub-entries containing grouped, "(...)", information.
+
+[2007-07-09 13:36:07 +0000] Fixed bug that affected erroneously typesetting text instead of placeholders in the index.
+
+[2007-07-09 00:28:24 +0000] Implemented handlig of acronym definitions too.
+
+[2007-07-08 15:22:45 +0000] Updated naming and unit tests for paren_parser module.
+
+[2007-07-08 10:51:24 +0000] Corrected the interpretations of concept entries.
+
+[2007-07-08 10:51:12 +0000] Corrected the interpretations of concept entries.
+
+[2007-07-08 10:49:58 +0000] Corrected the interpretations of concept entries.
+
+[2007-07-07 22:50:14 +0000] Made small changes to the example ITX file (rewritten.itx) and implemented proper expansion of concepts and sub-concepts.
+
+[2007-07-05 18:53:45 +0000] Implemented generation of reference and typeset versions, based on ITX entries.
+
+[2007-07-05 15:24:36 +0000] Added another unit test, which exposed a bug related to the use of non-default separators for the ParenParser's split() method.  Fixed the bug.
+
+[2007-07-05 14:13:12 +0000] Implemented a proper parentheses-aware split method.
+
+[2007-07-04 10:31:47 +0000] Renamed s/IndexEntry/Entry/g.
+
+[2007-07-04 10:31:31 +0000] Renamed s/IndexEntry/Entry/g.
+
+[2007-07-04 10:31:15 +0000] Renamed s/IndexEntry/Entry/g.
+
+[2007-07-04 06:49:00 +0000] Added TODO file.
+
+[2007-07-03 13:54:17 +0000] Added a Stack class.
+
+[2007-07-03 11:13:58 +0000] Added several comments and examples to the example ITX file.
+
+[2007-07-03 07:16:54 +0000] Sat all of the svn:keywords properties.
+
+[2007-07-03 07:14:06 +0000] Refactored the code by splitting code into library modules.
+
+[2007-07-03 07:08:21 +0000] Refactored the code by splitting code into library modules.
+
+[2007-07-03 06:54:32 +0000] Added new module 'intex'.
+
+[2007-07-03 06:32:23 +0000] Added a source directory.
+
+[2007-07-03 06:31:34 +0000] Added a Makefile.
+
+[2007-07-03 06:31:20 +0000] Added a library directory 'lib'.
+
+[2007-07-02 13:56:35 +0000] Continued the implementation of the parenparser's split method.
+
+[2007-03-01 20:24:33 +0000] Added another test.  Cleaned up ParenParser module.
+
+[2007-02-28 18:32:37 +0000] Sat some keywords.
+
+[2007-02-28 18:31:46 +0000] Added two test cases.
+
+[2007-02-28 18:28:14 +0000] Added two test cases.
+
+[2007-02-26 10:51:42 +0000] Added parser exception and better comments.
+
+[2007-02-15 23:03:06 +0000] Implemented the basic functionality of the ParenParser.
+
+[2007-02-15 23:02:43 +0000] Implemented the basic functionality of the ParenParser.
+
+[2007-02-15 14:23:50 +0000] Doing some code tests in test.py.
+
+[2007-02-15 14:15:08 +0000] Doing some code tests in test.py.
+
+[2007-02-15 14:14:55 +0000] Doing some code tests in test.py.
+
+[2007-02-15 11:10:56 +0000] Spell-checked the source code.
+
+[2007-02-14 23:38:55 +0000] Improved placeholders parsing implementation.
+
+[2007-02-14 23:28:51 +0000] Implemented basic meaning of placeholders.
+
+[2007-02-14 17:24:31 +0000] Cleaned up the code related to inflections a bit.
+
+
+[2007-02-14 17:13:55 +0000] Got further with the inflection implementation.
+
+
+[2007-02-14 12:33:00 +0000] Refactored a bit.  Cleaned up code.  Changed the mail address.
+
+[2007-02-14 12:28:25 +0000] Refactored a bit.  Cleaned up code.  Changed the mail address.
+
+[2007-02-13 14:09:30 +0000] Added necessary functions for storing the entries in an adquate datastructure.
+
+[2007-02-13 13:56:39 +0000] Moving along.
+
+[2007-02-13 11:17:06 +0000] Improved logging/reporting facility.
+
+[2007-02-12 14:47:48 +0000] Implemented a rather simple parser.
+
+[2007-02-12 11:03:19 +0000] Added parser regexps.
+
+[2007-02-12 06:44:11 +0000] First version of handler table implemented.
+
+[2007-02-12 06:43:17 +0000] First version of handler table implemented.
+
+[2007-02-11 18:48:09 +0000] Trying to find an adequate and user-friendly format for the InTeX-files.
+
+[2007-02-10 16:06:42 +0000] Addded new file.
+
+[2007-02-10 16:06:20 +0000] Addded new file.
+
+[2007-02-09 21:21:00 +0000] Added test index.
+
+[2007-02-09 13:17:22 +0000] Added property.
+
+
+[2007-02-09 13:15:17 +0000] Added new generation of the make-InTeX program.
+
+[2007-02-09 13:13:13 +0000] Cleaning up.
+
+[2007-02-09 13:12:28 +0000] Cleaning up, and added two missing files.
+
+[2007-02-09 13:12:15 +0000] Cleaning up, and added two missing files.
+
+[2007-02-09 13:08:47 +0000] Added new directory.
+
+[2007-02-09 13:07:59 +0000] Before rewrite.
+
+[2006-04-13 13:09:30 +0000] Fixed verso/recto-placement of margin notes (at least for two-sided printing.
+
+[2006-04-13 12:25:43 +0000] Changed behavior from rewriting the .aux file to writing (and later importing) an external file .ito.
+
+[2006-03-29 22:11:32 +0000] Update.  Commented out a lot of warnings.
+
+[2006-03-22 10:13:07 +0000] Refactoring in process.
+
+[2006-03-21 13:54:15 +0000] Refactoring in process.
+
+[2006-03-21 13:51:24 +0000] Refactoring in process.
+
+[2006-03-21 13:51:03 +0000] Refactoring in process.
+
+[2006-03-21 13:50:36 +0000] Refactoring in process.
+
+[2006-03-21 13:50:23 +0000] Refactoring in process.
+
+[2006-03-21 13:50:01 +0000] Refactoring in process.
+
+[2006-03-21 13:49:00 +0000] Refactoring in process.
+
+[2006-03-20 22:17:56 +0000] Refactoring in process.
+
+[2006-03-20 10:57:15 +0000] Backup, before quick refactoring.
+
+[2006-02-13 22:16:15 +0000] Improved makeintex source code.
+
+[2006-02-13 22:13:01 +0000] Improved makeintex source code.
+
+[2006-02-13 20:04:07 +0000] Initial module layout
+
