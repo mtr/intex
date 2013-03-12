@@ -8,7 +8,7 @@ AM_INIT_AUTOMAKE
 
 dnl AM_GNU_GETTEXT([external])
 
-AM_PATH_PYTHON(2.5,, :)
+AM_PATH_PYTHON(2.7,, :)
 
 AC_OUTPUT([Makefile
 	   setup.cfg

@@ -10,7 +10,7 @@ EXTRA_DIST = config.rpath m4/ChangeLog  m4/ChangeLog src/*.py #lib/
 
 pysetyp = setup.py
 
-PYTHON = /usr/bin/python2.5
+PYTHON = /usr/bin/python2.7
 
 GET_RELEASE = $(top_srcdir)/bin/get_release
 
