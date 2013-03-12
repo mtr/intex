@@ -44,7 +44,7 @@ file INSTALL, located in the top directory of the package.
 Usage
 -----
 
-The `mkintex` command takes the following options:
+The `mkintex(1)` command takes the following options:
 
        --version
               show program's version number and exit
@@ -78,7 +78,7 @@ Examples
 --------
 
 Let us assume that you have already written a `latex(1)` document,
-named `<document_name>.tex`, that uses the InTeX(5) package.
+named `<document_name>.tex`, that uses the `InTeX(5)` package.
 Furthermore, we assume that you have defined a set of concepts,
 acronyms, and proper nouns for indexing in a file named
 `<document_name>.itx`.  Then, to run this program the standard way,
@@ -113,10 +113,11 @@ typeset and indexed:
 Please note that in the examples above, `<document_name>` is the name
 of the main LaTeX document, without the `.tex` ending.
 
-For more information and examples of how to use the  InTeX(5)  LaTeX(1)
-package, please see the file `intex.pdf`.
+For more information and examples of how to use the `InTeX(5)`
+`LaTeX(1)` package, please see the file
+[latex/intex.pdf](https://github.com/mtr/intex/blob/master/latex/intex.pdf?raw=true).
 
-For further usage information, please consult the mkintex(1) man page.
+You may also consult the `mkintex(1)` man page.
 
 
 Licensing
