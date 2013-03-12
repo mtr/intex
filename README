@@ -12,7 +12,29 @@ consistent manner throughout documents of arbitrary length.
 
 * Installation
 
-For information about how to install this package, please consult the
+From source:
+
+    $ git clone https://github.com/mtr/intex.git
+	$ cd intex
+	$ automake --add-missing
+	$ autoconf
+	$ configure
+	$ make
+	
+Create a deb package:
+	
+	$ make deb
+	
+Install deb package:
+
+	$ dpkg --install dist/intex_1.8.0-1_all.deb
+
+Or, you may also install directly from source:
+
+	$ make install  # might need a sudo
+
+
+For furhter information about how to install this package, please consult the
 file INSTALL, located in the top directory of the package.
 
 * Usage
