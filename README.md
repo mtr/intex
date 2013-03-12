@@ -15,19 +15,19 @@ consistent manner throughout documents of arbitrary length.
 From source:
 
     $ git clone https://github.com/mtr/intex.git
-	$ cd intex
-	$ automake --add-missing
-	$ autoconf
-	$ configure
-	$ make
-	
+    $ cd intex
+    $ automake --add-missing
+    $ autoconf
+    $ configure
+    $ make
+    
 Create a deb package:
-	
-	$ make deb
-	
+    
+    $ make deb
+    
 Install deb package:
 
-	$ dpkg --install dist/intex_1.8.0-1_all.deb
+    $ dpkg --install dist/intex_1.8.0-1_all.deb
 
 Or, you may also install directly from source:
 
