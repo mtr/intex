@@ -127,4 +127,4 @@ For information about this package's license, please see the file
 COPYING in the top directory of the package.
 
 
- -- Martin Thorsen Ranang <mtr@ranang.org>, 2013-03-12
+-- Martin Thorsen Ranang, 2013-03-12
