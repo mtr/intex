@@ -1,5 +1,0 @@
-\makeatletter
-\@itx@margin@acronymfalse%
-\makeatother
-We could talk about multiple \co{IDs},
-or a single \co{ID}.
